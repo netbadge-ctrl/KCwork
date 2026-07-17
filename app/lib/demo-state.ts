@@ -1,19 +1,32 @@
 import type {
+  DevelopmentTaskStatus,
   ExecutionState,
   Message,
   Mode,
   PreviewKind,
+  ProjectRole,
+  ProjectSection,
+  RequirementStage,
   ViewId,
 } from "./types";
+import { developmentTasks, projectMembers, requirements } from "./demo-data";
 
 export interface ClientState {
   view: ViewId;
   mode: Mode;
   selectedAgentId: string;
   selectedProjectId: string | null;
+  selectedRequirementId: string | null;
+  projectSection: ProjectSection;
+  selectedAssetId: string | null;
   preview: PreviewKind | null;
   execution: ExecutionState;
   messages: Message[];
+  requirementStages: Record<string, RequirementStage>;
+  stageRisks: Record<string, string>;
+  memberRoles: Record<string, ProjectRole>;
+  developmentTaskStatuses: Record<string, DevelopmentTaskStatus>;
+  documentDrafts: Record<string, string>;
 }
 
 export type ClientAction =
@@ -21,6 +34,22 @@ export type ClientAction =
   | { type: "set-mode"; mode: Mode }
   | { type: "select-agent"; agentId: string }
   | { type: "select-project"; projectId: string | null }
+  | { type: "select-requirement"; requirementId: string }
+  | {
+      type: "set-requirement-stage";
+      requirementId: string;
+      stage: RequirementStage;
+      reason: string;
+    }
+  | { type: "select-project-section"; section: ProjectSection }
+  | { type: "select-project-asset"; assetId: string | null }
+  | { type: "set-member-role"; memberId: string; role: ProjectRole }
+  | {
+      type: "set-development-task-status";
+      taskId: string;
+      status: DevelopmentTaskStatus;
+    }
+  | { type: "set-document-draft"; documentId: string; draft: string }
   | { type: "open-preview"; preview: PreviewKind }
   | { type: "close-preview" }
   | { type: "send-message"; text: string }
@@ -32,8 +61,22 @@ export const initialClientState: ClientState = {
   mode: "research",
   selectedAgentId: "prd-writer",
   selectedProjectId: "customer-portal",
+  selectedRequirementId: null,
+  projectSection: "overview",
+  selectedAssetId: null,
   preview: null,
   execution: "idle",
+  requirementStages: Object.fromEntries(
+    requirements.map((requirement) => [requirement.id, requirement.stage]),
+  ),
+  stageRisks: {},
+  memberRoles: Object.fromEntries(
+    projectMembers.map((member) => [member.id, member.role]),
+  ),
+  developmentTaskStatuses: Object.fromEntries(
+    developmentTasks.map((task) => [task.id, task.status]),
+  ),
+  documentDrafts: {},
   messages: [
     {
       id: "initial-user",
@@ -77,6 +120,55 @@ export function clientReducer(
       return { ...state, selectedAgentId: action.agentId };
     case "select-project":
       return { ...state, selectedProjectId: action.projectId };
+    case "select-requirement":
+      return {
+        ...state,
+        view: "requirement-detail",
+        selectedRequirementId: action.requirementId,
+        selectedAgentId: "requirement-analysis",
+      };
+    case "set-requirement-stage":
+      return {
+        ...state,
+        requirementStages: {
+          ...state.requirementStages,
+          [action.requirementId]: action.stage,
+        },
+        stageRisks: {
+          ...state.stageRisks,
+          [action.requirementId]: action.reason,
+        },
+      };
+    case "select-project-section":
+      return {
+        ...state,
+        projectSection: action.section,
+        selectedAssetId: null,
+        view: action.section === "overview" ? "project-detail" : "project-asset",
+      };
+    case "select-project-asset":
+      return { ...state, selectedAssetId: action.assetId };
+    case "set-member-role":
+      return {
+        ...state,
+        memberRoles: { ...state.memberRoles, [action.memberId]: action.role },
+      };
+    case "set-development-task-status":
+      return {
+        ...state,
+        developmentTaskStatuses: {
+          ...state.developmentTaskStatuses,
+          [action.taskId]: action.status,
+        },
+      };
+    case "set-document-draft":
+      return {
+        ...state,
+        documentDrafts: {
+          ...state.documentDrafts,
+          [action.documentId]: action.draft,
+        },
+      };
     case "open-preview":
       return { ...state, preview: action.preview };
     case "close-preview":

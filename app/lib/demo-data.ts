@@ -1,4 +1,17 @@
-import type { Agent, AssetItem, Project, RecentTask } from "./types";
+import type {
+  Agent,
+  AssetItem,
+  CodeChange,
+  DevelopmentTask,
+  ProductDocument,
+  Project,
+  ProjectAssetSummary,
+  ProjectMember,
+  RecentTask,
+  Requirement,
+  TestCase,
+  TestReport,
+} from "./types";
 
 export const agents: Agent[] = [
   { id: "prd-writer", name: "PRD 撰写 Agent", shortName: "产", mode: "research", category: "产品", description: "基于项目上下文完善 PRD 与验收标准" },
@@ -37,4 +50,95 @@ export const assetGroups: AssetItem[] = [
   { id: "expense-repo", kind: "repository", name: "expense-platform", description: "main · 最近索引昨天", status: "可用", meta: "2 个关联项目" },
   { id: "requirements", kind: "tool", name: "企业需求平台", description: "需求、评审与验收标准", status: "已连接", meta: "全员可用" },
   { id: "test-platform", kind: "tool", name: "企业测试平台", description: "测试用例与执行报告", status: "已连接", meta: "研发中心" },
+];
+
+export const requirements: Requirement[] = [
+  {
+    id: "role-permissions",
+    projectId: "customer-portal",
+    code: "REQ-032",
+    title: "角色与成员权限重构",
+    summary: "统一租户、项目和资源级操作边界",
+    stage: "developing",
+    gateStatus: "approved",
+    gateLabel: "产品方案已确认",
+    specVersion: "v1.4",
+    specCompletion: 92,
+    owners: { product: "陈楠", development: "林川", testing: "周祺" },
+    counts: { prototypes: 3, documents: 2, tasks: 6, changes: 8, tests: 26 },
+    updatedAt: "10 分钟前",
+  },
+  {
+    id: "sso-login",
+    projectId: "customer-portal",
+    code: "REQ-029",
+    title: "企业 SSO 登录体验优化",
+    summary: "补齐异常反馈、租户选择和登录审计",
+    stage: "testing",
+    gateStatus: "objected",
+    gateLabel: "2 项测试异议",
+    specVersion: "v2.1",
+    specCompletion: 100,
+    owners: { product: "顾言", development: "赵屿", testing: "周祺" },
+    counts: { prototypes: 2, documents: 1, tasks: 5, changes: 11, tests: 34 },
+    updatedAt: "昨天",
+  },
+  {
+    id: "audit-export",
+    projectId: "customer-portal",
+    code: "REQ-035",
+    title: "权限审计记录导出",
+    summary: "支持按成员、操作和时间范围导出审计记录",
+    stage: "designing",
+    gateStatus: "pending",
+    gateLabel: "等待产品评审",
+    specVersion: "v0.8",
+    specCompletion: 68,
+    owners: { product: "陈楠", development: "林川", testing: "待分配" },
+    counts: { prototypes: 1, documents: 1, tasks: 0, changes: 0, tests: 6 },
+    updatedAt: "2 小时前",
+  },
+];
+
+export const projectMembers: ProjectMember[] = [
+  { id: "member-chen", projectId: "customer-portal", name: "陈楠", initials: "陈", role: "admin", team: "产品中心" },
+  { id: "member-lin", projectId: "customer-portal", name: "林川", initials: "林", role: "development", team: "前端研发" },
+  { id: "member-zhao", projectId: "customer-portal", name: "赵屿", initials: "赵", role: "development", team: "后端研发" },
+  { id: "member-zhou", projectId: "customer-portal", name: "周祺", initials: "周", role: "testing", team: "质量保障" },
+  { id: "member-gu", projectId: "customer-portal", name: "顾言", initials: "顾", role: "product", team: "产品中心" },
+];
+
+export const projectAssetSummaries: ProjectAssetSummary[] = [
+  { section: "documents", label: "产品文档", value: "8 份", note: "PRD、原型与验收标准", updatedAt: "10 分钟前" },
+  { section: "memory", label: "项目记忆", value: "23 条", note: "人工确认的范围与决策", updatedAt: "昨天" },
+  { section: "repositories", label: "代码库", value: "3 个", note: "主仓库与依赖服务", updatedAt: "8 分钟前" },
+  { section: "tests", label: "测试资产", value: "42 项", note: "用例、报告与缺陷", updatedAt: "20 分钟前" },
+];
+
+export const productDocuments: ProductDocument[] = [
+  { id: "prd-role-permissions", projectId: "customer-portal", requirementId: "role-permissions", title: "角色与成员权限 PRD", kind: "prd", status: "changed", version: "v1.4", updatedAt: "10 分钟前" },
+  { id: "prototype-role-permissions", projectId: "customer-portal", requirementId: "role-permissions", title: "角色配置交互原型", kind: "prototype", status: "confirmed", version: "V3", updatedAt: "昨天" },
+];
+
+export const developmentTasks: DevelopmentTask[] = [
+  { id: "dev-role-panel", requirementId: "role-permissions", title: "重构角色面板权限判断", status: "not-started", specRef: "AC-07", repository: "customer-portal", files: 3 },
+  { id: "dev-member-batch", requirementId: "role-permissions", title: "增加成员批量角色操作", status: "in-progress", specRef: "US-04", repository: "customer-portal", files: 5 },
+  { id: "dev-audit-api", requirementId: "role-permissions", title: "补齐权限变更审计接口", status: "done", specRef: "BR-12", repository: "portal-service", files: 4 },
+];
+
+export const codeChanges: CodeChange[] = [
+  { id: "change-role-panel", requirementId: "role-permissions", taskId: "dev-role-panel", file: "src/features/roles/RolePanel.tsx", additions: 18, deletions: 6, rationale: "将管理员判断替换为项目权限集合判断" },
+  { id: "change-role-hook", requirementId: "role-permissions", taskId: "dev-role-panel", file: "src/features/roles/useRolePermissions.ts", additions: 42, deletions: 0, rationale: "集中计算资源范围与操作权限" },
+  { id: "change-role-test", requirementId: "role-permissions", taskId: "dev-role-panel", file: "src/features/roles/RolePanel.test.tsx", additions: 35, deletions: 2, rationale: "覆盖项目管理员和观察者权限" },
+];
+
+export const testCases: TestCase[] = [
+  { id: "tc-role-edit", requirementId: "role-permissions", title: "项目管理员可以修改成员角色", type: "automated", status: "passed", specRef: "AC-07" },
+  { id: "tc-role-viewer", requirementId: "role-permissions", title: "观察者只能查看项目内容", type: "automated", status: "passed", specRef: "AC-09" },
+  { id: "tc-role-batch", requirementId: "role-permissions", title: "批量修改角色需要二次确认", type: "manual", status: "failed", specRef: "AC-11" },
+  { id: "tc-role-audit", requirementId: "role-permissions", title: "角色变更写入审计记录", type: "automated", status: "pending", specRef: "AC-12" },
+];
+
+export const testReports: TestReport[] = [
+  { id: "report-role-regression", requirementId: "role-permissions", title: "角色管理回归测试报告", passRate: 92, passed: 23, failed: 2, skipped: 1 },
 ];

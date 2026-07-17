@@ -3,6 +3,8 @@ export type ViewId =
   | "home"
   | "projects"
   | "project-detail"
+  | "project-asset"
+  | "requirement-detail"
   | "assets"
   | "task";
 export type AssetKind =
@@ -11,7 +13,16 @@ export type AssetKind =
   | "memory"
   | "repository"
   | "tool";
-export type PreviewKind = "prd" | "diff" | "context" | "log" | "test";
+export type PreviewKind =
+  | "prd"
+  | "prototype"
+  | "pdf"
+  | "diff"
+  | "context"
+  | "log"
+  | "test"
+  | "members"
+  | "asset";
 export type ExecutionState =
   | "idle"
   | "reading"
@@ -63,4 +74,131 @@ export interface Message {
   agentId?: string;
   text: string;
   artifact?: PreviewKind;
+}
+
+export type RequirementStage =
+  | "clarifying"
+  | "designing"
+  | "ready-for-dev"
+  | "developing"
+  | "ready-for-test"
+  | "testing"
+  | "ready-for-release"
+  | "done";
+
+export type ReviewGateStatus =
+  | "pending"
+  | "approved"
+  | "objected"
+  | "skipped";
+export type ProjectRole =
+  | "admin"
+  | "product"
+  | "development"
+  | "testing"
+  | "viewer";
+export type DeliverableStatus =
+  | "draft"
+  | "reviewing"
+  | "confirmed"
+  | "changed";
+export type DevelopmentTaskStatus =
+  | "not-started"
+  | "in-progress"
+  | "done"
+  | "blocked";
+export type ProjectSection =
+  | "overview"
+  | "documents"
+  | "memory"
+  | "repositories"
+  | "tests";
+
+export interface ProjectMember {
+  id: string;
+  projectId: string;
+  name: string;
+  initials: string;
+  role: ProjectRole;
+  team: string;
+}
+
+export interface Requirement {
+  id: string;
+  projectId: string;
+  code: string;
+  title: string;
+  summary: string;
+  stage: RequirementStage;
+  gateStatus: ReviewGateStatus;
+  gateLabel: string;
+  specVersion: string;
+  specCompletion: number;
+  owners: { product: string; development: string; testing: string };
+  counts: {
+    prototypes: number;
+    documents: number;
+    tasks: number;
+    changes: number;
+    tests: number;
+  };
+  updatedAt: string;
+}
+
+export interface ProjectAssetSummary {
+  section: Exclude<ProjectSection, "overview">;
+  label: string;
+  value: string;
+  note: string;
+  updatedAt: string;
+}
+
+export interface ProductDocument {
+  id: string;
+  projectId: string;
+  requirementId: string;
+  title: string;
+  kind: "prd" | "prototype";
+  status: DeliverableStatus;
+  version: string;
+  updatedAt: string;
+}
+
+export interface DevelopmentTask {
+  id: string;
+  requirementId: string;
+  title: string;
+  status: DevelopmentTaskStatus;
+  specRef: string;
+  repository: string;
+  files: number;
+}
+
+export interface CodeChange {
+  id: string;
+  requirementId: string;
+  taskId: string;
+  file: string;
+  additions: number;
+  deletions: number;
+  rationale: string;
+}
+
+export interface TestCase {
+  id: string;
+  requirementId: string;
+  title: string;
+  type: "manual" | "automated";
+  status: "pending" | "passed" | "failed";
+  specRef: string;
+}
+
+export interface TestReport {
+  id: string;
+  requirementId: string;
+  title: string;
+  passRate: number;
+  passed: number;
+  failed: number;
+  skipped: number;
 }
