@@ -1,98 +1,39 @@
-# vinext-starter
+# KFlow 企业智能工作客户端 Demo
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+一个面向企业系统开发与日常办公的任务对话式客户端原型。它以项目和需求为共享上下文，通过按需选择的 Agent 支持产品、研发、测试与办公工作，不做固定 Agent 编排。
 
-## Prerequisites
+## 体验路径
 
-- Node.js `>=22.13.0`
+- 新建任务：在“系统开发”和“日常办公”之间切换，选择 Agent、项目与权限模式后发起任务。
+- 项目：打开“企业客户门户 V3.2”，查看和编辑成员，进入产品文档、项目记忆、代码库、测试资产四类共享内容。
+- 多需求：每个项目包含多份需求；需求各自维护 Spec、阶段、审核门禁、负责人和全链路产物。成员可以自由调整阶段，跳过门禁时保留原因和风险。
+- Agent 工作区：进入“角色与成员权限重构”，切换需求分析、原型设计、PRD 撰写、前后端开发、代码审查和测试 Agent。不同 Agent 使用不同中心工作区，但共享需求上下文和底部对话入口。
+- 辅助预览：右侧按需打开页面原型、PDF、代码 Diff、引用上下文、执行日志与测试报告，按 `Escape` 可关闭。
+- 智能资产：集中查看 Agent、知识库、记忆库、代码库与工具。
 
-## Quick Start
+## 关键交互
+
+- 原型工作区支持桌面／平板／移动画布和独立页面预览。
+- PRD 工作区支持自然语言修订建议、确认变更和 PDF 预览。
+- 开发工作区支持标记任务状态、关联 Spec 验收标准，并将 AI 变更与代码基线对比。
+- 测试工作区展示 Spec 可追溯用例、执行结果和回归报告。
+- PDF、代码比较或测试执行失败时，错误只停留在右侧辅助面板，不阻断项目其他内容。
+
+所有数据与交互均为确定性的前端 Demo；刷新后会恢复初始状态，不执行真实 Git 写入、PDF 转换、CI 或外部系统操作。
+
+## 本地运行
+
+需要 Node.js `>=22.13.0`。
 
 ```bash
 npm install
 npm run dev
+```
+
+验证：
+
+```bash
+npm test
+npm run lint
 npm run build
 ```
-
-This starter does not use `wrangler.jsonc`.
-
-## Included Shape
-
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)

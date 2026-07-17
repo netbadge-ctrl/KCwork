@@ -2842,6 +2842,21 @@ select:focus-visible {
 .test-failure-detail span { color: #a5767b; font-size: 8px; }
 .test-failure-detail p { color: #795b60; font-size: 9px; margin: 0; }
 
+.preview-error {
+  align-items: center;
+  background: #fff7f0;
+  border: 1px solid #efd9c8;
+  border-radius: 12px;
+  color: #6c5547;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  padding: 18px;
+}
+.preview-error svg { color: #b96538; }
+.preview-error p { font-size: 11px; margin: 0; }
+.preview-error button { background: #fff; border: 1px solid #d9bba8; border-radius: 7px; color: #8d4d2b; padding: 7px 13px; }
+
 .prototype-preview-shell,
 .pdf-preview { display: grid; gap: 12px; }
 .prototype-preview-app { border: 1px solid #e3e1e8; border-radius: 10px; min-height: 460px; overflow: hidden; }

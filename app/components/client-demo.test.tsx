@@ -263,4 +263,22 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByRole("main")).toBeInTheDocument();
     expect(screen.getByLabelText("辅助工具")).toBeInTheDocument();
   });
+
+  test("keeps the three product regions and office mode", async () => {
+    render(<Page />);
+    expect(screen.getByRole("navigation", { name: "主导航" })).toBeInTheDocument();
+    expect(screen.getByRole("main")).toBeInTheDocument();
+    expect(screen.getByLabelText("辅助工具")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "新建任务" }));
+    await userEvent.click(screen.getByRole("button", { name: "日常办公" }));
+    expect(screen.getByRole("button", { name: /会议纪要 Agent/ })).toBeInTheDocument();
+  });
+
+  test("closes every contextual drawer with Escape", async () => {
+    render(<Page />);
+    await openCustomerPortal();
+    await userEvent.click(screen.getByRole("button", { name: "管理成员" }));
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("complementary", { name: "成员管理" })).not.toBeInTheDocument();
+  });
 });

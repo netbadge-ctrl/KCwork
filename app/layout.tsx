@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: "KFlow · 企业智能工作客户端",
-    description: "面向企业研发与日常办公的任务对话式智能工作客户端 Demo",
+    description: "面向企业系统开发与日常办公的任务对话式智能工作客户端 Demo",
     openGraph: {
       title: "KFlow · 企业智能工作客户端",
       description: "任务即对话，Agent 按需调用。",

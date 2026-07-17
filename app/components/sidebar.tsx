@@ -1,6 +1,5 @@
 import {
   Bot,
-  BriefcaseBusiness,
   ChevronDown,
   FolderKanban,
   Plus,

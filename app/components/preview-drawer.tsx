@@ -12,15 +12,18 @@ import {
 import { useEffect } from "react";
 import type { PreviewKind, ProjectMember, ProjectRole } from "../lib/types";
 import { MemberManager } from "./member-manager";
+import { PreviewErrorState, type PreviewErrorKind } from "./preview-error-state";
 
 export interface PreviewDrawerProps {
   preview: PreviewKind | null;
   members: ProjectMember[];
   memberRoles: Record<string, ProjectRole>;
   selectedAssetId: string | null;
+  previewError?: PreviewErrorKind | null;
   onSelect(kind: PreviewKind): void;
   onChangeMemberRole(memberId: string, role: ProjectRole): void;
   onClose(): void;
+  onRetryPreview?(): void;
 }
 
 const tools: { kind: PreviewKind; label: string; icon: typeof FileText }[] = [
@@ -45,9 +48,11 @@ export function PreviewDrawer({
   members,
   memberRoles,
   selectedAssetId,
+  previewError,
   onSelect,
   onChangeMemberRole,
   onClose,
+  onRetryPreview,
 }: PreviewDrawerProps) {
   useEffect(() => {
     if (!preview) return;
@@ -75,6 +80,10 @@ export function PreviewDrawer({
             </button>
           </header>
           <div className="drawer-body">
+            {previewError === preview ? (
+              <PreviewErrorState kind={previewError} onRetry={onRetryPreview ?? (() => undefined)} />
+            ) : (
+              <>
             {preview === "prd" && <PrdPreview />}
             {preview === "diff" && <DiffPreview />}
             {preview === "context" && <ContextPreview />}
@@ -90,6 +99,8 @@ export function PreviewDrawer({
               />
             )}
             {preview === "asset" && <AssetDetail assetId={selectedAssetId} />}
+              </>
+            )}
           </div>
         </aside>
       )}
