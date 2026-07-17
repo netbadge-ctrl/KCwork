@@ -41,7 +41,7 @@ export function HomeView(props: HomeViewProps) {
             onClick={() => props.onModeChange("research")}
             type="button"
           >
-            <Code2 size={17} /> 代码研发
+            <Code2 size={17} /> 系统开发
           </button>
         </div>
         <Composer {...props} variant="hero" />
@@ -51,7 +51,7 @@ export function HomeView(props: HomeViewProps) {
         <div className="section-title">
           <div>
             <p className="eyebrow">按需调用</p>
-            <h2>{props.mode === "office" ? "办公 Agent" : "研发 Agent"}</h2>
+            <h2>{props.mode === "office" ? "办公 Agent" : "系统开发 Agent"}</h2>
           </div>
           <span>每次任务只选择你需要的能力</span>
         </div>

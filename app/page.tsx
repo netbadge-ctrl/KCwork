@@ -7,7 +7,15 @@ import { PreviewDrawer } from "./components/preview-drawer";
 import { ProjectsView } from "./components/projects-view";
 import { Sidebar } from "./components/sidebar";
 import { TaskView } from "./components/task-view";
-import { agents, assetGroups, projects, recentTasks } from "./lib/demo-data";
+import {
+  agents,
+  assetGroups,
+  projectAssetSummaries,
+  projectMembers,
+  projects,
+  recentTasks,
+  requirements,
+} from "./lib/demo-data";
 import { clientReducer, initialClientState } from "./lib/demo-state";
 
 export default function Page() {
@@ -74,18 +82,36 @@ export default function Page() {
 
         {(state.view === "projects" || state.view === "project-detail") && (
           <ProjectsView
-            projects={projects}
-            selectedProjectId={
-              state.view === "project-detail" ? state.selectedProjectId : null
-            }
-            recentTasks={recentTasks}
-            onOpenProject={openProject}
-            onBack={() => dispatch({ type: "navigate", view: "projects" })}
-            onStartTask={(projectId) => {
+            assetSummaries={projectAssetSummaries}
+            members={projectMembers}
+            onNewRequirement={(projectId) => {
               dispatch({ type: "select-project", projectId });
               dispatch({ type: "navigate", view: "home" });
             }}
-            onOpenTask={() => dispatch({ type: "navigate", view: "task" })}
+            onOpenMembers={() => dispatch({ type: "open-preview", preview: "members" })}
+            onOpenRequirement={(requirementId) =>
+              dispatch({ type: "select-requirement", requirementId })
+            }
+            onOpenSection={(section) =>
+              dispatch({ type: "select-project-section", section })
+            }
+            onSetRequirementStage={(requirementId, stage, reason) =>
+              dispatch({
+                type: "set-requirement-stage",
+                requirementId,
+                stage,
+                reason,
+              })
+            }
+            projects={projects}
+            requirementStages={state.requirementStages}
+            requirements={requirements}
+            selectedProjectId={
+              state.view === "project-detail" ? state.selectedProjectId : null
+            }
+            stageRisks={state.stageRisks}
+            onOpenProject={openProject}
+            onBack={() => dispatch({ type: "navigate", view: "projects" })}
           />
         )}
 

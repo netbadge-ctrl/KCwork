@@ -1,120 +1,67 @@
-import {
-  ArrowLeft,
-  ArrowRight,
-  BookOpen,
-  Boxes,
-  FileText,
-  FlaskConical,
-  GitBranch,
-  Plus,
-  Search,
-  Users,
-} from "lucide-react";
+import { ArrowRight, Boxes, Plus, Search, Users } from "lucide-react";
 import { useState } from "react";
-import type { Project, RecentTask } from "../lib/types";
+import type {
+  Project,
+  ProjectAssetSummary,
+  ProjectMember,
+  ProjectSection,
+  Requirement,
+  RequirementStage,
+} from "../lib/types";
+import { ProjectDetailView } from "./project-detail-view";
 
 export interface ProjectsViewProps {
   projects: Project[];
   selectedProjectId: string | null;
-  recentTasks: RecentTask[];
+  members: ProjectMember[];
+  assetSummaries: ProjectAssetSummary[];
+  requirements: Requirement[];
+  requirementStages: Record<string, RequirementStage>;
+  stageRisks: Record<string, string>;
   onOpenProject(id: string): void;
   onBack(): void;
-  onStartTask(projectId: string): void;
-  onOpenTask(task: RecentTask): void;
+  onNewRequirement(projectId: string): void;
+  onOpenMembers(): void;
+  onOpenSection(section: ProjectSection): void;
+  onOpenRequirement(id: string): void;
+  onSetRequirementStage(id: string, stage: RequirementStage, reason: string): void;
 }
 
 export function ProjectsView({
   projects,
   selectedProjectId,
-  recentTasks,
+  members,
+  assetSummaries,
+  requirements,
+  requirementStages,
+  stageRisks,
   onOpenProject,
   onBack,
-  onStartTask,
-  onOpenTask,
+  onNewRequirement,
+  onOpenMembers,
+  onOpenSection,
+  onOpenRequirement,
+  onSetRequirementStage,
 }: ProjectsViewProps) {
   const [query, setQuery] = useState("");
   const project = projects.find((item) => item.id === selectedProjectId);
 
   if (project) {
-    const projectTasks = recentTasks.filter(
-      (task) => task.projectId === project.id,
-    );
-    const contextCards = [
-      { label: "产品文档", value: "8 份", icon: FileText, note: "PRD、原型与验收标准" },
-      { label: "项目记忆", value: "23 条", icon: BookOpen, note: "人工确认的范围与决策" },
-      { label: "代码库", value: "3 个", icon: GitBranch, note: "主仓库与依赖服务" },
-      { label: "测试资产", value: "42 项", icon: FlaskConical, note: "用例、报告与缺陷" },
-    ];
-
     return (
-      <div className="project-detail page-scroll">
-        <header className="page-header detail-header">
-          <button className="back-button" onClick={onBack} type="button">
-            <ArrowLeft size={17} /> 返回项目
-          </button>
-          <div className="detail-title-row">
-            <div>
-              <div className="project-kicker">
-                <span style={{ background: project.color }} /> 研发项目
-              </div>
-              <h1>{project.name}</h1>
-              <p>{project.description}</p>
-            </div>
-            <button
-              className="primary-button"
-              onClick={() => onStartTask(project.id)}
-              type="button"
-            >
-              <Plus size={16} /> 在此项目中新建任务
-            </button>
-          </div>
-          <div className="project-meta-row">
-            <span><Users size={15} /> {project.members} 位成员</span>
-            <span><Boxes size={15} /> {project.contextCount} 项共享上下文</span>
-            <span>更新于 {project.updatedAt}</span>
-          </div>
-        </header>
-
-        <section className="content-section">
-          <div className="section-title">
-            <div>
-              <p className="eyebrow">跨任务共用</p>
-              <h2>共享项目上下文</h2>
-            </div>
-            <span>Agent 按权限引用，不改变你的工作方式</span>
-          </div>
-          <div className="context-grid">
-            {contextCards.map(({ label, value, note, icon: Icon }) => (
-              <button className="context-card" key={label} type="button">
-                <span className="context-icon"><Icon size={19} /></span>
-                <span className="context-copy">
-                  <strong>{label}</strong>
-                  <small>{note}</small>
-                </span>
-                <b>{value}</b>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="content-section">
-          <div className="section-title">
-            <div>
-              <p className="eyebrow">最近活动</p>
-              <h2>项目任务</h2>
-            </div>
-          </div>
-          <div className="task-table">
-            {projectTasks.map((task) => (
-              <button key={task.id} onClick={() => onOpenTask(task)} type="button">
-                <span className="task-status-dot" />
-                <span><strong>{task.title}</strong><small>{task.time}</small></span>
-                <ArrowRight size={16} />
-              </button>
-            ))}
-          </div>
-        </section>
-      </div>
+      <ProjectDetailView
+        assetSummaries={assetSummaries}
+        members={members.filter((member) => member.projectId === project.id)}
+        onBack={onBack}
+        onNewRequirement={() => onNewRequirement(project.id)}
+        onOpenMembers={onOpenMembers}
+        onOpenRequirement={onOpenRequirement}
+        onOpenSection={onOpenSection}
+        onSetRequirementStage={onSetRequirementStage}
+        project={project}
+        requirementStages={requirementStages}
+        requirements={requirements.filter((requirement) => requirement.projectId === project.id)}
+        stageRisks={stageRisks}
+      />
     );
   }
 
