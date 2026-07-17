@@ -1,6 +1,7 @@
 import { ArrowLeft, ShieldCheck, Users } from "lucide-react";
 import type {
   Agent,
+  DevelopmentTaskStatus,
   PreviewKind,
   Project,
   Requirement,
@@ -20,6 +21,7 @@ export interface RequirementWorkspaceProps {
   projects: Project[];
   selectedProjectId: string | null;
   documentDraft: string;
+  developmentTaskStatuses: Record<string, DevelopmentTaskStatus>;
   onBack(): void;
   onSetStage(stage: RequirementStage): void;
   onSelectAgent(agentId: string): void;
@@ -27,6 +29,7 @@ export interface RequirementWorkspaceProps {
   onSend(text: string): void;
   onOpenPreview(kind: PreviewKind): void;
   onSaveDocumentDraft(draft: string): void;
+  onSetDevelopmentTaskStatus(taskId: string, status: DevelopmentTaskStatus): void;
 }
 
 export function RequirementWorkspace({
@@ -39,6 +42,7 @@ export function RequirementWorkspace({
   projects,
   selectedProjectId,
   documentDraft,
+  developmentTaskStatuses,
   onBack,
   onSetStage,
   onSelectAgent,
@@ -46,6 +50,7 @@ export function RequirementWorkspace({
   onSend,
   onOpenPreview,
   onSaveDocumentDraft,
+  onSetDevelopmentTaskStatus,
 }: RequirementWorkspaceProps) {
   const researchAgents = agents.filter((item) => item.mode === "research" || item.mode === "both");
   const requestAgentSwitch = (agentId: string) => {
@@ -111,8 +116,10 @@ export function RequirementWorkspace({
         <WorkspaceRouter
           agent={agent}
           documentDraft={documentDraft}
+          developmentTaskStatuses={developmentTaskStatuses}
           onOpenPreview={onOpenPreview}
           onSaveDocumentDraft={onSaveDocumentDraft}
+          onSetDevelopmentTaskStatus={onSetDevelopmentTaskStatus}
           requirement={requirement}
         />
       </div>

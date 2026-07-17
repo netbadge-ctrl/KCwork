@@ -1,4 +1,9 @@
-import type { Agent, PreviewKind, Requirement } from "../../lib/types";
+import type {
+  Agent,
+  DevelopmentTaskStatus,
+  PreviewKind,
+  Requirement,
+} from "../../lib/types";
 import { CodeReviewWorkspace } from "./code-review-workspace";
 import { DevelopmentWorkspace } from "./development-workspace";
 import { PrdWorkspace } from "./prd-workspace";
@@ -10,7 +15,12 @@ export interface WorkspaceRouterProps {
   agent: Agent;
   requirement: Requirement;
   documentDraft: string;
+  developmentTaskStatuses: Record<string, DevelopmentTaskStatus>;
   onSaveDocumentDraft(draft: string): void;
+  onSetDevelopmentTaskStatus(
+    taskId: string,
+    status: DevelopmentTaskStatus,
+  ): void;
   onOpenPreview(kind: PreviewKind): void;
 }
 

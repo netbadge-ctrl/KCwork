@@ -36,6 +36,8 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   pdf: "PDF 预览",
   members: "成员管理",
   asset: "资产详情",
+  diff: "代码差异",
+  test: "测试报告",
 };
 
 export function PreviewDrawer({
@@ -201,7 +203,12 @@ function PrdPreview() {
 }
 
 function DiffPreview() {
-  return <div className="code-preview"><div className="code-file"><Braces size={16} /> src/features/roles/RolePanel.tsx</div><pre><code><span className="minus">- const canEdit = isAdmin;</span>{"\n"}<span className="plus">+ const canEdit = permissions.includes(&quot;role:write&quot;);</span>{"\n"}<span className="plus">+ const scope = activeProject.id;</span></code></pre></div>;
+  return <div className="diff-layout">
+    <div className="diff-rationale"><p className="eyebrow">AI 修改说明</p><h3>把角色编辑权限绑定到项目级权限集合</h3><p>原实现只判断管理员身份，无法区分项目范围。此次修改按 AC-07 引入权限集合，并补充观察者测试。</p><div><span>3 个文件</span><b className="plus-text">+95</b><b className="minus-text">−8</b></div></div>
+    <div className="diff-file-list"><b>变更文件</b><button className="active" type="button">RolePanel.tsx <span>+18 −6</span></button><button type="button">useRolePermissions.ts <span>+42</span></button><button type="button">RolePanel.test.tsx <span>+35 −2</span></button></div>
+    <div className="code-preview"><div className="code-file"><Braces size={16} /> src/features/roles/RolePanel.tsx</div><pre><code><span className="minus">- const canEdit = isAdmin;</span>{"\n"}<span className="plus">+ const canEdit = permissions.includes(&quot;role:write&quot;);</span>{"\n"}<span className="plus">+ const scope = activeProject.id;</span>{"\n"}{"\n"}<span className="neutral">  return &lt;RoleActions disabled=&#123;!canEdit&#125; /&gt;;</span></code></pre></div>
+    <div className="diff-actions"><button type="button">放弃本次变更</button><button type="button">继续修改</button><button className="primary-small" type="button">接受变更</button></div>
+  </div>;
 }
 
 function ContextPreview() {
@@ -213,5 +220,5 @@ function LogPreview() {
 }
 
 function TestPreview() {
-  return <div className="test-preview"><div className="test-score"><strong>92%</strong><span>测试通过率</span></div><h3>角色管理回归测试</h3><p>通过 23　失败 2　跳过 1</p><div className="test-bar"><span /></div></div>;
+  return <div className="test-preview"><div className="test-score"><strong>92%</strong><span>测试通过率</span></div><h3>角色管理回归测试报告</h3><p>通过 23　失败 2　跳过 1</p><div className="test-bar"><span /></div><div className="report-metrics"><div><b>87%</b><span>语句覆盖</span></div><div><b>81%</b><span>分支覆盖</span></div><div><b>3m 42s</b><span>执行耗时</span></div></div><article className="test-failure-detail"><b>失败：批量修改角色需要二次确认</b><span>对应 AC-11 · Chrome 126</span><p>实际结果：提交批量操作前未出现影响范围确认弹窗。</p></article><button className="primary-small" type="button">创建修复任务</button></div>;
 }

@@ -180,6 +180,46 @@ describe("enterprise AI client demo", () => {
     confirmSpy.mockRestore();
   });
 
+  test("marks a development task and opens the code diff", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.selectOptions(
+      screen.getByLabelText("选择 Agent"),
+      "frontend-dev",
+    );
+    await userEvent.selectOptions(
+      screen.getByLabelText("角色面板任务状态"),
+      "in-progress",
+    );
+    expect(screen.getByLabelText("角色面板任务状态")).toHaveValue(
+      "in-progress",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "查看角色面板代码差异" }),
+    );
+    expect(
+      screen.getByRole("complementary", { name: "代码差异" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("AI 修改说明")).toBeInTheDocument();
+  });
+
+  test("shows Spec-linked test cases and a test report", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.selectOptions(
+      screen.getByLabelText("选择 Agent"),
+      "testing",
+    );
+    expect(screen.getByText("AC-07")).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "查看角色管理测试报告" }),
+    );
+    expect(
+      screen.getByRole("complementary", { name: "测试报告" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("92%")).toBeInTheDocument();
+  });
+
   test("shows all governed smart asset categories", async () => {
     render(<Page />);
     await userEvent.click(screen.getByRole("button", { name: "智能资产" }));

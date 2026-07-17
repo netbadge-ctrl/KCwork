@@ -154,6 +154,7 @@ export default function Page() {
             documentDraft={
               state.documentDrafts["prd-role-permissions"] ?? ""
             }
+            developmentTaskStatuses={state.developmentTaskStatuses}
             onBack={() => dispatch({ type: "navigate", view: "project-detail" })}
             onOpenPreview={(preview) =>
               dispatch({ type: "open-preview", preview })
@@ -182,6 +183,9 @@ export default function Page() {
                 stage,
                 reason: "由需求工作区直接调整",
               })
+            }
+            onSetDevelopmentTaskStatus={(taskId, status) =>
+              dispatch({ type: "set-development-task-status", taskId, status })
             }
             project={selectedProject}
             projects={projects}
