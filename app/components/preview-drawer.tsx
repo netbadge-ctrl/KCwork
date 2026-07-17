@@ -10,11 +10,16 @@ import {
   X,
 } from "lucide-react";
 import { useEffect } from "react";
-import type { PreviewKind } from "../lib/types";
+import type { PreviewKind, ProjectMember, ProjectRole } from "../lib/types";
+import { MemberManager } from "./member-manager";
 
 export interface PreviewDrawerProps {
   preview: PreviewKind | null;
+  members: ProjectMember[];
+  memberRoles: Record<string, ProjectRole>;
+  selectedAssetId: string | null;
   onSelect(kind: PreviewKind): void;
+  onChangeMemberRole(memberId: string, role: ProjectRole): void;
   onClose(): void;
 }
 
@@ -26,7 +31,22 @@ const tools: { kind: PreviewKind; label: string; icon: typeof FileText }[] = [
   { kind: "test", label: "测试报告", icon: TestTube2 },
 ];
 
-export function PreviewDrawer({ preview, onSelect, onClose }: PreviewDrawerProps) {
+const contextualLabels: Partial<Record<PreviewKind, string>> = {
+  prototype: "页面预览",
+  pdf: "PDF 预览",
+  members: "成员管理",
+  asset: "资产详情",
+};
+
+export function PreviewDrawer({
+  preview,
+  members,
+  memberRoles,
+  selectedAssetId,
+  onSelect,
+  onChangeMemberRole,
+  onClose,
+}: PreviewDrawerProps) {
   useEffect(() => {
     if (!preview) return;
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -39,11 +59,14 @@ export function PreviewDrawer({ preview, onSelect, onClose }: PreviewDrawerProps
   return (
     <div className="auxiliary" aria-label="辅助工具">
       {preview && (
-        <aside className="preview-drawer" aria-label="产物预览">
+        <aside
+          className="preview-drawer"
+          aria-label={contextualLabels[preview] ?? "产物预览"}
+        >
           <header className="drawer-header">
             <div>
               <p className="eyebrow">辅助面板</p>
-              <h2>{tools.find((tool) => tool.kind === preview)?.label}</h2>
+              <h2>{contextualLabels[preview] ?? tools.find((tool) => tool.kind === preview)?.label}</h2>
             </div>
             <button aria-label="关闭预览" className="icon-button" onClick={onClose} type="button">
               <X size={18} />
@@ -55,6 +78,14 @@ export function PreviewDrawer({ preview, onSelect, onClose }: PreviewDrawerProps
             {preview === "context" && <ContextPreview />}
             {preview === "log" && <LogPreview />}
             {preview === "test" && <TestPreview />}
+            {preview === "members" && (
+              <MemberManager
+                members={members}
+                onChangeRole={onChangeMemberRole}
+                roles={memberRoles}
+              />
+            )}
+            {preview === "asset" && <AssetDetail assetId={selectedAssetId} />}
           </div>
         </aside>
       )}
@@ -76,6 +107,24 @@ export function PreviewDrawer({ preview, onSelect, onClose }: PreviewDrawerProps
         </button>
       </aside>
     </div>
+  );
+}
+
+function AssetDetail({ assetId }: { assetId: string | null }) {
+  return (
+    <article className="asset-detail-preview">
+      <span className="document-tag">项目资产</span>
+      <h3>{assetId ? "资产详情与编辑" : "选择一项资产"}</h3>
+      <p>该资产对项目内全部成员可见，并可被产品、研发和测试需求共同引用。</p>
+      {assetId && (
+        <>
+          <div className="asset-detail-field"><b>资产标识</b><span>{assetId}</span></div>
+          <div className="asset-detail-field"><b>引用需求</b><span>REQ-032 角色与成员权限重构</span></div>
+          <textarea aria-label="编辑资产说明" defaultValue="已确认的项目共享上下文，可供 Agent 按权限引用。" />
+          <button className="primary-small" type="button">保存新版本</button>
+        </>
+      )}
+    </article>
   );
 }
 

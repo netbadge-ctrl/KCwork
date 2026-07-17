@@ -3,6 +3,13 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, test } from "vitest";
 import Page from "../page";
 
+async function openCustomerPortal() {
+  await userEvent.click(screen.getByRole("button", { name: "项目" }));
+  await userEvent.click(
+    screen.getByRole("button", { name: "打开企业客户门户 V3.2" }),
+  );
+}
+
 describe("enterprise AI client demo", () => {
   test("navigates to projects from the fixed sidebar", async () => {
     render(<Page />);
@@ -41,10 +48,7 @@ describe("enterprise AI client demo", () => {
 
   test("shows clickable project assets and multiple requirements", async () => {
     render(<Page />);
-    await userEvent.click(screen.getByRole("button", { name: "项目" }));
-    await userEvent.click(
-      screen.getByRole("button", { name: "打开企业客户门户 V3.2" }),
-    );
+    await openCustomerPortal();
 
     for (const label of ["产品文档", "项目记忆", "代码库", "测试资产"]) {
       expect(
@@ -54,6 +58,37 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByText("角色与成员权限重构")).toBeInTheDocument();
     expect(screen.getByText("企业 SSO 登录体验优化")).toBeInTheDocument();
     expect(screen.getByText("权限审计记录导出")).toBeInTheDocument();
+  });
+
+  test("opens member management and edits a role", async () => {
+    render(<Page />);
+    await openCustomerPortal();
+    await userEvent.click(screen.getByRole("button", { name: "管理成员" }));
+    expect(
+      screen.getByRole("complementary", { name: "成员管理" }),
+    ).toBeInTheDocument();
+    await userEvent.selectOptions(
+      screen.getByLabelText("修改林川的项目角色"),
+      "testing",
+    );
+    expect(screen.getByLabelText("修改林川的项目角色")).toHaveValue(
+      "testing",
+    );
+  });
+
+  test("opens product documents and previews an asset", async () => {
+    render(<Page />);
+    await openCustomerPortal();
+    await userEvent.click(screen.getByRole("button", { name: /产品文档/ }));
+    expect(
+      screen.getByRole("heading", { name: "产品文档" }),
+    ).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "查看角色与成员权限 PRD" }),
+    );
+    expect(
+      screen.getByRole("complementary", { name: "产物预览" }),
+    ).toBeInTheDocument();
   });
 
   test("shows all governed smart asset categories", async () => {

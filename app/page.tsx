@@ -4,6 +4,7 @@ import { useEffect, useMemo, useReducer } from "react";
 import { AssetsView } from "./components/assets-view";
 import { HomeView } from "./components/home-view";
 import { PreviewDrawer } from "./components/preview-drawer";
+import { ProjectAssetsView } from "./components/project-assets-view";
 import { ProjectsView } from "./components/projects-view";
 import { Sidebar } from "./components/sidebar";
 import { TaskView } from "./components/task-view";
@@ -13,6 +14,7 @@ import {
   projectAssetSummaries,
   projectMembers,
   projects,
+  productDocuments,
   recentTasks,
   requirements,
 } from "./lib/demo-data";
@@ -115,6 +117,25 @@ export default function Page() {
           />
         )}
 
+        {state.view === "project-asset" && state.projectSection !== "overview" && (
+          <ProjectAssetsView
+            documents={productDocuments.filter(
+              (document) => document.projectId === state.selectedProjectId,
+            )}
+            onBack={() =>
+              dispatch({ type: "select-project-section", section: "overview" })
+            }
+            onOpenPreview={(assetId, preview) => {
+              dispatch({ type: "select-project-asset", assetId });
+              dispatch({ type: "open-preview", preview });
+            }}
+            requirements={requirements.filter(
+              (requirement) => requirement.projectId === state.selectedProjectId,
+            )}
+            section={state.projectSection}
+          />
+        )}
+
         {state.view === "assets" && (
           <AssetsView agents={agents} assets={assetGroups} />
         )}
@@ -143,7 +164,15 @@ export default function Page() {
       </section>
 
       <PreviewDrawer
+        memberRoles={state.memberRoles}
+        members={projectMembers.filter(
+          (member) => member.projectId === state.selectedProjectId,
+        )}
+        onChangeMemberRole={(memberId, role) =>
+          dispatch({ type: "set-member-role", memberId, role })
+        }
         preview={state.preview}
+        selectedAssetId={state.selectedAssetId}
         onSelect={(preview) => dispatch({ type: "open-preview", preview })}
         onClose={() => dispatch({ type: "close-preview" })}
       />

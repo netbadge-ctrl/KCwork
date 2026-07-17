@@ -70,7 +70,7 @@ export function ProjectDetailView({
             <p>{project.description}</p>
           </div>
           <div className="project-member-actions">
-            <button className="member-stack" onClick={onOpenMembers} type="button" aria-label="管理成员">
+            <button className="member-stack" onClick={onOpenMembers} type="button" aria-label="查看项目成员">
               {members.slice(0, 4).map((member) => (
                 <span key={member.id} title={member.name}>{member.initials}</span>
               ))}
