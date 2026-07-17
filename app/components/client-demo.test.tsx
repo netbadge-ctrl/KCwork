@@ -10,6 +10,15 @@ async function openCustomerPortal() {
   );
 }
 
+async function openRoleRequirement() {
+  await openCustomerPortal();
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: "打开需求 角色与成员权限重构",
+    }),
+  );
+}
+
 describe("enterprise AI client demo", () => {
   test("navigates to projects from the fixed sidebar", async () => {
     render(<Page />);
@@ -88,6 +97,23 @@ describe("enterprise AI client demo", () => {
     );
     expect(
       screen.getByRole("complementary", { name: "产物预览" }),
+    ).toBeInTheDocument();
+  });
+
+  test("opens a requirement and changes workspace with the selected Agent", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    expect(screen.getByText("Spec v1.4")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "产品需求工作台" }),
+    ).toBeInTheDocument();
+
+    await userEvent.selectOptions(
+      screen.getByLabelText("选择 Agent"),
+      "prototype",
+    );
+    expect(
+      screen.getByRole("heading", { name: "原型设计工作台" }),
     ).toBeInTheDocument();
   });
 

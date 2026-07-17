@@ -6,6 +6,7 @@ import { HomeView } from "./components/home-view";
 import { PreviewDrawer } from "./components/preview-drawer";
 import { ProjectAssetsView } from "./components/project-assets-view";
 import { ProjectsView } from "./components/projects-view";
+import { RequirementWorkspace } from "./components/requirement-workspace";
 import { Sidebar } from "./components/sidebar";
 import { TaskView } from "./components/task-view";
 import {
@@ -39,6 +40,13 @@ export default function Page() {
       projects.find((project) => project.id === state.selectedProjectId) ??
       null,
     [state.selectedProjectId],
+  );
+  const selectedRequirement = useMemo(
+    () =>
+      requirements.find(
+        (requirement) => requirement.id === state.selectedRequirementId,
+      ) ?? null,
+    [state.selectedRequirementId],
   );
 
   const openProject = (projectId: string) => {
@@ -133,6 +141,43 @@ export default function Page() {
               (requirement) => requirement.projectId === state.selectedProjectId,
             )}
             section={state.projectSection}
+          />
+        )}
+
+        {state.view === "requirement-detail" && selectedRequirement && selectedProject && (
+          <RequirementWorkspace
+            agent={selectedAgent}
+            agents={agents}
+            currentStage={
+              state.requirementStages[selectedRequirement.id] ?? selectedRequirement.stage
+            }
+            onBack={() => dispatch({ type: "navigate", view: "project-detail" })}
+            onOpenPreview={(preview) =>
+              dispatch({ type: "open-preview", preview })
+            }
+            onSelectAgent={(agentId) =>
+              dispatch({ type: "select-agent", agentId })
+            }
+            onSelectProject={(projectId) =>
+              dispatch({ type: "select-project", projectId })
+            }
+            onSend={(text) => {
+              dispatch({ type: "send-message", text });
+              dispatch({ type: "navigate", view: "requirement-detail" });
+            }}
+            onSetStage={(stage) =>
+              dispatch({
+                type: "set-requirement-stage",
+                requirementId: selectedRequirement.id,
+                stage,
+                reason: "由需求工作区直接调整",
+              })
+            }
+            project={selectedProject}
+            projects={projects}
+            requirement={selectedRequirement}
+            selectedProjectId={state.selectedProjectId}
+            stageRisk={state.stageRisks[selectedRequirement.id]}
           />
         )}
 
