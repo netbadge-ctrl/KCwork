@@ -151,6 +151,9 @@ export default function Page() {
             currentStage={
               state.requirementStages[selectedRequirement.id] ?? selectedRequirement.stage
             }
+            documentDraft={
+              state.documentDrafts["prd-role-permissions"] ?? ""
+            }
             onBack={() => dispatch({ type: "navigate", view: "project-detail" })}
             onOpenPreview={(preview) =>
               dispatch({ type: "open-preview", preview })
@@ -165,6 +168,13 @@ export default function Page() {
               dispatch({ type: "send-message", text });
               dispatch({ type: "navigate", view: "requirement-detail" });
             }}
+            onSaveDocumentDraft={(draft) =>
+              dispatch({
+                type: "set-document-draft",
+                documentId: "prd-role-permissions",
+                draft,
+              })
+            }
             onSetStage={(stage) =>
               dispatch({
                 type: "set-requirement-stage",

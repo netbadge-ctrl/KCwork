@@ -78,6 +78,8 @@ export function PreviewDrawer({
             {preview === "context" && <ContextPreview />}
             {preview === "log" && <LogPreview />}
             {preview === "test" && <TestPreview />}
+            {preview === "prototype" && <PrototypePreview />}
+            {preview === "pdf" && <PdfPreview />}
             {preview === "members" && (
               <MemberManager
                 members={members}
@@ -124,6 +126,51 @@ function AssetDetail({ assetId }: { assetId: string | null }) {
           <button className="primary-small" type="button">保存新版本</button>
         </>
       )}
+    </article>
+  );
+}
+
+function PrototypePreview() {
+  return (
+    <article className="prototype-preview-shell">
+      <div className="document-toolbar"><span>角色配置原型 V3</span><button type="button">在画布中编辑</button></div>
+      <div className="prototype-preview-app">
+        <aside><b>KFlow</b><span>项目总览</span><span className="active">成员管理</span><span>操作审计</span></aside>
+        <main>
+          <p className="eyebrow">企业客户门户 V3.2</p>
+          <div className="prototype-screen-heading"><h3>成员与角色预览</h3><button type="button">添加成员</button></div>
+          <div className="prototype-filter">搜索成员、邮箱或角色 <span>全部角色⌄</span></div>
+          {["陈楠", "林川", "周祺", "顾言"].map((name, index) => (
+            <div className="prototype-member-line" key={name}><i>{name.slice(0, 1)}</i><span>{name}<small>{index === 0 ? "项目管理员" : index === 2 ? "测试" : "研发"}</small></span><b>{index === 0 ? "全部权限" : "按角色编辑"}</b><em>•••</em></div>
+          ))}
+        </main>
+      </div>
+      <footer>桌面端 · 1440 × 900 · 12 个交互热点</footer>
+    </article>
+  );
+}
+
+function PdfPreview() {
+  return (
+    <article className="pdf-preview">
+      <div className="document-toolbar"><span>角色与成员权限 PRD v1.4.pdf</span><button type="button">下载</button></div>
+      <div className="pdf-sheet">
+        <span className="document-tag">产品需求文档</span>
+        <h1>角色与成员权限重构</h1>
+        <p className="document-meta">REQ-032 · Spec v1.4 · 2026-07-17</p>
+        <h2>1. 背景与目标</h2>
+        <p>统一企业客户门户中的项目成员和角色管理体验，使产品、研发和测试围绕同一份可追溯规格协作。</p>
+        <h2>2. 角色定义</h2>
+        <div className="role-table">
+          <div><b>项目管理员</b><span>管理成员、项目设置与全部资产</span></div>
+          <div><b>产品</b><span>维护需求、原型与产品文档</span></div>
+          <div><b>研发</b><span>维护开发任务和代码变更</span></div>
+          <div><b>测试</b><span>维护测试用例、报告与缺陷</span></div>
+        </div>
+        <h2>3. 验收标准</h2>
+        {["角色变更前展示影响范围", "所有变更写入审计记录", "项目成员可查看全部研发上下文"].map((item) => <p className="check-line" key={item}><Check size={14} />{item}</p>)}
+        <div className="pdf-page-number">1 / 4</div>
+      </div>
     </article>
   );
 }

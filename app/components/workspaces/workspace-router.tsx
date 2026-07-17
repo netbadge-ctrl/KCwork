@@ -9,6 +9,8 @@ import { TestingWorkspace } from "./testing-workspace";
 export interface WorkspaceRouterProps {
   agent: Agent;
   requirement: Requirement;
+  documentDraft: string;
+  onSaveDocumentDraft(draft: string): void;
   onOpenPreview(kind: PreviewKind): void;
 }
 

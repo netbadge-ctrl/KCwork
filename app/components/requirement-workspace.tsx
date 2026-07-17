@@ -19,12 +19,14 @@ export interface RequirementWorkspaceProps {
   project: Project;
   projects: Project[];
   selectedProjectId: string | null;
+  documentDraft: string;
   onBack(): void;
   onSetStage(stage: RequirementStage): void;
   onSelectAgent(agentId: string): void;
   onSelectProject(projectId: string | null): void;
   onSend(text: string): void;
   onOpenPreview(kind: PreviewKind): void;
+  onSaveDocumentDraft(draft: string): void;
 }
 
 export function RequirementWorkspace({
@@ -36,14 +38,30 @@ export function RequirementWorkspace({
   project,
   projects,
   selectedProjectId,
+  documentDraft,
   onBack,
   onSetStage,
   onSelectAgent,
   onSelectProject,
   onSend,
   onOpenPreview,
+  onSaveDocumentDraft,
 }: RequirementWorkspaceProps) {
   const researchAgents = agents.filter((item) => item.mode === "research" || item.mode === "both");
+  const requestAgentSwitch = (agentId: string) => {
+    if (
+      agent.id === "prd-writer" &&
+      documentDraft &&
+      agentId !== agent.id
+    ) {
+      const shouldLeave = window.confirm(
+        "当前修订尚未确认，是否放弃并切换 Agent？",
+      );
+      if (!shouldLeave) return;
+      onSaveDocumentDraft("");
+    }
+    onSelectAgent(agentId);
+  };
   return (
     <div className="requirement-workspace">
       <header className="requirement-header">
@@ -73,7 +91,7 @@ export function RequirementWorkspace({
           <span className="spec-version-chip">Spec {requirement.specVersion}</span>
           <select
             aria-label="切换工作台 Agent"
-            onChange={(event) => onSelectAgent(event.target.value)}
+            onChange={(event) => requestAgentSwitch(event.target.value)}
             value={agent.id}
           >
             {researchAgents.map((item) => (
@@ -92,7 +110,9 @@ export function RequirementWorkspace({
       <div className="requirement-workspace-scroll">
         <WorkspaceRouter
           agent={agent}
+          documentDraft={documentDraft}
           onOpenPreview={onOpenPreview}
+          onSaveDocumentDraft={onSaveDocumentDraft}
           requirement={requirement}
         />
       </div>
@@ -101,7 +121,7 @@ export function RequirementWorkspace({
         <Composer
           agents={agents}
           mode="research"
-          onSelectAgent={onSelectAgent}
+          onSelectAgent={requestAgentSwitch}
           onSelectProject={onSelectProject}
           onSend={onSend}
           projects={projects}

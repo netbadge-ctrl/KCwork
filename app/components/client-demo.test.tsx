@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import Page from "../page";
 
 async function openCustomerPortal() {
@@ -115,6 +115,69 @@ describe("enterprise AI client demo", () => {
     expect(
       screen.getByRole("heading", { name: "原型设计工作台" }),
     ).toBeInTheDocument();
+  });
+
+  test("previews the prototype from the prototype Agent", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.selectOptions(
+      screen.getByLabelText("选择 Agent"),
+      "prototype",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "预览角色配置页面" }),
+    );
+    expect(
+      screen.getByRole("complementary", { name: "页面预览" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("成员与角色")).toBeInTheDocument();
+  });
+
+  test("revises a PRD with natural language and opens PDF preview", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.selectOptions(
+      screen.getByLabelText("选择 Agent"),
+      "prd-writer",
+    );
+    const input = screen.getByLabelText("PRD 修改要求");
+    await userEvent.type(input, "增加批量修改角色的二次确认说明");
+    await userEvent.click(
+      screen.getByRole("button", { name: "生成修订建议" }),
+    );
+    expect(screen.getByText(/二次确认说明/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "预览 PDF" }));
+    expect(
+      screen.getByRole("complementary", { name: "PDF 预览" }),
+    ).toBeInTheDocument();
+  });
+
+  test("warns before leaving an unconfirmed PRD revision", async () => {
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.selectOptions(
+      screen.getByLabelText("选择 Agent"),
+      "prd-writer",
+    );
+    await userEvent.type(
+      screen.getByLabelText("PRD 修改要求"),
+      "调整角色批量操作说明",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "生成修订建议" }),
+    );
+    await userEvent.selectOptions(
+      screen.getByLabelText("选择 Agent"),
+      "prototype",
+    );
+    expect(confirmSpy).toHaveBeenCalledWith(
+      "当前修订尚未确认，是否放弃并切换 Agent？",
+    );
+    expect(
+      screen.getByRole("heading", { name: "PRD 撰写工作台" }),
+    ).toBeInTheDocument();
+    confirmSpy.mockRestore();
   });
 
   test("shows all governed smart asset categories", async () => {
