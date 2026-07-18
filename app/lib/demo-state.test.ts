@@ -33,11 +33,38 @@ describe("clientReducer", () => {
       text: "补充权限边界",
     });
 
-    expect(sent.messages.at(-1)?.role).toBe("user");
-    expect(sent.execution).toBe("reading");
+    expect(sent.taskMessagesById["prd-role"].at(-1)?.role).toBe("user");
+    expect(sent.taskExecutionsById["prd-role"]).toBe("reading");
     expect(
-      clientReducer(sent, { type: "advance-execution" }).execution,
+      clientReducer(sent, { type: "advance-execution" })
+        .taskExecutionsById["prd-role"],
     ).toBe("analyzing");
+  });
+
+  it("keeps messages and execution scoped to the selected recent task", () => {
+    const selected = clientReducer(initialClientState, {
+      type: "select-task",
+      taskId: "q3-report",
+    });
+    const sent = clientReducer(selected, {
+      type: "send-message",
+      text: "总结本季度趋势",
+    });
+    const analyzing = clientReducer(sent, { type: "advance-execution" });
+    const generating = clientReducer(analyzing, { type: "advance-execution" });
+    const done = clientReducer(generating, { type: "advance-execution" });
+
+    expect(done.selectedTaskId).toBe("q3-report");
+    expect(done.taskMessagesById["q3-report"].at(-2)?.text).toBe(
+      "总结本季度趋势",
+    );
+    expect(done.taskMessagesById["q3-report"].at(-1)?.text).toContain(
+      "Q3 经营分析报告",
+    );
+    expect(done.taskMessagesById["prd-role"]).toEqual(
+      initialClientState.taskMessagesById["prd-role"],
+    );
+    expect(done.taskExecutionsById["q3-report"]).toBe("done");
   });
 
   it("ignores empty messages", () => {

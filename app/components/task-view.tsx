@@ -14,11 +14,13 @@ import type {
   PreviewKind,
   Project,
   ProjectRole,
+  RecentTask,
 } from "../lib/types";
 import { projectRoleLabels } from "../lib/project-capabilities";
 import { Composer } from "./composer";
 
 export interface TaskViewProps {
+  task: RecentTask;
   messages: Message[];
   execution: ExecutionState;
   agent: Agent;
@@ -41,6 +43,7 @@ const executionSteps = [
 ] as const;
 
 export function TaskView({
+  task,
   messages,
   execution,
   agent,
@@ -60,10 +63,10 @@ export function TaskView({
       <header className="task-header">
         <div>
           <div className="task-heading-row">
-            <h1>完善角色管理 PRD</h1>
+            <h1>{task.title}</h1>
             <ChevronDown size={15} />
           </div>
-          <small>任务 · 今天 14:32</small>
+          <small>任务 · {task.time}</small>
         </div>
         <div className="task-header-actions">
           {!canEdit && project && <span className="read-only-notice">当前角色仅可查看</span>}
@@ -106,11 +109,11 @@ export function TaskView({
                   <div className="artifact-card">
                     <span className="artifact-icon"><FileText size={19} /></span>
                     <span className="artifact-copy">
-                      <strong>角色管理模块 PRD v1.3</strong>
-                      <small>产品文档 · 刚刚更新 · 8.4 KB</small>
+                      <strong>{message.artifactTitle ?? `${task.title} 产物`}</strong>
+                      <small>{message.artifactMeta ?? "任务产物"}</small>
                     </span>
                     <button
-                      aria-label="查看角色管理模块 PRD v1.3"
+                      aria-label={`查看${message.artifactTitle ?? `${task.title} 产物`}`}
                       onClick={() => onOpenPreview(message.artifact!)}
                       type="button"
                     >

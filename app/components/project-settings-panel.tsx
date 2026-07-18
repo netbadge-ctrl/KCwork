@@ -33,7 +33,7 @@ export interface ProjectSettingsPanelProps {
   currentRole: ProjectRole;
   onChangeMemberRole(memberId: string, role: ProjectRole): void;
   onSetRequirementStage(requirementId: string, stage: RequirementStage): void;
-  onOpenAsset(section: ProjectSection): void;
+  onOpenAsset(section: Exclude<ProjectSection, "overview">): void;
 }
 
 export function ProjectSettingsPanel({

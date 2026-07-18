@@ -14,6 +14,8 @@ import {
   contextSources,
   developmentTasks,
   projectMembers,
+  recentTaskMessages,
+  recentTasks,
   requirements,
 } from "./demo-data";
 
@@ -29,8 +31,9 @@ export interface ClientState {
   projectSection: ProjectSection;
   selectedAssetId: string | null;
   preview: PreviewKind | null;
-  execution: ExecutionState;
-  messages: Message[];
+  selectedTaskId: string;
+  taskExecutionsById: Record<string, ExecutionState>;
+  taskMessagesById: Record<string, Message[]>;
   requirementExecutions: Record<string, ExecutionState>;
   requirementMessages: Record<string, Message[]>;
   requirementStages: Record<string, RequirementStage>;
@@ -44,6 +47,7 @@ export type ClientAction =
   | { type: "navigate"; view: ViewId }
   | { type: "set-mode"; mode: Mode }
   | { type: "select-agent"; agentId: string }
+  | { type: "select-task"; taskId: string }
   | { type: "select-project"; projectId: string | null }
   | { type: "select-requirement"; requirementId: string }
   | { type: "resume-agent-work"; sessionId: string }
@@ -108,7 +112,16 @@ export const initialClientState: ClientState = {
   projectSection: "overview",
   selectedAssetId: null,
   preview: null,
-  execution: "idle",
+  selectedTaskId: "prd-role",
+  taskExecutionsById: Object.fromEntries(
+    recentTasks.map((task) => [task.id, "idle"]),
+  ),
+  taskMessagesById: Object.fromEntries(
+    Object.entries(recentTaskMessages).map(([taskId, messages]) => [
+      taskId,
+      [...messages],
+    ]),
+  ),
   requirementExecutions: Object.fromEntries(
     requirements.map((requirement) => [requirement.id, "idle"]),
   ),
@@ -154,20 +167,6 @@ export const initialClientState: ClientState = {
     developmentTasks.map((task) => [task.id, task.status]),
   ),
   documentDrafts: {},
-  messages: [
-    {
-      id: "initial-user",
-      role: "user",
-      text: "根据需求访谈和原型，帮我完善角色管理模块的 PRD，重点补全权限边界和验收标准。",
-    },
-    {
-      id: "initial-agent",
-      role: "agent",
-      agentId: "prd-writer",
-      text: "PRD 已更新。我补充了租户管理员、项目管理员和普通成员三类角色的权限边界，并新增了 12 条可测试的验收标准。",
-      artifact: "prd",
-    },
-  ],
 };
 
 const nextExecution: Record<ExecutionState, ExecutionState> = {
@@ -218,6 +217,10 @@ export function clientReducer(
             }
           : state.lastAgentByRequirement,
       };
+    case "select-task":
+      return recentTasks.some((task) => task.id === action.taskId)
+        ? { ...state, selectedTaskId: action.taskId }
+        : state;
     case "select-project":
       if (!action.projectId) {
         return {
@@ -430,43 +433,65 @@ export function clientReducer(
       return {
         ...state,
         view: "task",
-        execution: "reading",
-        messages: [
-          ...state.messages,
-          {
-            id: `user-${state.messages.length}`,
-            role: "user",
-            text,
-          },
-        ],
+        taskExecutionsById: {
+          ...state.taskExecutionsById,
+          [state.selectedTaskId]: "reading",
+        },
+        taskMessagesById: {
+          ...state.taskMessagesById,
+          [state.selectedTaskId]: [
+            ...(state.taskMessagesById[state.selectedTaskId] ?? []),
+            {
+              id: `${state.selectedTaskId}-user-${state.taskMessagesById[state.selectedTaskId]?.length ?? 0}`,
+              role: "user",
+              text,
+            },
+          ],
+        },
       };
     }
     case "advance-execution": {
-      const execution = nextExecution[state.execution];
-      if (execution !== "done" || state.execution === "done") {
-        return { ...state, execution };
+      const currentExecution =
+        state.taskExecutionsById[state.selectedTaskId] ?? "idle";
+      const execution = nextExecution[currentExecution];
+      if (execution !== "done" || currentExecution === "done") {
+        return {
+          ...state,
+          taskExecutionsById: {
+            ...state.taskExecutionsById,
+            [state.selectedTaskId]: execution,
+          },
+        };
       }
+      const messages = state.taskMessagesById[state.selectedTaskId] ?? [];
+      const task = recentTasks.find((item) => item.id === state.selectedTaskId);
       return {
         ...state,
-        execution,
-        messages: [
-          ...state.messages,
-          {
-            id: `agent-${state.messages.length}`,
-            role: "agent",
-            agentId: state.selectedAgentId,
-            text: "任务已完成。我已结合当前项目上下文整理结果，你可以继续调整或查看产物。",
-            artifact:
-              state.selectedAgentId === "testing"
-                ? "test"
-                : state.selectedAgentId.includes("dev")
-                  ? "diff"
-                  : "prd",
-          },
-        ],
+        taskExecutionsById: {
+          ...state.taskExecutionsById,
+          [state.selectedTaskId]: execution,
+        },
+        taskMessagesById: {
+          ...state.taskMessagesById,
+          [state.selectedTaskId]: [
+            ...messages,
+            {
+              id: `${state.selectedTaskId}-agent-${messages.length}`,
+              role: "agent",
+              agentId: state.selectedAgentId,
+              text: `${task?.title ?? "当前任务"} 已完成。本轮结果已保留在这条任务会话中，可继续调整。`,
+            },
+          ],
+        },
       };
     }
     case "fail-execution":
-      return { ...state, execution: "error" };
+      return {
+        ...state,
+        taskExecutionsById: {
+          ...state.taskExecutionsById,
+          [state.selectedTaskId]: "error",
+        },
+      };
   }
 }

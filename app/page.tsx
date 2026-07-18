@@ -39,18 +39,23 @@ export default function Page() {
   const [state, dispatch] = useReducer(clientReducer, initialClientState);
   const [pendingNavigation, setPendingNavigation] =
     useState<PendingNavigation | null>(null);
+  const selectedTaskExecution =
+    state.taskExecutionsById[state.selectedTaskId] ?? "idle";
 
   useEffect(() => {
-    if (["idle", "done", "error"].includes(state.execution)) return;
+    if (["idle", "done", "error"].includes(selectedTaskExecution)) return;
     const timer = window.setTimeout(
       () => dispatch({ type: "advance-execution" }),
       720,
     );
     return () => window.clearTimeout(timer);
-  }, [state.execution]);
+  }, [selectedTaskExecution]);
 
   const selectedAgent =
     agents.find((agent) => agent.id === state.selectedAgentId) ?? agents[0];
+  const selectedTask =
+    recentTasks.find((task) => task.id === state.selectedTaskId) ??
+    recentTasks[0];
   const selectedProject = useMemo(
     () =>
       projects.find((project) => project.id === state.selectedProjectId) ??
@@ -153,6 +158,7 @@ export default function Page() {
         onNavigate={navigateFromSidebar}
         onOpenTask={(task) => {
           requestNavigation(task.title, () => {
+            dispatch({ type: "select-task", taskId: task.id });
             dispatch({ type: "select-agent", agentId: task.agentId });
             dispatch({
               type: "select-project",
@@ -295,8 +301,9 @@ export default function Page() {
 
         {state.view === "task" && (
           <TaskView
-            messages={state.messages}
-            execution={state.execution}
+            messages={state.taskMessagesById[selectedTask.id] ?? []}
+            execution={selectedTaskExecution}
+            task={selectedTask}
             agent={selectedAgent}
             project={selectedProject}
             agents={agents}

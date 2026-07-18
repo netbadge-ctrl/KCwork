@@ -108,6 +108,8 @@ export interface Message {
   agentId?: string;
   text: string;
   artifact?: PreviewKind;
+  artifactTitle?: string;
+  artifactMeta?: string;
 }
 
 export type RequirementStage =

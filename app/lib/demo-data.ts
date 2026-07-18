@@ -5,6 +5,7 @@ import type {
   CodeChange,
   ContextSource,
   DevelopmentTask,
+  Message,
   ProductDocument,
   Project,
   ProjectAssetSummary,
@@ -78,6 +79,67 @@ export const recentTasks: RecentTask[] = [
   { id: "login-failure", title: "分析登录失败问题", mode: "research", projectId: "expense", agentId: "backend-dev", time: "周一" },
   { id: "q3-report", title: "Q3 经营分析报告", mode: "office", agentId: "data-analysis", time: "7 月 12 日" },
 ];
+
+export const recentTaskMessages: Record<string, Message[]> = {
+  "prd-role": [
+    {
+      id: "prd-role-user",
+      role: "user",
+      text: "根据需求访谈和原型，帮我完善角色管理模块的 PRD，重点补全权限边界和验收标准。",
+    },
+    {
+      id: "prd-role-agent",
+      role: "agent",
+      agentId: "prd-writer",
+      text: "PRD 已更新。我补充了租户管理员、项目管理员和普通成员三类角色的权限边界，并新增了 12 条可测试的验收标准。",
+      artifact: "prd",
+      artifactTitle: "角色管理模块 PRD v1.3",
+      artifactMeta: "产品文档 · 刚刚更新 · 8.4 KB",
+    },
+  ],
+  "permission-ui": [
+    {
+      id: "permission-ui-user",
+      role: "user",
+      text: "按照确认后的权限边界实现角色配置页面，并补齐观察者只读状态。",
+    },
+    {
+      id: "permission-ui-agent",
+      role: "agent",
+      agentId: "frontend-dev",
+      text: "角色配置页面已完成，项目管理员和观察者的操作范围已分别覆盖。",
+      artifact: "diff",
+      artifactTitle: "角色配置页面代码变更",
+      artifactMeta: "代码差异 · 昨天更新 · 3 个文件",
+    },
+  ],
+  "login-failure": [
+    {
+      id: "login-failure-user",
+      role: "user",
+      text: "分析智能报销系统本周的登录失败记录，找出主要原因。",
+    },
+    {
+      id: "login-failure-agent",
+      role: "agent",
+      agentId: "backend-dev",
+      text: "登录失败集中在过期会话和企业身份源超时，尚未生成可确认的代码变更或诊断产物。",
+    },
+  ],
+  "q3-report": [
+    {
+      id: "q3-report-user",
+      role: "user",
+      text: "分析 Q3 经营数据，提炼收入、客户和成本趋势。",
+    },
+    {
+      id: "q3-report-agent",
+      role: "agent",
+      agentId: "data-analysis",
+      text: "Q3 营收同比增长 18%，企业客户续约率提升 6 个百分点；当前为分析结论，尚未生成正式报告产物。",
+    },
+  ],
+};
 
 export const assetGroups: AssetItem[] = [
   { id: "product-kb", kind: "knowledge", name: "产品规范知识库", description: "PRD、交互和验收规范", status: "已同步", meta: "286 篇文档" },

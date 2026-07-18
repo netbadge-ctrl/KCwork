@@ -172,11 +172,35 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("button", { name: "Q3 经营分析报告7 月 12 日" }),
     );
 
+    expect(screen.getByRole("heading", { name: "Q3 经营分析报告" })).toBeInTheDocument();
+    expect(screen.getByText("任务 · 7 月 12 日")).toBeInTheDocument();
+    expect(screen.getByText(/Q3 营收同比增长/)).toBeInTheDocument();
+    expect(screen.getByText("✦ 数据分析 Agent")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "完善角色管理 PRD" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/租户管理员、项目管理员和普通成员/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "查看角色管理模块 PRD v1.3" })).not.toBeInTheDocument();
     expect(screen.queryByText("当前角色仅可查看")).not.toBeInTheDocument();
     expect(screen.getByLabelText("任务输入")).toBeEnabled();
     await userEvent.type(screen.getByLabelText("任务输入"), "总结本季度趋势");
     await userEvent.click(screen.getByRole("button", { name: "发送" }));
+    expect(screen.getByText("总结本季度趋势")).toBeInTheDocument();
     expect(screen.getByText("读取项目上下文")).toBeInTheDocument();
+  });
+
+  test("opens login-failure work with its own project, Agent, and conversation", async () => {
+    render(<Page />);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "分析登录失败问题周一" }),
+    );
+
+    expect(screen.getByRole("heading", { name: "分析登录失败问题" })).toBeInTheDocument();
+    expect(screen.getByText("任务 · 周一")).toBeInTheDocument();
+    expect(screen.getAllByText("智能报销系统").length).toBeGreaterThan(0);
+    expect(screen.getByText("✦ 后端开发 Agent")).toBeInTheDocument();
+    expect(screen.getByText(/登录失败集中在过期会话/)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "完善角色管理 PRD" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "查看角色管理模块 PRD v1.3" })).not.toBeInTheDocument();
   });
 
   test("lets product edit product artifacts but not development or test artifacts", async () => {
