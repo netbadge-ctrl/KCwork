@@ -131,3 +131,28 @@ Follow-up implementation commit: `1ce08218ae9de1de99f775f1d28a368fc2ffd121`
 - `npm run build` — exit 0; `Build complete`.
 - `git diff --check` — exit 0, no output.
 - `git diff --check ec0c39bee7b43343271d39376fce4acdec653ad0..HEAD` — exit 0, no output.
+
+## Recent task identity follow-up
+
+Task-session implementation commit: `75315b70948efac6d848cb0cb46c3e0ca15b65af`
+
+### Finding closed
+
+- Recent task selection now stores the selected task ID and renders the matching deterministic title, timestamp, Agent, project, messages, and optional artifact metadata.
+- `Q3 经营分析报告` shows its own unscoped office-analysis conversation with no false PRD artifact, while `分析登录失败问题` shows its own intelligent-expense diagnosis and backend Agent association.
+- Task messages and execution are keyed by task ID. New sends append to the active task, completion text names that task, and other recent-task conversations remain unchanged.
+- Unscoped capability behavior and project role/workspace capability gating remain intact.
+
+### Task-session TDD evidence
+
+- Component RED: `npm test -- app/components/client-demo.test.tsx` — 40 tests run; 2 expected identity failures and 38 passes.
+- Reducer RED: `npm test -- app/lib/demo-state.test.ts` — 20 tests run; 1 expected task-scoping failure and 19 passes.
+- Focused GREEN: `npm test -- app/lib/demo-state.test.ts app/components/client-demo.test.tsx` — 2 files passed, 60 tests passed.
+
+### Task-session final verification
+
+- `npm test` — 4 files passed, 62 tests passed.
+- `npm run lint` — exit 0, no findings.
+- `npm run build` — exit 0; `Build complete`.
+- `git diff --check` — exit 0, no output.
+- `git diff --check ec0c39bee7b43343271d39376fce4acdec653ad0..HEAD` — exit 0, no output.
