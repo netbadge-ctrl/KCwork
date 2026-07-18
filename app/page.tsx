@@ -11,8 +11,9 @@ import { Sidebar } from "./components/sidebar";
 import { TaskView } from "./components/task-view";
 import {
   agents,
+  agentWorkSessions,
   assetGroups,
-  projectAssetSummaries,
+  contextSources,
   projectMembers,
   projects,
   productDocuments,
@@ -92,34 +93,25 @@ export default function Page() {
 
         {(state.view === "projects" || state.view === "project-detail") && (
           <ProjectsView
-            assetSummaries={projectAssetSummaries}
-            members={projectMembers}
-            onNewRequirement={(projectId) => {
-              dispatch({ type: "select-project", projectId });
-              dispatch({ type: "navigate", view: "home" });
-            }}
-            onOpenMembers={() => dispatch({ type: "open-preview", preview: "members" })}
+            agents={agents}
+            contextSources={contextSources}
+            lastAgentByRequirement={state.lastAgentByRequirement}
+            onOpenContext={() => dispatch({ type: "open-preview", preview: "sources" })}
             onOpenRequirement={(requirementId) =>
               dispatch({ type: "select-requirement", requirementId })
             }
-            onOpenSection={(section) =>
-              dispatch({ type: "select-project-section", section })
-            }
-            onSetRequirementStage={(requirementId, stage, reason) =>
-              dispatch({
-                type: "set-requirement-stage",
-                requirementId,
-                stage,
-                reason,
-              })
+            onOpenSettings={() => dispatch({ type: "open-preview", preview: "project-settings" })}
+            onResumeSession={(sessionId) =>
+              dispatch({ type: "resume-agent-work", sessionId })
             }
             projects={projects}
             requirementStages={state.requirementStages}
             requirements={requirements}
+            selectedContextIds={state.selectedContextIds}
             selectedProjectId={
               state.view === "project-detail" ? state.selectedProjectId : null
             }
-            stageRisks={state.stageRisks}
+            sessions={agentWorkSessions}
             onOpenProject={openProject}
             onBack={() => dispatch({ type: "navigate", view: "projects" })}
           />

@@ -1,10 +1,10 @@
 import { ArrowRight, Boxes, Plus, Search, Users } from "lucide-react";
 import { useState } from "react";
 import type {
+  Agent,
+  AgentWorkSession,
+  ContextSource,
   Project,
-  ProjectAssetSummary,
-  ProjectMember,
-  ProjectSection,
   Requirement,
   RequirementStage,
 } from "../lib/types";
@@ -13,35 +13,37 @@ import { ProjectDetailView } from "./project-detail-view";
 export interface ProjectsViewProps {
   projects: Project[];
   selectedProjectId: string | null;
-  members: ProjectMember[];
-  assetSummaries: ProjectAssetSummary[];
+  sessions: AgentWorkSession[];
+  agents: Agent[];
+  contextSources: ContextSource[];
+  selectedContextIds: string[];
   requirements: Requirement[];
   requirementStages: Record<string, RequirementStage>;
-  stageRisks: Record<string, string>;
+  lastAgentByRequirement: Record<string, string>;
   onOpenProject(id: string): void;
   onBack(): void;
-  onNewRequirement(projectId: string): void;
-  onOpenMembers(): void;
-  onOpenSection(section: ProjectSection): void;
+  onResumeSession(sessionId: string): void;
   onOpenRequirement(id: string): void;
-  onSetRequirementStage(id: string, stage: RequirementStage, reason: string): void;
+  onOpenContext(): void;
+  onOpenSettings(): void;
 }
 
 export function ProjectsView({
   projects,
   selectedProjectId,
-  members,
-  assetSummaries,
+  sessions,
+  agents,
+  contextSources,
+  selectedContextIds,
   requirements,
   requirementStages,
-  stageRisks,
+  lastAgentByRequirement,
   onOpenProject,
   onBack,
-  onNewRequirement,
-  onOpenMembers,
-  onOpenSection,
+  onResumeSession,
   onOpenRequirement,
-  onSetRequirementStage,
+  onOpenContext,
+  onOpenSettings,
 }: ProjectsViewProps) {
   const [query, setQuery] = useState("");
   const project = projects.find((item) => item.id === selectedProjectId);
@@ -49,18 +51,21 @@ export function ProjectsView({
   if (project) {
     return (
       <ProjectDetailView
-        assetSummaries={assetSummaries}
-        members={members.filter((member) => member.projectId === project.id)}
+        agents={agents}
+        contextSources={contextSources.filter((source) => source.projectId === project.id)}
+        lastAgentByRequirement={lastAgentByRequirement}
         onBack={onBack}
-        onNewRequirement={() => onNewRequirement(project.id)}
-        onOpenMembers={onOpenMembers}
+        onOpenContext={onOpenContext}
         onOpenRequirement={onOpenRequirement}
-        onOpenSection={onOpenSection}
-        onSetRequirementStage={onSetRequirementStage}
+        onOpenSettings={onOpenSettings}
+        onResumeSession={onResumeSession}
         project={project}
         requirementStages={requirementStages}
         requirements={requirements.filter((requirement) => requirement.projectId === project.id)}
-        stageRisks={stageRisks}
+        selectedContextIds={selectedContextIds.filter((id) =>
+          contextSources.some((source) => source.projectId === project.id && source.id === id),
+        )}
+        sessions={sessions.filter((session) => session.projectId === project.id)}
       />
     );
   }
