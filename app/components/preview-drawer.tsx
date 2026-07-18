@@ -10,9 +10,16 @@ import {
   X,
 } from "lucide-react";
 import { useEffect } from "react";
+import {
+  codeChanges,
+  productDocuments,
+  testCases,
+  testReports,
+} from "../lib/demo-data";
 import type {
   ContextSource,
   PreviewKind,
+  ProjectCapabilities,
   ProjectMember,
   ProjectRole,
   ProjectSection,
@@ -31,6 +38,9 @@ export interface PreviewDrawerProps {
   requirements: Requirement[];
   requirementStages: Record<string, RequirementStage>;
   sources: ContextSource[];
+  selectedRequirement: Requirement | null;
+  capabilities: ProjectCapabilities;
+  currentRole: ProjectRole;
   selectedContextIds: string[];
   lockedContextIds: string[];
   selectedAssetId: string | null;
@@ -71,6 +81,9 @@ export function PreviewDrawer({
   requirements,
   requirementStages,
   sources,
+  selectedRequirement,
+  capabilities,
+  currentRole,
   selectedContextIds,
   lockedContextIds,
   selectedAssetId,
@@ -114,9 +127,9 @@ export function PreviewDrawer({
               <PreviewErrorState kind={previewError} onRetry={onRetryPreview ?? (() => undefined)} />
             ) : (
               <>
-            {preview === "prd" && <PrdPreview />}
-            {preview === "diff" && <DiffPreview />}
-            {preview === "context" && <ContextPreview />}
+            {preview === "prd" && <PrdPreview canEdit={capabilities.canEditAgentWork} requirement={selectedRequirement} />}
+            {preview === "diff" && <DiffPreview canEdit={capabilities.canEditAgentWork} requirement={selectedRequirement} />}
+            {preview === "context" && <ContextPreview selectedIds={selectedContextIds} sources={sources} />}
             {preview === "sources" && (
               <ContextSourcesPanel
                 lockedIds={lockedContextIds}
@@ -126,12 +139,13 @@ export function PreviewDrawer({
                 sources={sources}
               />
             )}
-            {preview === "log" && <LogPreview />}
-            {preview === "test" && <TestPreview />}
-            {preview === "prototype" && <PrototypePreview />}
-            {preview === "pdf" && <PdfPreview />}
+            {preview === "log" && <LogPreview requirement={selectedRequirement} />}
+            {preview === "test" && <TestPreview canEdit={capabilities.canEditAgentWork} requirement={selectedRequirement} />}
+            {preview === "prototype" && <PrototypePreview canEdit={capabilities.canEditAgentWork} requirement={selectedRequirement} />}
+            {preview === "pdf" && <PdfPreview requirement={selectedRequirement} />}
             {preview === "members" && (
               <MemberManager
+                canManage={capabilities.canManageMembers}
                 members={members}
                 onChangeRole={onChangeMemberRole}
                 roles={memberRoles}
@@ -139,6 +153,8 @@ export function PreviewDrawer({
             )}
             {preview === "project-settings" && (
               <ProjectSettingsPanel
+                capabilities={capabilities}
+                currentRole={currentRole}
                 memberRoles={memberRoles}
                 members={members}
                 onChangeMemberRole={onChangeMemberRole}
@@ -148,7 +164,7 @@ export function PreviewDrawer({
                 requirements={requirements}
               />
             )}
-            {preview === "asset" && <AssetDetail assetId={selectedAssetId} />}
+            {preview === "asset" && <AssetDetail assetId={selectedAssetId} canEdit={capabilities.canManageAssets} requirement={selectedRequirement} />}
               </>
             )}
           </div>
@@ -175,7 +191,15 @@ export function PreviewDrawer({
   );
 }
 
-function AssetDetail({ assetId }: { assetId: string | null }) {
+function AssetDetail({
+  assetId,
+  canEdit,
+  requirement,
+}: {
+  assetId: string | null;
+  canEdit: boolean;
+  requirement: Requirement | null;
+}) {
   return (
     <article className="asset-detail-preview">
       <span className="document-tag">项目资产</span>
@@ -184,19 +208,32 @@ function AssetDetail({ assetId }: { assetId: string | null }) {
       {assetId && (
         <>
           <div className="asset-detail-field"><b>资产标识</b><span>{assetId}</span></div>
-          <div className="asset-detail-field"><b>引用需求</b><span>REQ-032 角色与成员权限重构</span></div>
-          <textarea aria-label="编辑资产说明" defaultValue="已确认的项目共享上下文，可供 Agent 按权限引用。" />
-          <button className="primary-small" type="button">保存新版本</button>
+          <div className="asset-detail-field"><b>引用需求</b><span>{requirement ? `${requirement.code} ${requirement.title}` : "项目共享资产"}</span></div>
+          <textarea aria-label="编辑资产说明" defaultValue="已确认的项目共享上下文，可供 Agent 按权限引用。" disabled={!canEdit} />
+          <button className="primary-small" disabled={!canEdit} type="button">保存新版本</button>
         </>
       )}
     </article>
   );
 }
 
-function PrototypePreview() {
+function PrototypePreview({
+  requirement,
+  canEdit,
+}: {
+  requirement: Requirement | null;
+  canEdit: boolean;
+}) {
+  const prototype = productDocuments.find(
+    (document) =>
+      document.requirementId === requirement?.id && document.kind === "prototype",
+  );
+  if (!requirement || !prototype) {
+    return <EmptyPreview message="当前需求暂无可预览的原型产物。" />;
+  }
   return (
     <article className="prototype-preview-shell">
-      <div className="document-toolbar"><span>角色配置原型 V3</span><button type="button">在画布中编辑</button></div>
+      <div className="document-toolbar"><span>{prototype.title} {prototype.version}</span><button disabled={!canEdit} type="button">在画布中编辑</button></div>
       <div className="prototype-preview-app">
         <aside><b>KFlow</b><span>项目总览</span><span className="active">成员管理</span><span>操作审计</span></aside>
         <main>
@@ -213,14 +250,20 @@ function PrototypePreview() {
   );
 }
 
-function PdfPreview() {
+function PdfPreview({ requirement }: { requirement: Requirement | null }) {
+  const document = productDocuments.find(
+    (item) => item.requirementId === requirement?.id && item.kind === "prd",
+  );
+  if (!requirement || !document) {
+    return <EmptyPreview message="当前需求暂无可预览的 PRD PDF。" />;
+  }
   return (
     <article className="pdf-preview">
-      <div className="document-toolbar"><span>角色与成员权限 PRD v1.4.pdf</span><button type="button">下载</button></div>
+      <div className="document-toolbar"><span>{document.title} {document.version}.pdf</span><button type="button">下载</button></div>
       <div className="pdf-sheet">
         <span className="document-tag">产品需求文档</span>
-        <h1>角色与成员权限重构</h1>
-        <p className="document-meta">REQ-032 · Spec v1.4 · 2026-07-17</p>
+        <h1>{requirement.title}</h1>
+        <p className="document-meta">{requirement.code} · Spec {requirement.specVersion} · 2026-07-17</p>
         <h2>1. 背景与目标</h2>
         <p>统一企业客户门户中的项目成员和角色管理体验，使产品、研发和测试围绕同一份可追溯规格协作。</p>
         <h2>2. 角色定义</h2>
@@ -238,14 +281,26 @@ function PdfPreview() {
   );
 }
 
-function PrdPreview() {
+function PrdPreview({
+  requirement,
+  canEdit,
+}: {
+  requirement: Requirement | null;
+  canEdit: boolean;
+}) {
+  const document = productDocuments.find(
+    (item) => item.requirementId === requirement?.id && item.kind === "prd",
+  );
+  if (!requirement || !document) {
+    return <EmptyPreview message="当前需求暂无 PRD 产物。" />;
+  }
   return (
     <article className="document-preview">
-      <div className="document-toolbar"><span>角色管理模块 PRD v1.3</span><button type="button">编辑</button></div>
+      <div className="document-toolbar"><span>{document.title} {document.version}</span><button disabled={!canEdit} type="button">编辑</button></div>
       <div className="document-sheet">
         <span className="document-tag">产品需求文档</span>
-        <h1>角色管理与成员权限</h1>
-        <p className="document-meta">版本 v1.3 · 陈楠 · 刚刚更新</p>
+        <h1>{requirement.title}</h1>
+        <p className="document-meta">{requirement.code} · 版本 {document.version} · {document.updatedAt}</p>
         <h2>1. 背景与目标</h2>
         <p>为企业客户提供清晰、可控的角色管理能力，支持租户与项目两个权限范围。</p>
         <h2>2. 角色定义</h2>
@@ -263,23 +318,54 @@ function PrdPreview() {
   );
 }
 
-function DiffPreview() {
+function DiffPreview({
+  requirement,
+  canEdit,
+}: {
+  requirement: Requirement | null;
+  canEdit: boolean;
+}) {
+  const changes = codeChanges.filter(
+    (change) => change.requirementId === requirement?.id,
+  );
+  if (!requirement || changes.length === 0) {
+    return <EmptyPreview message="当前需求暂无可审查的代码变更。" />;
+  }
   return <div className="diff-layout">
     <div className="diff-rationale"><p className="eyebrow">AI 修改说明</p><h3>把角色编辑权限绑定到项目级权限集合</h3><p>原实现只判断管理员身份，无法区分项目范围。此次修改按 AC-07 引入权限集合，并补充观察者测试。</p><div><span>3 个文件</span><b className="plus-text">+95</b><b className="minus-text">−8</b></div></div>
     <div className="diff-file-list"><b>变更文件</b><button className="active" type="button">RolePanel.tsx <span>+18 −6</span></button><button type="button">useRolePermissions.ts <span>+42</span></button><button type="button">RolePanel.test.tsx <span>+35 −2</span></button></div>
     <div className="code-preview"><div className="code-file"><Braces size={16} /> src/features/roles/RolePanel.tsx</div><pre><code><span className="minus">- const canEdit = isAdmin;</span>{"\n"}<span className="plus">+ const canEdit = permissions.includes(&quot;role:write&quot;);</span>{"\n"}<span className="plus">+ const scope = activeProject.id;</span>{"\n"}{"\n"}<span className="neutral">  return &lt;RoleActions disabled=&#123;!canEdit&#125; /&gt;;</span></code></pre></div>
-    <div className="diff-actions"><button type="button">放弃本次变更</button><button type="button">继续修改</button><button className="primary-small" type="button">接受变更</button></div>
+    <div className="diff-actions"><button disabled={!canEdit} type="button">放弃本次变更</button><button disabled={!canEdit} type="button">继续修改</button><button className="primary-small" disabled={!canEdit} type="button">接受变更</button></div>
   </div>;
 }
 
-function ContextPreview() {
-  return <div className="context-preview"><h3>本次引用 4 项上下文</h3>{["需求访谈纪要 · 7 月 12 日", "角色配置原型 V2", "权限接口文档", "项目决策记录 #18"].map((item) => <div key={item}><Check size={15} /><span>{item}</span></div>)}</div>;
+function ContextPreview({ sources, selectedIds }: { sources: ContextSource[]; selectedIds: string[] }) {
+  const selectedSources = sources.filter((source) => selectedIds.includes(source.id));
+  return <div className="context-preview"><h3>本次引用 {selectedSources.length} 项上下文</h3>{selectedSources.map((source) => <div key={source.id}><Check size={15} /><span>{source.name} · {source.detail}</span></div>)}</div>;
 }
 
-function LogPreview() {
-  return <div className="log-preview"><p>14:32:04　读取项目上下文</p><p>14:32:05　分析需求与权限模型</p><p>14:32:07　生成 PRD 修订内容</p><p className="success-line">14:32:08　执行完成</p></div>;
+function LogPreview({ requirement }: { requirement: Requirement | null }) {
+  if (!requirement) return <EmptyPreview message="选择需求后查看 Agent 执行日志。" />;
+  return <div className="log-preview"><p>读取 {requirement.code} 自动上下文</p><p>分析 {requirement.title}</p><p>生成当前 Agent 结果</p><p className="success-line">执行完成 · 结果保留在当前需求</p></div>;
 }
 
-function TestPreview() {
-  return <div className="test-preview"><div className="test-score"><strong>92%</strong><span>测试通过率</span></div><h3>角色管理回归测试报告</h3><p>通过 23　失败 2　跳过 1</p><div className="test-bar"><span /></div><div className="report-metrics"><div><b>87%</b><span>语句覆盖</span></div><div><b>81%</b><span>分支覆盖</span></div><div><b>3m 42s</b><span>执行耗时</span></div></div><article className="test-failure-detail"><b>失败：批量修改角色需要二次确认</b><span>对应 AC-11 · Chrome 126</span><p>实际结果：提交批量操作前未出现影响范围确认弹窗。</p></article><button className="primary-small" type="button">创建修复任务</button></div>;
+function TestPreview({
+  requirement,
+  canEdit,
+}: {
+  requirement: Requirement | null;
+  canEdit: boolean;
+}) {
+  const report = testReports.find((item) => item.requirementId === requirement?.id);
+  const failedCase = testCases.find(
+    (item) => item.requirementId === requirement?.id && item.status === "failed",
+  );
+  if (!requirement || !report) {
+    return <EmptyPreview message="当前需求暂无测试报告。" />;
+  }
+  return <div className="test-preview"><div className="test-score"><strong>{report.passRate}%</strong><span>测试通过率</span></div><h3>{report.title}</h3><p>通过 {report.passed}　失败 {report.failed}　跳过 {report.skipped}</p><div className="test-bar"><span style={{ width: `${report.passRate}%` }} /></div>{failedCase && <article className="test-failure-detail"><b>失败：{failedCase.title}</b><span>对应 {failedCase.specRef}</span><p>该结果仅属于 {requirement.code}，等待用户确认后再创建修复任务。</p></article>}<button className="primary-small" disabled={!canEdit} type="button">创建修复任务</button></div>;
+}
+
+function EmptyPreview({ message }: { message: string }) {
+  return <div className="workspace-empty-state compact"><FileText size={22} /><strong>{message}</strong><p>尚未生成的证据不会使用其他需求的数据代替。</p></div>;
 }

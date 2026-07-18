@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useReducer } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { AssetsView } from "./components/assets-view";
 import { HomeView } from "./components/home-view";
+import { NavigationGuardDialog } from "./components/navigation-guard-dialog";
 import { PreviewDrawer } from "./components/preview-drawer";
 import { ProjectAssetsView } from "./components/project-assets-view";
 import { ProjectsView } from "./components/projects-view";
@@ -21,9 +22,19 @@ import {
   requirements,
 } from "./lib/demo-data";
 import { clientReducer, initialClientState } from "./lib/demo-state";
+import { getProjectCapabilities } from "./lib/project-capabilities";
+import type { ViewId } from "./lib/types";
+
+interface PendingNavigation {
+  destination: string;
+  draftId: string;
+  run(): void;
+}
 
 export default function Page() {
   const [state, dispatch] = useReducer(clientReducer, initialClientState);
+  const [pendingNavigation, setPendingNavigation] =
+    useState<PendingNavigation | null>(null);
 
   useEffect(() => {
     if (["idle", "done", "error"].includes(state.execution)) return;
@@ -49,14 +60,75 @@ export default function Page() {
       ) ?? null,
     [state.selectedRequirementId],
   );
-  const activeContextSources = useMemo(
+  const selectedPrdDocument = useMemo(
     () =>
-      contextSources.filter(
-        (source) => source.projectId === state.selectedProjectId,
+      productDocuments.find(
+        (document) =>
+          document.requirementId === selectedRequirement?.id &&
+          document.kind === "prd",
+      ) ?? null,
+    [selectedRequirement],
+  );
+  const selectedProjectMembers = useMemo(
+    () =>
+      projectMembers.filter(
+        (member) => member.projectId === state.selectedProjectId,
       ),
     [state.selectedProjectId],
   );
+  const currentMember = selectedProjectMembers.find(
+    (member) => member.name === "陈楠",
+  );
+  const currentRole = currentMember
+    ? state.memberRoles[currentMember.id] ?? currentMember.role
+    : "viewer";
+  const capabilities = getProjectCapabilities(currentRole);
+  const activeContextSources = useMemo(
+    () =>
+      contextSources.filter(
+        (source) =>
+          source.projectId === state.selectedProjectId &&
+          (!source.requirementId ||
+            source.requirementId === state.selectedRequirementId),
+      ),
+    [state.selectedProjectId, state.selectedRequirementId],
+  );
   const activeContextSourceIds = activeContextSources.map((source) => source.id);
+  const activeSelectedContextIds = state.selectedRequirementId
+    ? state.selectedContextIdsByRequirement[state.selectedRequirementId] ?? []
+    : [];
+  const activeLockedContextIds = state.selectedRequirementId
+    ? state.lockedContextIdsByRequirement[state.selectedRequirementId] ?? []
+    : [];
+
+  const requestNavigation = (
+    destination: string,
+    run: () => void,
+  ) => {
+    const draftId = selectedPrdDocument?.id;
+    const hasUnconfirmedDraft =
+      state.view === "requirement-detail" &&
+      draftId &&
+      Boolean(state.documentDrafts[draftId]);
+    if (hasUnconfirmedDraft) {
+      setPendingNavigation({ destination, draftId, run });
+      return;
+    }
+    run();
+  };
+
+  const navigateFromSidebar = (view: ViewId) => {
+    const labels: Record<ViewId, string> = {
+      home: "新建任务",
+      projects: "项目",
+      "project-detail": "项目工作台",
+      "project-asset": "项目资产",
+      "requirement-detail": "需求工作区",
+      assets: "智能资产",
+      task: "任务",
+    };
+    requestNavigation(labels[view], () => dispatch({ type: "navigate", view }));
+  };
 
   const openProject = (projectId: string) => {
     dispatch({ type: "select-project", projectId });
@@ -68,14 +140,16 @@ export default function Page() {
       <Sidebar
         activeView={state.view}
         recentTasks={recentTasks}
-        onNavigate={(view) => dispatch({ type: "navigate", view })}
+        onNavigate={navigateFromSidebar}
         onOpenTask={(task) => {
-          dispatch({ type: "select-agent", agentId: task.agentId });
-          dispatch({
-            type: "select-project",
-            projectId: task.projectId ?? null,
+          requestNavigation(task.title, () => {
+            dispatch({ type: "select-agent", agentId: task.agentId });
+            dispatch({
+              type: "select-project",
+              projectId: task.projectId ?? null,
+            });
+            dispatch({ type: "navigate", view: "task" });
           });
-          dispatch({ type: "navigate", view: "task" });
         }}
       />
 
@@ -83,6 +157,8 @@ export default function Page() {
         {state.view === "home" && (
           <HomeView
             mode={state.mode}
+            canEdit={capabilities.canEditAgentWork}
+            currentRole={currentRole}
             agents={agents}
             projects={projects}
             selectedAgentId={state.selectedAgentId}
@@ -115,11 +191,14 @@ export default function Page() {
             projects={projects}
             requirementStages={state.requirementStages}
             requirements={requirements}
-            selectedContextIds={state.selectedContextIds}
+            selectedContextIds={activeSelectedContextIds}
             selectedProjectId={
               state.view === "project-detail" ? state.selectedProjectId : null
             }
             sessions={agentWorkSessions}
+            onCreateRequirement={() =>
+              dispatch({ type: "navigate", view: "home" })
+            }
             onOpenProject={openProject}
             onBack={() => dispatch({ type: "navigate", view: "projects" })}
           />
@@ -151,11 +230,19 @@ export default function Page() {
             currentStage={
               state.requirementStages[selectedRequirement.id] ?? selectedRequirement.stage
             }
-            documentDraft={
-              state.documentDrafts["prd-role-permissions"] ?? ""
-            }
+            canEdit={capabilities.canEditAgentWork}
+            currentRole={currentRole}
+            documentDraft={selectedPrdDocument
+              ? state.documentDrafts[selectedPrdDocument.id] ?? ""
+              : ""}
             developmentTaskStatuses={state.developmentTaskStatuses}
-            onBack={() => dispatch({ type: "navigate", view: "project-detail" })}
+            execution={state.requirementExecutions[selectedRequirement.id] ?? "idle"}
+            messages={state.requirementMessages[selectedRequirement.id] ?? []}
+            onBack={() =>
+              requestNavigation(selectedProject.name, () =>
+                dispatch({ type: "navigate", view: "project-detail" }),
+              )
+            }
             onOpenContext={() =>
               dispatch({ type: "open-preview", preview: "sources" })
             }
@@ -165,20 +252,19 @@ export default function Page() {
             onOpenSettings={() =>
               dispatch({ type: "open-preview", preview: "project-settings" })
             }
-            onSelectAgent={(agentId) =>
-              dispatch({ type: "select-agent", agentId })
-            }
-            onSelectProject={(projectId) =>
-              dispatch({ type: "select-project", projectId })
-            }
-            onSend={(text) => {
-              dispatch({ type: "send-message", text });
-              dispatch({ type: "navigate", view: "requirement-detail" });
+            onSelectAgent={(agentId) => {
+              if (agentId === state.selectedAgentId) return;
+              const nextAgent = agents.find((agent) => agent.id === agentId);
+              requestNavigation(nextAgent?.name ?? "其他 Agent", () =>
+                dispatch({ type: "select-agent", agentId }),
+              );
             }}
+            onSend={(text) => dispatch({ type: "send-message", text })}
             onSaveDocumentDraft={(draft) =>
+              selectedPrdDocument &&
               dispatch({
                 type: "set-document-draft",
-                documentId: "prd-role-permissions",
+                documentId: selectedPrdDocument.id,
                 draft,
               })
             }
@@ -188,7 +274,7 @@ export default function Page() {
             project={selectedProject}
             projects={projects}
             requirement={selectedRequirement}
-            selectedContextCount={state.selectedContextIds.length}
+            selectedContextCount={activeSelectedContextIds.length}
             selectedProjectId={state.selectedProjectId}
           />
         )}
@@ -206,6 +292,8 @@ export default function Page() {
             agents={agents}
             projects={projects}
             selectedProjectId={state.selectedProjectId}
+            canEdit={capabilities.canEditAgentWork}
+            currentRole={currentRole}
             onSelectAgent={(agentId) =>
               dispatch({ type: "select-agent", agentId })
             }
@@ -221,13 +309,13 @@ export default function Page() {
       </section>
 
       <PreviewDrawer
-        lockedContextIds={state.lockedContextIds.filter((id) =>
+        capabilities={capabilities}
+        currentRole={currentRole}
+        lockedContextIds={activeLockedContextIds.filter((id) =>
           activeContextSourceIds.includes(id),
         )}
         memberRoles={state.memberRoles}
-        members={projectMembers.filter(
-          (member) => member.projectId === state.selectedProjectId,
-        )}
+        members={selectedProjectMembers}
         onChangeMemberRole={(memberId, role) =>
           dispatch({ type: "set-member-role", memberId, role })
         }
@@ -244,24 +332,56 @@ export default function Page() {
           dispatch({ type: "select-project-section", section });
         }}
         onToggleContextLock={(sourceId) =>
-          dispatch({ type: "toggle-context-lock", sourceId })
+          state.selectedRequirementId &&
+          dispatch({
+            type: "toggle-context-lock",
+            requirementId: state.selectedRequirementId,
+            sourceId,
+          })
         }
         onToggleContextSource={(sourceId) =>
-          dispatch({ type: "toggle-context-source", sourceId })
+          state.selectedRequirementId &&
+          dispatch({
+            type: "toggle-context-source",
+            requirementId: state.selectedRequirementId,
+            sourceId,
+          })
         }
         preview={state.preview}
         requirementStages={state.requirementStages}
         requirements={requirements.filter(
           (requirement) => requirement.projectId === state.selectedProjectId,
         )}
-        selectedContextIds={state.selectedContextIds.filter((id) =>
+        selectedContextIds={activeSelectedContextIds.filter((id) =>
           activeContextSourceIds.includes(id),
         )}
+        selectedRequirement={selectedRequirement}
         selectedAssetId={state.selectedAssetId}
         onSelect={(preview) => dispatch({ type: "open-preview", preview })}
         onClose={() => dispatch({ type: "close-preview" })}
         sources={activeContextSources}
       />
+      {pendingNavigation && (
+        <NavigationGuardDialog
+          destination={pendingNavigation.destination}
+          onDiscard={() => {
+            dispatch({
+              type: "set-document-draft",
+              documentId: pendingNavigation.draftId,
+              draft: "",
+            });
+            const run = pendingNavigation.run;
+            setPendingNavigation(null);
+            run();
+          }}
+          onRetain={() => {
+            const run = pendingNavigation.run;
+            setPendingNavigation(null);
+            run();
+          }}
+          onReturn={() => setPendingNavigation(null)}
+        />
+      )}
     </main>
   );
 }

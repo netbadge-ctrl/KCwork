@@ -3,12 +3,17 @@ import { useState } from "react";
 import type {
   Agent,
   DevelopmentTaskStatus,
+  ExecutionState,
+  Message,
   PreviewKind,
   Project,
+  ProjectRole,
   Requirement,
   RequirementStage,
 } from "../lib/types";
+import { projectRoleLabels } from "../lib/project-capabilities";
 import { Composer } from "./composer";
+import { RequirementAgentActivity } from "./requirement-agent-activity";
 import { stageLabels } from "./requirement-list";
 import { WorkspaceRouter } from "./workspaces/workspace-router";
 
@@ -23,9 +28,12 @@ export interface RequirementWorkspaceProps {
   documentDraft: string;
   developmentTaskStatuses: Record<string, DevelopmentTaskStatus>;
   selectedContextCount: number;
+  messages: Message[];
+  execution: ExecutionState;
+  canEdit: boolean;
+  currentRole: ProjectRole;
   onBack(): void;
   onSelectAgent(agentId: string): void;
-  onSelectProject(projectId: string | null): void;
   onSend(text: string): void;
   onOpenPreview(kind: PreviewKind): void;
   onOpenContext(): void;
@@ -45,9 +53,12 @@ export function RequirementWorkspace({
   documentDraft,
   developmentTaskStatuses,
   selectedContextCount,
+  messages,
+  execution,
+  canEdit,
+  currentRole,
   onBack,
   onSelectAgent,
-  onSelectProject,
   onSend,
   onOpenPreview,
   onOpenContext,
@@ -57,20 +68,6 @@ export function RequirementWorkspace({
 }: RequirementWorkspaceProps) {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const researchAgents = agents.filter((item) => item.mode === "research" || item.mode === "both");
-  const requestAgentSwitch = (agentId: string) => {
-    if (
-      agent.id === "prd-writer" &&
-      documentDraft &&
-      agentId !== agent.id
-    ) {
-      const shouldLeave = window.confirm(
-        "当前修订尚未确认，是否放弃并切换 Agent？",
-      );
-      if (!shouldLeave) return;
-      onSaveDocumentDraft("");
-    }
-    onSelectAgent(agentId);
-  };
   return (
     <div className="requirement-workspace">
       <header className="requirement-header">
@@ -87,9 +84,11 @@ export function RequirementWorkspace({
         <div className="requirement-toolbar">
           <span className="spec-version-chip">Spec {requirement.specVersion}</span>
           <span className="requirement-stage-label">{stageLabels[currentStage]}</span>
+          {currentRole === "viewer" && <span className="read-only-notice">当前角色仅可查看</span>}
           <select
             aria-label="切换工作台 Agent"
-            onChange={(event) => requestAgentSwitch(event.target.value)}
+            disabled={!canEdit}
+            onChange={(event) => onSelectAgent(event.target.value)}
             value={agent.id}
           >
             {researchAgents.map((item) => (
@@ -116,8 +115,8 @@ export function RequirementWorkspace({
                 >
                   调整状态与门禁
                 </button>
-                <button type="button">编辑负责人</button>
-                <button type="button">归档需求</button>
+                <button disabled={!canEdit} type="button">编辑负责人</button>
+                <button disabled={!canEdit} type="button">归档需求</button>
               </div>
             )}
           </div>
@@ -127,12 +126,19 @@ export function RequirementWorkspace({
       <div className="requirement-workspace-scroll">
         <WorkspaceRouter
           agent={agent}
+          canEdit={canEdit}
           documentDraft={documentDraft}
           developmentTaskStatuses={developmentTaskStatuses}
           onOpenPreview={onOpenPreview}
           onSaveDocumentDraft={onSaveDocumentDraft}
           onSetDevelopmentTaskStatus={onSetDevelopmentTaskStatus}
           requirement={requirement}
+        />
+        <RequirementAgentActivity
+          agents={agents}
+          execution={execution}
+          messages={messages}
+          onOpenPreview={onOpenPreview}
         />
       </div>
 
@@ -147,16 +153,21 @@ export function RequirementWorkspace({
         </button>
         <Composer
           agents={agents}
+          disabled={!canEdit}
           mode="research"
-          onSelectAgent={requestAgentSwitch}
-          onSelectProject={onSelectProject}
+          onSelectAgent={onSelectAgent}
           onSend={onSend}
           projects={projects}
           selectedAgentId={agent.id}
           selectedProjectId={selectedProjectId}
+          projectSelectionLocked
           variant="task"
         />
-        <p className="composer-hint">当前 Agent 读写同一份需求 Spec，执行结果由你确认。</p>
+        <p className="composer-hint">
+          {canEdit
+            ? "当前 Agent 读写同一份需求 Spec，执行结果由你确认。"
+            : `${projectRoleLabels[currentRole]}角色仅可查看当前需求与产物。`}
+        </p>
       </div>
     </div>
   );

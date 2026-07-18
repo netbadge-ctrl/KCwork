@@ -35,12 +35,12 @@ export function ContextConnectionBar({
     <section className="context-connection-bar content-section">
       <div>
         <p className="eyebrow">自动连接</p>
-        <strong>Agent 已连接项目上下文</strong>
-        <span>{groupedCounts}</span>
+        <strong>{sources.length > 0 ? "Agent 已连接项目上下文" : "尚未为该项目连接自动上下文来源"}</strong>
+        <span>{groupedCounts || "可在项目设置中维护产品文档、记忆、代码库和测试资产"}</span>
       </div>
       <div>
         <small>{selectedIds.length} 项已自动选择</small>
-        <button aria-label="查看自动上下文来源" onClick={onOpen} type="button">
+        <button aria-label="查看自动上下文来源" disabled={sources.length === 0} onClick={onOpen} type="button">
           查看来源
         </button>
       </div>

@@ -1,4 +1,4 @@
-import { ArrowLeft, Settings } from "lucide-react";
+import { ArrowLeft, FilePlus2, Settings } from "lucide-react";
 import type {
   Agent,
   AgentWorkSession,
@@ -25,6 +25,7 @@ export interface ProjectDetailViewProps {
   onOpenRequirement(requirementId: string): void;
   onOpenContext(): void;
   onOpenSettings(): void;
+  onCreateRequirement(): void;
 }
 
 export function ProjectDetailView({
@@ -41,6 +42,7 @@ export function ProjectDetailView({
   onOpenRequirement,
   onOpenContext,
   onOpenSettings,
+  onCreateRequirement,
 }: ProjectDetailViewProps) {
   return (
     <div className="project-detail page-scroll">
@@ -66,14 +68,28 @@ export function ProjectDetailView({
         </div>
       </header>
 
-      <RecentAgentWork agents={agents} onResume={onResumeSession} sessions={sessions} />
-      <AgentRequirementList
-        agents={agents}
-        lastAgentByRequirement={lastAgentByRequirement}
-        onOpen={onOpenRequirement}
-        requirements={requirements}
-        stages={requirementStages}
-      />
+      {sessions.length > 0 && (
+        <RecentAgentWork agents={agents} onResume={onResumeSession} sessions={sessions} />
+      )}
+      {requirements.length > 0 ? (
+        <AgentRequirementList
+          agents={agents}
+          lastAgentByRequirement={lastAgentByRequirement}
+          onOpen={onOpenRequirement}
+          requirements={requirements}
+          stages={requirementStages}
+        />
+      ) : (
+        <section className="project-empty-state content-section">
+          <span><FilePlus2 size={24} /></span>
+          <div>
+            <p className="eyebrow">从需求开始</p>
+            <h2>还没有需求</h2>
+            <p>创建首个需求后，即可在项目边界内选择 Agent 并连接专属上下文。</p>
+          </div>
+          <button onClick={onCreateRequirement} type="button">新建需求</button>
+        </section>
+      )}
       <ContextConnectionBar
         onOpen={onOpenContext}
         selectedIds={selectedContextIds}

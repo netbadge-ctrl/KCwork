@@ -22,8 +22,8 @@ export interface ClientState {
   mode: Mode;
   selectedAgentId: string;
   lastAgentByRequirement: Record<string, string>;
-  selectedContextIds: string[];
-  lockedContextIds: string[];
+  selectedContextIdsByRequirement: Record<string, string[]>;
+  lockedContextIdsByRequirement: Record<string, string[]>;
   selectedProjectId: string | null;
   selectedRequirementId: string | null;
   projectSection: ProjectSection;
@@ -31,6 +31,8 @@ export interface ClientState {
   preview: PreviewKind | null;
   execution: ExecutionState;
   messages: Message[];
+  requirementExecutions: Record<string, ExecutionState>;
+  requirementMessages: Record<string, Message[]>;
   requirementStages: Record<string, RequirementStage>;
   stageRisks: Record<string, string>;
   memberRoles: Record<string, ProjectRole>;
@@ -45,8 +47,8 @@ export type ClientAction =
   | { type: "select-project"; projectId: string | null }
   | { type: "select-requirement"; requirementId: string }
   | { type: "resume-agent-work"; sessionId: string }
-  | { type: "toggle-context-source"; sourceId: string }
-  | { type: "toggle-context-lock"; sourceId: string }
+  | { type: "toggle-context-source"; requirementId: string; sourceId: string }
+  | { type: "toggle-context-lock"; requirementId: string; sourceId: string }
   | {
       type: "set-requirement-stage";
       requirementId: string;
@@ -68,6 +70,26 @@ export type ClientAction =
   | { type: "advance-execution" }
   | { type: "fail-execution" };
 
+function contextIdsForRequirement(requirementId: string) {
+  const requirement = requirements.find((item) => item.id === requirementId);
+  if (!requirement) return [];
+  return contextSources
+    .filter(
+      (source) =>
+        source.projectId === requirement.projectId &&
+        (!source.requirementId || source.requirementId === requirementId) &&
+        source.autoSelected,
+    )
+    .map((source) => source.id);
+}
+
+const selectedContextIdsByRequirement = Object.fromEntries(
+  requirements.map((requirement) => [
+    requirement.id,
+    contextIdsForRequirement(requirement.id),
+  ]),
+);
+
 export const initialClientState: ClientState = {
   view: "task",
   mode: "research",
@@ -75,16 +97,52 @@ export const initialClientState: ClientState = {
   lastAgentByRequirement: Object.fromEntries(
     agentWorkSessions.map((session) => [session.requirementId, session.agentId]),
   ),
-  selectedContextIds: contextSources
-    .filter((source) => source.autoSelected)
-    .map((source) => source.id),
-  lockedContextIds: ["context-role-spec"],
+  selectedContextIdsByRequirement,
+  lockedContextIdsByRequirement: {
+    "role-permissions": ["context-role-spec"],
+    "sso-login": [],
+    "audit-export": [],
+  },
   selectedProjectId: "customer-portal",
-  selectedRequirementId: null,
+  selectedRequirementId: "role-permissions",
   projectSection: "overview",
   selectedAssetId: null,
   preview: null,
   execution: "idle",
+  requirementExecutions: Object.fromEntries(
+    requirements.map((requirement) => [requirement.id, "idle"]),
+  ),
+  requirementMessages: {
+    "role-permissions": [
+      {
+        id: "role-session-user",
+        role: "user",
+        text: "补全角色权限边界和可测试验收标准。",
+      },
+      {
+        id: "role-session-agent",
+        role: "agent",
+        agentId: "prd-writer",
+        text: "REQ-032 PRD v1.4 已生成，等待确认本轮修订。",
+        artifact: "prd",
+      },
+    ],
+    "sso-login": [
+      {
+        id: "sso-session-user",
+        role: "user",
+        text: "执行企业 SSO 登录核心回归。",
+      },
+      {
+        id: "sso-session-agent",
+        role: "agent",
+        agentId: "testing",
+        text: "REQ-029 核心回归完成，31 个通过、2 个失败、1 个跳过。",
+        artifact: "test",
+      },
+    ],
+    "audit-export": [],
+  },
   requirementStages: Object.fromEntries(
     requirements.map((requirement) => [requirement.id, requirement.stage]),
   ),
@@ -148,15 +206,45 @@ export function clientReducer(
           : state.lastAgentByRequirement,
       };
     case "select-project":
-      return { ...state, selectedProjectId: action.projectId };
+      if (!action.projectId) {
+        return {
+          ...state,
+          selectedProjectId: null,
+          selectedRequirementId: null,
+        };
+      }
+      {
+        const currentRequirement = requirements.find(
+          (item) => item.id === state.selectedRequirementId,
+        );
+        const nextRequirement =
+          currentRequirement?.projectId === action.projectId
+            ? currentRequirement
+            : requirements.find((item) => item.projectId === action.projectId) ?? null;
+        return {
+          ...state,
+          selectedProjectId: action.projectId,
+          selectedRequirementId: nextRequirement?.id ?? null,
+          selectedAgentId: nextRequirement
+            ? state.lastAgentByRequirement[nextRequirement.id] ?? "requirement-analysis"
+            : state.selectedAgentId,
+        };
+      }
     case "select-requirement":
-      return {
-        ...state,
-        view: "requirement-detail",
-        selectedRequirementId: action.requirementId,
-        selectedAgentId:
-          state.lastAgentByRequirement[action.requirementId] ?? "requirement-analysis",
-      };
+      {
+        const requirement = requirements.find(
+          (item) => item.id === action.requirementId,
+        );
+        if (!requirement) return state;
+        return {
+          ...state,
+          view: "requirement-detail",
+          selectedProjectId: requirement.projectId,
+          selectedRequirementId: requirement.id,
+          selectedAgentId:
+            state.lastAgentByRequirement[requirement.id] ?? "requirement-analysis",
+        };
+      }
     case "resume-agent-work": {
       const session = agentWorkSessions.find((item) => item.id === action.sessionId);
       if (!session) return state;
@@ -172,20 +260,69 @@ export function clientReducer(
         },
       };
     }
-    case "toggle-context-source":
+    case "toggle-context-source": {
+      const selectedIds =
+        state.selectedContextIdsByRequirement[action.requirementId] ?? [];
+      const lockedIds =
+        state.lockedContextIdsByRequirement[action.requirementId] ?? [];
+      if (lockedIds.includes(action.sourceId)) return state;
+      const requirement = requirements.find(
+        (item) => item.id === action.requirementId,
+      );
+      const source = contextSources.find((item) => item.id === action.sourceId);
+      if (
+        !requirement ||
+        !source ||
+        source.projectId !== requirement.projectId ||
+        (source.requirementId && source.requirementId !== requirement.id)
+      ) {
+        return state;
+      }
       return {
         ...state,
-        selectedContextIds: state.selectedContextIds.includes(action.sourceId)
-          ? state.selectedContextIds.filter((id) => id !== action.sourceId)
-          : [...state.selectedContextIds, action.sourceId],
+        selectedContextIdsByRequirement: {
+          ...state.selectedContextIdsByRequirement,
+          [action.requirementId]: selectedIds.includes(action.sourceId)
+            ? selectedIds.filter((id) => id !== action.sourceId)
+            : [...selectedIds, action.sourceId],
+        },
       };
-    case "toggle-context-lock":
+    }
+    case "toggle-context-lock": {
+      const lockedIds =
+        state.lockedContextIdsByRequirement[action.requirementId] ?? [];
+      const selectedIds =
+        state.selectedContextIdsByRequirement[action.requirementId] ?? [];
+      const requirement = requirements.find(
+        (item) => item.id === action.requirementId,
+      );
+      const source = contextSources.find((item) => item.id === action.sourceId);
+      if (
+        !requirement ||
+        !source ||
+        source.projectId !== requirement.projectId ||
+        (source.requirementId && source.requirementId !== requirement.id)
+      ) {
+        return state;
+      }
+      const isLocked = lockedIds.includes(action.sourceId);
       return {
         ...state,
-        lockedContextIds: state.lockedContextIds.includes(action.sourceId)
-          ? state.lockedContextIds.filter((id) => id !== action.sourceId)
-          : [...state.lockedContextIds, action.sourceId],
+        lockedContextIdsByRequirement: {
+          ...state.lockedContextIdsByRequirement,
+          [action.requirementId]: isLocked
+            ? lockedIds.filter((id) => id !== action.sourceId)
+            : [...lockedIds, action.sourceId],
+        },
+        selectedContextIdsByRequirement: {
+          ...state.selectedContextIdsByRequirement,
+          [action.requirementId]:
+            !isLocked && !selectedIds.includes(action.sourceId)
+              ? [...selectedIds, action.sourceId]
+              : selectedIds,
+        },
       };
+    }
     case "set-requirement-stage":
       return {
         ...state,
@@ -235,6 +372,46 @@ export function clientReducer(
     case "send-message": {
       const text = action.text.trim();
       if (!text) return state;
+      if (state.view === "requirement-detail" && state.selectedRequirementId) {
+        const requirement = requirements.find(
+          (item) => item.id === state.selectedRequirementId,
+        );
+        if (!requirement) return state;
+        const messages = state.requirementMessages[requirement.id] ?? [];
+        return {
+          ...state,
+          requirementExecutions: {
+            ...state.requirementExecutions,
+            [requirement.id]: "done",
+          },
+          requirementMessages: {
+            ...state.requirementMessages,
+            [requirement.id]: [
+              ...messages,
+              {
+                id: `${requirement.id}-user-${messages.length}`,
+                role: "user",
+                text,
+              },
+              {
+                id: `${requirement.id}-agent-${messages.length + 1}`,
+                role: "agent",
+                agentId: state.selectedAgentId,
+                text: `${requirement.code} 的本轮处理已完成。结果已保留在当前需求工作区，可继续调整或查看对应产物。`,
+                artifact:
+                  state.selectedAgentId === "testing"
+                    ? "test"
+                    : state.selectedAgentId.includes("dev") ||
+                        state.selectedAgentId === "code-review"
+                      ? "diff"
+                      : state.selectedAgentId === "prototype"
+                        ? "prototype"
+                        : "prd",
+              },
+            ],
+          },
+        };
+      }
       return {
         ...state,
         view: "task",

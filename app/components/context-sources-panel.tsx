@@ -64,7 +64,7 @@ export function ContextSourcesPanel({
                   <input
                     aria-label={`引用${source.name}`}
                     checked={isSelected}
-                    disabled={isUnavailable}
+                    disabled={isUnavailable || isLocked}
                     onChange={() => onToggle(source.id)}
                     type="checkbox"
                   />

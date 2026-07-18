@@ -131,6 +131,13 @@ export type ProjectRole =
   | "development"
   | "testing"
   | "viewer";
+
+export interface ProjectCapabilities {
+  canEditAgentWork: boolean;
+  canManageMembers: boolean;
+  canManageRequirements: boolean;
+  canManageAssets: boolean;
+}
 export type DeliverableStatus =
   | "draft"
   | "reviewing"

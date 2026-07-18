@@ -112,15 +112,21 @@ describe("clientReducer", () => {
   it("lets a user adjust and lock automatically selected context", () => {
     const removed = clientReducer(initialClientState, {
       type: "toggle-context-source",
+      requirementId: "role-permissions",
       sourceId: "context-role-interview",
     });
     const locked = clientReducer(removed, {
       type: "toggle-context-lock",
+      requirementId: "role-permissions",
       sourceId: "context-project-memory",
     });
 
-    expect(removed.selectedContextIds).not.toContain("context-role-interview");
-    expect(locked.lockedContextIds).toContain("context-project-memory");
+    expect(
+      removed.selectedContextIdsByRequirement["role-permissions"],
+    ).not.toContain("context-role-interview");
+    expect(
+      locked.lockedContextIdsByRequirement["role-permissions"],
+    ).toContain("context-project-memory");
   });
 
   it("opens a requirement with its remembered Agent", () => {
@@ -191,5 +197,90 @@ describe("clientReducer", () => {
 
     expect(resumed.lastAgentByRequirement["role-permissions"]).toBe("prd-writer");
     expect(reopened.selectedAgentId).toBe("prd-writer");
+  });
+
+  it("atomically matches a selected requirement to its project", () => {
+    const fromAnotherProject = {
+      ...initialClientState,
+      selectedProjectId: "expense",
+      selectedRequirementId: null,
+    };
+
+    const selected = clientReducer(fromAnotherProject, {
+      type: "select-requirement",
+      requirementId: "sso-login",
+    });
+
+    expect(selected.selectedProjectId).toBe("customer-portal");
+    expect(selected.selectedRequirementId).toBe("sso-login");
+  });
+
+  it("keeps context selection and locks scoped to each requirement", () => {
+    const ssoSelected = clientReducer(initialClientState, {
+      type: "toggle-context-source",
+      requirementId: "sso-login",
+      sourceId: "context-sso-runbook",
+    });
+    const roleLocked = clientReducer(ssoSelected, {
+      type: "toggle-context-lock",
+      requirementId: "role-permissions",
+      sourceId: "context-role-interview",
+    });
+
+    expect(
+      ssoSelected.selectedContextIdsByRequirement["sso-login"],
+    ).not.toContain("context-sso-runbook");
+    expect(
+      ssoSelected.selectedContextIdsByRequirement["role-permissions"],
+    ).toContain("context-role-interview");
+    expect(
+      roleLocked.lockedContextIdsByRequirement["role-permissions"],
+    ).toContain("context-role-interview");
+    expect(
+      roleLocked.lockedContextIdsByRequirement["sso-login"],
+    ).not.toContain("context-role-interview");
+  });
+
+  it("selects a source when locking it and refuses to remove it while locked", () => {
+    const removed = clientReducer(initialClientState, {
+      type: "toggle-context-source",
+      requirementId: "role-permissions",
+      sourceId: "context-role-interview",
+    });
+    const locked = clientReducer(removed, {
+      type: "toggle-context-lock",
+      requirementId: "role-permissions",
+      sourceId: "context-role-interview",
+    });
+    const attemptedRemoval = clientReducer(locked, {
+      type: "toggle-context-source",
+      requirementId: "role-permissions",
+      sourceId: "context-role-interview",
+    });
+
+    expect(
+      locked.selectedContextIdsByRequirement["role-permissions"],
+    ).toContain("context-role-interview");
+    expect(attemptedRemoval).toEqual(locked);
+  });
+
+  it("stores Agent activity inside the active requirement session", () => {
+    const opened = clientReducer(initialClientState, {
+      type: "select-requirement",
+      requirementId: "sso-login",
+    });
+    const sent = clientReducer(opened, {
+      type: "send-message",
+      text: "总结失败用例并给出下一步",
+    });
+
+    expect(sent.view).toBe("requirement-detail");
+    expect(sent.requirementExecutions["sso-login"]).toBe("done");
+    expect(sent.requirementMessages["sso-login"].at(-1)?.text).toContain(
+      "REQ-029",
+    );
+    expect(sent.requirementMessages["role-permissions"]).toEqual(
+      initialClientState.requirementMessages["role-permissions"],
+    );
   });
 });

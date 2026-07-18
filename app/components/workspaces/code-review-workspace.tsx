@@ -1,7 +1,18 @@
 import { FileWarning, ScanSearch, ShieldCheck } from "lucide-react";
+import { codeChanges } from "../../lib/demo-data";
 import type { WorkspaceRouterProps } from "./workspace-router";
+import { WorkspaceEmptyState } from "./workspace-empty-state";
 
 export function CodeReviewWorkspace({ requirement, onOpenPreview }: WorkspaceRouterProps) {
+  const changes = codeChanges.filter((change) => change.requirementId === requirement.id);
+  if (changes.length === 0) {
+    return (
+      <section className="workspace-canvas workspace-shell-card">
+        <div className="workspace-heading"><div><p className="eyebrow">Independent review</p><h2>代码审查工作台</h2><p>当前工作区只展示 {requirement.code} 的代码证据。</p></div></div>
+        <WorkspaceEmptyState title="当前需求暂无可审查代码变更" detail="生成代码变更后，审查 Agent 才会展示结论。" />
+      </section>
+    );
+  }
   return (
     <section className="workspace-canvas workspace-shell-card">
       <div className="workspace-heading"><div><p className="eyebrow">Independent review</p><h2>代码审查工作台</h2><p>围绕 {requirement.code} 检查需求覆盖、安全与兼容性。</p></div></div>

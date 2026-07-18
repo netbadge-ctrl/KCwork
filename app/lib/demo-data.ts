@@ -60,6 +60,10 @@ export const contextSources: ContextSource[] = [
   { id: "context-project-memory", projectId: "customer-portal", kind: "memory", name: "项目决策记忆", detail: "权限范围与兼容性决策", status: "available", autoSelected: true },
   { id: "context-portal-repo", projectId: "customer-portal", kind: "repository", name: "customer-portal", detail: "main · 8 分钟前同步", status: "available", autoSelected: true },
   { id: "context-role-tests", projectId: "customer-portal", requirementId: "role-permissions", kind: "test", name: "角色管理测试资产", detail: "26 个用例 · 1 份报告", status: "available", autoSelected: true },
+  { id: "context-sso-spec", projectId: "customer-portal", requirementId: "sso-login", kind: "requirement", name: "REQ-029 Spec v2.1", detail: "SSO 异常、租户选择与审计验收标准", status: "available", autoSelected: true },
+  { id: "context-sso-runbook", projectId: "customer-portal", requirementId: "sso-login", kind: "document", name: "SSO 异常处理手册", detail: "身份源错误码与降级指引", status: "available", autoSelected: true },
+  { id: "context-sso-tests", projectId: "customer-portal", requirementId: "sso-login", kind: "test", name: "SSO 登录测试资产", detail: "34 个用例 · 1 份报告", status: "available", autoSelected: true },
+  { id: "context-audit-spec", projectId: "customer-portal", requirementId: "audit-export", kind: "requirement", name: "REQ-035 Spec v0.8", detail: "审计记录导出范围与 6 条验收标准", status: "available", autoSelected: true },
 ];
 
 export const projects: Project[] = [
@@ -114,7 +118,7 @@ export const requirements: Requirement[] = [
     specVersion: "v2.1",
     specCompletion: 100,
     owners: { product: "顾言", development: "赵屿", testing: "周祺" },
-    counts: { prototypes: 2, documents: 1, tasks: 5, changes: 11, tests: 34 },
+    counts: { prototypes: 0, documents: 0, tasks: 0, changes: 0, tests: 34 },
     updatedAt: "昨天",
   },
   {
@@ -129,7 +133,7 @@ export const requirements: Requirement[] = [
     specVersion: "v0.8",
     specCompletion: 68,
     owners: { product: "陈楠", development: "林川", testing: "待分配" },
-    counts: { prototypes: 1, documents: 1, tasks: 0, changes: 0, tests: 6 },
+    counts: { prototypes: 0, documents: 0, tasks: 0, changes: 0, tests: 0 },
     updatedAt: "2 小时前",
   },
 ];
@@ -140,6 +144,8 @@ export const projectMembers: ProjectMember[] = [
   { id: "member-zhao", projectId: "customer-portal", name: "赵屿", initials: "赵", role: "development", team: "后端研发" },
   { id: "member-zhou", projectId: "customer-portal", name: "周祺", initials: "周", role: "testing", team: "质量保障" },
   { id: "member-gu", projectId: "customer-portal", name: "顾言", initials: "顾", role: "product", team: "产品中心" },
+  { id: "member-chen-expense", projectId: "expense", name: "陈楠", initials: "陈", role: "product", team: "产品中心" },
+  { id: "member-chen-ops", projectId: "ops", name: "陈楠", initials: "陈", role: "product", team: "产品中心" },
 ];
 
 export const projectAssetSummaries: ProjectAssetSummary[] = [
@@ -171,8 +177,42 @@ export const testCases: TestCase[] = [
   { id: "tc-role-viewer", requirementId: "role-permissions", title: "观察者只能查看项目内容", type: "automated", status: "passed", specRef: "AC-09" },
   { id: "tc-role-batch", requirementId: "role-permissions", title: "批量修改角色需要二次确认", type: "manual", status: "failed", specRef: "AC-11" },
   { id: "tc-role-audit", requirementId: "role-permissions", title: "角色变更写入审计记录", type: "automated", status: "pending", specRef: "AC-12" },
+  { id: "tc-sso-retry", requirementId: "sso-login", title: "租户选择失败时可重新发起 SSO", type: "automated", status: "failed", specRef: "AC-05" },
+  { id: "tc-sso-error", requirementId: "sso-login", title: "身份源异常展示可诊断错误信息", type: "automated", status: "failed", specRef: "AC-08" },
+  { id: "tc-sso-audit", requirementId: "sso-login", title: "登录失败写入租户审计记录", type: "automated", status: "passed", specRef: "AC-11" },
 ];
 
 export const testReports: TestReport[] = [
   { id: "report-role-regression", requirementId: "role-permissions", title: "角色管理回归测试报告", passRate: 92, passed: 23, failed: 2, skipped: 1 },
+  { id: "report-sso-regression", requirementId: "sso-login", title: "SSO 登录核心回归报告", passRate: 91, passed: 31, failed: 2, skipped: 1 },
 ];
+
+export const requirementAnalysisSections: Record<
+  string,
+  { title: string; status: "已确认" | "待确认"; body: string }[]
+> = {
+  "role-permissions": [
+    { title: "目标与价值", status: "已确认", body: "让企业管理员能够清晰管理项目成员与角色边界。" },
+    { title: "范围", status: "已确认", body: "成员列表、角色调整、批量操作与权限审计。" },
+    { title: "非范围", status: "已确认", body: "本需求不调整租户级组织架构与外部身份源。" },
+    { title: "用户故事", status: "待确认", body: "作为项目管理员，我希望批量调整成员角色并了解影响。" },
+    { title: "业务规则", status: "已确认", body: "所有角色变更必须写入审计记录，并保留操作者。" },
+    { title: "验收标准", status: "待确认", body: "已整理 12 条可验证标准，其中 2 条需要产品确认。" },
+  ],
+  "sso-login": [
+    { title: "目标与价值", status: "已确认", body: "让企业用户在身份源异常时获得明确反馈并可以安全重试。" },
+    { title: "范围", status: "已确认", body: "异常反馈、租户选择、重试入口与登录审计。" },
+    { title: "非范围", status: "已确认", body: "不替换企业身份源，也不改变现有 SAML 配置流程。" },
+    { title: "用户故事", status: "已确认", body: "作为企业成员，我希望登录失败后知道原因并重新选择租户。" },
+    { title: "业务规则", status: "已确认", body: "错误信息不得暴露身份源密钥，所有失败均写入租户审计。" },
+    { title: "验收标准", status: "已确认", body: "34 个用例覆盖成功、失败、重试与审计路径。" },
+  ],
+  "audit-export": [
+    { title: "目标与价值", status: "已确认", body: "支持管理员按成员、操作和时间范围导出审计记录。" },
+    { title: "范围", status: "待确认", body: "导出筛选、字段范围和下载权限仍在澄清。" },
+    { title: "非范围", status: "已确认", body: "不改变审计数据保留周期和写入链路。" },
+    { title: "用户故事", status: "待确认", body: "作为审计管理员，我希望导出指定范围的操作记录。" },
+    { title: "业务规则", status: "待确认", body: "超大导出任务的上限和脱敏规则等待评审。" },
+    { title: "验收标准", status: "待确认", body: "当前整理 6 条初稿，尚无可执行测试资产。" },
+  ],
+};

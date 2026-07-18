@@ -16,6 +16,7 @@ export interface WorkspaceRouterProps {
   requirement: Requirement;
   documentDraft: string;
   developmentTaskStatuses: Record<string, DevelopmentTaskStatus>;
+  canEdit: boolean;
   onSaveDocumentDraft(draft: string): void;
   onSetDevelopmentTaskStatus(
     taskId: string,

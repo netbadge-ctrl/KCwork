@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, test } from "vitest";
 import Page from "../page";
 
 async function openCustomerPortal() {
@@ -115,6 +115,32 @@ describe("enterprise AI client demo", () => {
     expect(screen.queryByRole("complementary", { name: "项目设置" })).not.toBeInTheDocument();
   });
 
+  test("enforces the signed-in project role and updates controls immediately", async () => {
+    render(<Page />);
+    await openCustomerPortal();
+    await userEvent.click(screen.getByRole("button", { name: "项目设置" }));
+    await userEvent.click(screen.getByRole("button", { name: "成员与角色" }));
+    await userEvent.selectOptions(
+      screen.getByLabelText("修改陈楠的项目角色"),
+      "viewer",
+    );
+
+    expect(screen.getByText("当前角色仅可查看")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "添加成员" })).toBeDisabled();
+    expect(screen.getByLabelText("修改林川的项目角色")).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "恢复角色与成员权限重构工作区" }),
+    );
+    expect(screen.getByText("当前角色仅可查看")).toBeInTheDocument();
+    expect(screen.getByLabelText("任务输入")).toBeDisabled();
+    await userEvent.click(
+      screen.getByRole("button", { name: "完善角色管理 PRD14:32" }),
+    );
+    expect(screen.getByText("当前角色仅可查看")).toBeInTheDocument();
+    expect(screen.getByLabelText("任务输入")).toBeDisabled();
+  });
+
   test("shows and adjusts Agent-selected context", async () => {
     render(<Page />);
     await openCustomerPortal();
@@ -162,6 +188,17 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByText("权限审计记录导出")).toBeInTheDocument();
   });
 
+  test("shows an accurate empty project state without an empty recent section", async () => {
+    render(<Page />);
+    await userEvent.click(screen.getByRole("button", { name: "项目" }));
+    await userEvent.click(screen.getByRole("button", { name: "打开智能报销系统" }));
+
+    expect(screen.queryByRole("heading", { name: "继续 Agent 工作" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "还没有需求" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "新建需求" })).toBeInTheDocument();
+    expect(screen.getByText("尚未为该项目连接自动上下文来源")).toBeInTheDocument();
+  });
+
   test("opens a requirement and changes workspace with the selected Agent", async () => {
     render(<Page />);
     await openRoleRequirement();
@@ -201,6 +238,59 @@ describe("enterprise AI client demo", () => {
     );
 
     expect(screen.getByRole("complementary", { name: "自动上下文" })).toBeInTheDocument();
+  });
+
+  test("keeps requirement Agent execution and result visible in its workspace", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+
+    await userEvent.type(screen.getByLabelText("任务输入"), "补充观察者权限边界");
+    await userEvent.click(screen.getByRole("button", { name: "发送" }));
+
+    expect(screen.getByText("补充观察者权限边界")).toBeInTheDocument();
+    expect(screen.getByText(/REQ-032 的本轮处理已完成/)).toBeInTheDocument();
+    expect(screen.getByText("本轮 Agent 执行已完成")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "PRD 撰写工作台" })).toBeInTheDocument();
+  });
+
+  test("resumes SSO with requirement-bound tests and context", async () => {
+    render(<Page />);
+    await openCustomerPortal();
+    await userEvent.click(screen.getByRole("button", { name: "继续 测试 Agent 对话" }));
+
+    expect(screen.getAllByText("企业 SSO 登录体验优化").length).toBeGreaterThan(0);
+    expect(screen.getByText("租户选择失败时可重新发起 SSO")).toBeInTheDocument();
+    expect(screen.queryByText("AC-07")).not.toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "查看本次 5 项自动上下文" }),
+    );
+    expect(screen.getByText("REQ-029 Spec v2.1")).toBeInTheDocument();
+    expect(screen.queryByText("REQ-032 Spec v1.4")).not.toBeInTheDocument();
+  });
+
+  test("keeps a requirement atomically attached to its project", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+
+    expect(screen.queryByLabelText("选择项目")).not.toBeInTheDocument();
+    expect(screen.getByText("已关联项目：企业客户门户 V3.2")).toBeInTheDocument();
+  });
+
+  test("requires unlocking a source before it can be removed", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.click(
+      screen.getByRole("button", { name: "查看本次 6 项自动上下文" }),
+    );
+
+    const lockedSpec = screen.getByRole("checkbox", { name: "引用REQ-032 Spec v1.4" });
+    expect(lockedSpec).toBeDisabled();
+    await userEvent.click(
+      screen.getByRole("button", { name: "解除锁定REQ-032 Spec v1.4" }),
+    );
+    expect(lockedSpec).toBeEnabled();
+    await userEvent.click(lockedSpec);
+    expect(screen.getByText("本次自动引用 5 项上下文")).toBeInTheDocument();
   });
 
   test("routes requirement governance through more actions", async () => {
@@ -259,14 +349,9 @@ describe("enterprise AI client demo", () => {
     ).toBeInTheDocument();
   });
 
-  test("warns before leaving an unconfirmed PRD revision", async () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
+  test("retains an unconfirmed PRD revision when leaving with the back button", async () => {
     render(<Page />);
     await openRoleRequirement();
-    await userEvent.selectOptions(
-      screen.getByLabelText("选择 Agent"),
-      "prd-writer",
-    );
     await userEvent.type(
       screen.getByLabelText("PRD 修改要求"),
       "调整角色批量操作说明",
@@ -274,17 +359,38 @@ describe("enterprise AI client demo", () => {
     await userEvent.click(
       screen.getByRole("button", { name: "生成修订建议" }),
     );
-    await userEvent.selectOptions(
-      screen.getByLabelText("选择 Agent"),
-      "prototype",
+    await userEvent.click(screen.getByRole("button", { name: /企业客户门户 V3.2/ }));
+    expect(screen.getByRole("dialog", { name: "未确认的 PRD 修订" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "保留修订并离开" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "恢复角色与成员权限重构工作区" }),
     );
-    expect(confirmSpy).toHaveBeenCalledWith(
-      "当前修订尚未确认，是否放弃并切换 Agent？",
-    );
-    expect(
-      screen.getByRole("heading", { name: "PRD 撰写工作台" }),
-    ).toBeInTheDocument();
-    confirmSpy.mockRestore();
+    expect(screen.getByText("调整角色批量操作说明")).toBeInTheDocument();
+  });
+
+  test("discards an unconfirmed PRD revision before sidebar navigation", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.type(screen.getByLabelText("PRD 修改要求"), "这条修订应被放弃");
+    await userEvent.click(screen.getByRole("button", { name: "生成修订建议" }));
+    await userEvent.click(screen.getByRole("button", { name: "智能资产" }));
+    await userEvent.click(screen.getByRole("button", { name: "放弃修订并离开" }));
+
+    expect(screen.getByRole("heading", { name: "智能资产" })).toBeInTheDocument();
+    await openRoleRequirement();
+    expect(screen.queryByText("这条修订应被放弃")).not.toBeInTheDocument();
+  });
+
+  test("returns to an unconfirmed PRD revision from guarded sidebar navigation", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.type(screen.getByLabelText("PRD 修改要求"), "继续确认这条修订");
+    await userEvent.click(screen.getByRole("button", { name: "生成修订建议" }));
+    await userEvent.click(screen.getByRole("button", { name: "项目" }));
+    await userEvent.click(screen.getByRole("button", { name: "返回继续确认" }));
+
+    expect(screen.getByRole("heading", { name: "PRD 撰写工作台" })).toBeInTheDocument();
+    expect(screen.getByText("继续确认这条修订")).toBeInTheDocument();
   });
 
   test("marks a development task and opens the code diff", async () => {

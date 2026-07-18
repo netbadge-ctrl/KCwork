@@ -6,7 +6,9 @@ import {
   Tablet,
 } from "lucide-react";
 import { useState } from "react";
+import { productDocuments } from "../../lib/demo-data";
 import type { WorkspaceRouterProps } from "./workspace-router";
+import { WorkspaceEmptyState } from "./workspace-empty-state";
 
 const pages = ["总览", "成员与角色", "角色详情", "操作审计"];
 
@@ -15,11 +17,22 @@ export function PrototypeWorkspace({
   onOpenPreview,
 }: WorkspaceRouterProps) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const prototype = productDocuments.find(
+    (item) => item.requirementId === requirement.id && item.kind === "prototype",
+  );
+  if (!prototype) {
+    return (
+      <section className="workspace-canvas prototype-workspace">
+        <div className="workspace-heading"><div><p className="eyebrow">Prototype</p><h2>原型设计工作台</h2><p>当前工作区只展示 {requirement.code} 的产物。</p></div></div>
+        <WorkspaceEmptyState title="当前需求暂无原型产物" detail="可以通过底部对话框要求原型设计 Agent 生成首版页面。" />
+      </section>
+    );
+  }
   return (
     <section className="workspace-canvas prototype-workspace">
       <div className="workspace-heading">
         <div>
-          <p className="eyebrow">Prototype · V3</p>
+          <p className="eyebrow">Prototype · {prototype.version}</p>
           <h2>原型设计工作台</h2>
           <p>页面结构与交互说明直接引用 {requirement.code} 的用户故事。</p>
         </div>

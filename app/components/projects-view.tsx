@@ -26,6 +26,7 @@ export interface ProjectsViewProps {
   onOpenRequirement(id: string): void;
   onOpenContext(): void;
   onOpenSettings(): void;
+  onCreateRequirement(): void;
 }
 
 export function ProjectsView({
@@ -44,6 +45,7 @@ export function ProjectsView({
   onOpenRequirement,
   onOpenContext,
   onOpenSettings,
+  onCreateRequirement,
 }: ProjectsViewProps) {
   const [query, setQuery] = useState("");
   const project = projects.find((item) => item.id === selectedProjectId);
@@ -58,6 +60,7 @@ export function ProjectsView({
         onOpenContext={onOpenContext}
         onOpenRequirement={onOpenRequirement}
         onOpenSettings={onOpenSettings}
+        onCreateRequirement={onCreateRequirement}
         onResumeSession={onResumeSession}
         project={project}
         requirementStages={requirementStages}

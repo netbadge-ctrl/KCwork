@@ -2,11 +2,13 @@ import { ChevronDown, Database, FileText, GitBranch, ShieldCheck, TestTube2 } fr
 import { useState } from "react";
 import type {
   ProjectMember,
+  ProjectCapabilities,
   ProjectRole,
   ProjectSection,
   Requirement,
   RequirementStage,
 } from "../lib/types";
+import { projectRoleLabels } from "../lib/project-capabilities";
 import { MemberManager } from "./member-manager";
 import { stageLabels } from "./requirement-list";
 
@@ -27,6 +29,8 @@ export interface ProjectSettingsPanelProps {
   memberRoles: Record<string, ProjectRole>;
   requirements: Requirement[];
   requirementStages: Record<string, RequirementStage>;
+  capabilities: ProjectCapabilities;
+  currentRole: ProjectRole;
   onChangeMemberRole(memberId: string, role: ProjectRole): void;
   onSetRequirementStage(requirementId: string, stage: RequirementStage): void;
   onOpenAsset(section: ProjectSection): void;
@@ -37,6 +41,8 @@ export function ProjectSettingsPanel({
   memberRoles,
   requirements,
   requirementStages,
+  capabilities,
+  currentRole,
   onChangeMemberRole,
   onSetRequirementStage,
   onOpenAsset,
@@ -49,7 +55,12 @@ export function ProjectSettingsPanel({
   return (
     <section className="project-settings-panel" aria-label="项目治理设置">
       <div className="project-settings-intro">
-        <span className="project-settings-role"><ShieldCheck size={16} /> 当前角色：项目管理员</span>
+        <span className="project-settings-role">
+          <ShieldCheck size={16} />
+          {currentRole === "viewer"
+            ? "当前角色仅可查看"
+            : `当前角色：${projectRoleLabels[currentRole]}`}
+        </span>
         <p>项目治理和共享上下文维护集中在此处，日常工作仍围绕 Agent 与需求展开。</p>
       </div>
 
@@ -66,6 +77,7 @@ export function ProjectSettingsPanel({
         {openSection === "members" && (
           <div className="project-settings-section-content">
             <MemberManager
+              canManage={capabilities.canManageMembers}
               members={members}
               onChangeRole={onChangeMemberRole}
               roles={memberRoles}
@@ -100,6 +112,7 @@ export function ProjectSettingsPanel({
                       状态
                       <select
                         aria-label={`设置${requirement.title}状态`}
+                        disabled={!capabilities.canManageRequirements}
                         onChange={(event) =>
                           onSetRequirementStage(
                             requirement.id,
@@ -142,6 +155,7 @@ export function ProjectSettingsPanel({
                 <div><strong>{label}</strong><small>{description}</small></div>
                 <button
                   aria-label={`管理全部${label}`}
+                  disabled={!capabilities.canManageAssets}
                   onClick={() => onOpenAsset(section)}
                   type="button"
                 >管理全部</button>

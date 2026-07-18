@@ -13,7 +13,9 @@ import type {
   Message,
   PreviewKind,
   Project,
+  ProjectRole,
 } from "../lib/types";
+import { projectRoleLabels } from "../lib/project-capabilities";
 import { Composer } from "./composer";
 
 export interface TaskViewProps {
@@ -24,6 +26,8 @@ export interface TaskViewProps {
   agents: Agent[];
   projects: Project[];
   selectedProjectId: string | null;
+  canEdit: boolean;
+  currentRole: ProjectRole;
   onSelectAgent(id: string): void;
   onSelectProject(id: string | null): void;
   onSend(text: string): void;
@@ -44,6 +48,8 @@ export function TaskView({
   agents,
   projects,
   selectedProjectId,
+  canEdit,
+  currentRole,
   onSelectAgent,
   onSelectProject,
   onSend,
@@ -60,6 +66,7 @@ export function TaskView({
           <small>任务 · 今天 14:32</small>
         </div>
         <div className="task-header-actions">
+          {!canEdit && project && <span className="read-only-notice">当前角色仅可查看</span>}
           {project && (
             <span className="project-chip">
               <span style={{ background: project.color }} /> {project.name}
@@ -173,6 +180,7 @@ export function TaskView({
       <div className="task-composer-wrap">
         <Composer
           agents={agents}
+          disabled={!canEdit}
           mode={agent.mode === "office" ? "office" : "research"}
           onSelectAgent={onSelectAgent}
           onSelectProject={onSelectProject}
@@ -182,7 +190,11 @@ export function TaskView({
           selectedProjectId={selectedProjectId}
           variant="task"
         />
-        <p className="composer-hint">Agent 可能会出错，请检查重要信息与产物。</p>
+        <p className="composer-hint">
+          {canEdit
+            ? "Agent 可能会出错，请检查重要信息与产物。"
+            : `${projectRoleLabels[currentRole]}角色仅可查看当前项目任务。`}
+        </p>
       </div>
     </div>
   );

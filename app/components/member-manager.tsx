@@ -12,12 +12,14 @@ const roleLabels: Record<ProjectRole, string> = {
 export interface MemberManagerProps {
   members: ProjectMember[];
   roles: Record<string, ProjectRole>;
+  canManage?: boolean;
   onChangeRole(memberId: string, role: ProjectRole): void;
 }
 
 export function MemberManager({
   members,
   roles,
+  canManage = true,
   onChangeRole,
 }: MemberManagerProps) {
   return (
@@ -28,7 +30,7 @@ export function MemberManager({
           <strong>{members.length} 位成员</strong>
           <small>项目成员可查看全部需求、代码和测试进展</small>
         </div>
-        <button type="button"><Plus size={15} /> 添加成员</button>
+        <button disabled={!canManage} type="button"><Plus size={15} /> 添加成员</button>
       </div>
       <div className="member-list">
         {members.map((member) => (
@@ -41,6 +43,7 @@ export function MemberManager({
             <select
               aria-label={`修改${member.name}的项目角色`}
               className="member-role-select"
+              disabled={!canManage}
               onChange={(event) =>
                 onChangeRole(member.id, event.target.value as ProjectRole)
               }

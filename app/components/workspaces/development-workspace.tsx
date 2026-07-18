@@ -2,6 +2,7 @@ import { CheckCircle2, FileCode2, GitBranch, GitCompareArrows } from "lucide-rea
 import { codeChanges, developmentTasks } from "../../lib/demo-data";
 import type { DevelopmentTaskStatus } from "../../lib/types";
 import type { WorkspaceRouterProps } from "./workspace-router";
+import { WorkspaceEmptyState } from "./workspace-empty-state";
 
 const statusLabels: Record<DevelopmentTaskStatus, string> = {
   "not-started": "未开始",
@@ -15,6 +16,7 @@ export function DevelopmentWorkspace({
   developmentTaskStatuses,
   onSetDevelopmentTaskStatus,
   onOpenPreview,
+  canEdit,
 }: WorkspaceRouterProps) {
   const tasks = developmentTasks.filter(
     (task) => task.requirementId === requirement.id,
@@ -22,6 +24,14 @@ export function DevelopmentWorkspace({
   const changes = codeChanges.filter(
     (change) => change.requirementId === requirement.id,
   );
+  if (tasks.length === 0) {
+    return (
+      <section className="workspace-canvas development-workspace">
+        <div className="workspace-heading"><div><p className="eyebrow">Spec to code</p><h2>开发工作台</h2><p>当前工作区只展示 {requirement.code} 的开发记录。</p></div></div>
+        <WorkspaceEmptyState title="当前需求暂无开发任务" detail="尚未生成的任务和代码变更不会借用其他需求的数据。" />
+      </section>
+    );
+  }
   return (
     <section className="workspace-canvas development-workspace">
       <div className="workspace-heading"><div><p className="eyebrow">Spec to code</p><h2>开发工作台</h2><p>开发任务、代码基线和验证结果均关联 {requirement.code}。</p></div></div>
@@ -32,7 +42,7 @@ export function DevelopmentWorkspace({
       </div>
       <div className="dev-grid">
         <div className="dev-task-list">
-          <header><div><strong>开发任务</strong><small>由成员选择任务并确认状态</small></div><button type="button">+ 标记开发任务</button></header>
+          <header><div><strong>开发任务</strong><small>由成员选择任务并确认状态</small></div><button disabled={!canEdit} type="button">+ 标记开发任务</button></header>
           {tasks.map((task) => {
             const status = developmentTaskStatuses[task.id] ?? task.status;
             const isRolePanelTask = task.id === "dev-role-panel";
@@ -46,6 +56,7 @@ export function DevelopmentWorkspace({
                 <select
                   aria-label={isRolePanelTask ? "角色面板任务状态" : `${task.title}任务状态`}
                   className={`dev-task-status ${status}`}
+                  disabled={!canEdit}
                   onChange={(event) => onSetDevelopmentTaskStatus(task.id, event.target.value as DevelopmentTaskStatus)}
                   value={status}
                 >
