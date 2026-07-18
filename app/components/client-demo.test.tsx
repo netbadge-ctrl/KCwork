@@ -76,17 +76,23 @@ describe("enterprise AI client demo", () => {
     expect(screen.queryByRole("combobox", { name: "切换 角色与成员权限重构 状态" })).not.toBeInTheDocument();
   });
 
-  test("keeps project role editing reachable from project settings", async () => {
+  test("keeps governance editable in secondary project settings", async () => {
     render(<Page />);
     await openCustomerPortal();
+    expect(screen.queryByRole("button", { name: "管理成员" })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "项目设置" }));
 
     expect(screen.getByRole("complementary", { name: "项目设置" })).toBeInTheDocument();
+    expect(screen.getByText("当前角色：项目管理员")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "成员与角色" }));
     await userEvent.selectOptions(
       screen.getByLabelText("修改林川的项目角色"),
       "testing",
     );
     expect(screen.getByLabelText("修改林川的项目角色")).toHaveValue("testing");
+    await userEvent.click(screen.getByRole("button", { name: "需求状态与门禁" }));
+    await userEvent.selectOptions(screen.getByLabelText("设置角色与成员权限重构状态"), "testing");
+    expect(screen.getByLabelText("设置角色与成员权限重构状态")).toHaveValue("testing");
   });
 
   test("shows and adjusts Agent-selected context", async () => {
@@ -178,6 +184,7 @@ describe("enterprise AI client demo", () => {
     );
 
     expect(screen.getByRole("complementary", { name: "项目设置" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "需求状态与门禁" }));
     await userEvent.selectOptions(
       screen.getByLabelText("设置角色与成员权限重构状态"),
       "testing",
