@@ -1,6 +1,6 @@
 # KFlow Final Review Fixes Report
 
-Date: 2026-07-18  
+Date: 2026-07-18
 Tested implementation commit: `60e1bb62d074694b46feec250d30a2a3dafc5e6d`
 
 ## Scope completed
@@ -103,3 +103,31 @@ Tested implementation commit: `60e1bb62d074694b46feec250d30a2a3dafc5e6d`
 - The production build emits the pre-existing Node `module.register()` deprecation warning and vinext dynamic-route classification notice; both are informational and were already accepted by the plan.
 - Demo results remain deterministic client-side state, with no backend persistence or external Agent execution, as required.
 - Deployment, push, and browser navigation were intentionally not performed because the final-review task explicitly prohibited them.
+
+## Final review follow-up
+
+Follow-up implementation commit: `1ce08218ae9de1de99f775f1d28a368fc2ffd121`
+
+### Findings closed
+
+1. Viewer context controls are disabled, and the reducer rejects direct context-selection and lock mutations for the signed-in viewer.
+2. Home and task work without a selected project use explicit unscoped capabilities and remain editable instead of inheriting a viewer fallback.
+3. Projects with no context sources now report `项目上下文尚未连接` instead of a ready state.
+4. Project-asset navigation from requirement settings now uses the same pending-PRD navigation guard, preserving retain, discard, and return behavior.
+5. Product, development, and testing roles can edit only their corresponding Agent workspaces and product, code, or test artifact mutations; cross-role workspaces and preview actions remain read-only. Admin retains all edit scopes.
+6. The report date line's trailing whitespace was removed.
+
+### Follow-up TDD evidence
+
+- Baseline: `npm test` — 4 files passed, 54 tests passed.
+- Reducer RED: `npm test -- app/lib/demo-state.test.ts` — 19 tests run; 1 expected failure and 18 passes, demonstrating that viewer context mutation was not yet rejected.
+- Component RED: `npm test -- app/components/client-demo.test.tsx` — 39 tests run; 7 expected failures and 32 passes, covering viewer context controls, unscoped editing, role-specific scopes, the empty-project header, and settings asset navigation.
+- Focused GREEN: `npm test -- app/lib/demo-state.test.ts app/components/context-sources-panel.test.tsx app/components/client-demo.test.tsx` — 3 files passed, 59 tests passed.
+
+### Follow-up final verification
+
+- `npm test` — 4 files passed, 60 tests passed.
+- `npm run lint` — exit 0, no findings.
+- `npm run build` — exit 0; `Build complete`.
+- `git diff --check` — exit 0, no output.
+- `git diff --check ec0c39bee7b43343271d39376fce4acdec653ad0..HEAD` — exit 0, no output.
