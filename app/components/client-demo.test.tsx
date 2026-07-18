@@ -36,6 +36,19 @@ describe("enterprise AI client demo", () => {
     expect(screen.queryByText("前端开发 Agent")).not.toBeInTheDocument();
   });
 
+  test("preserves office mode and all Agent-specific evidence workspaces", async () => {
+    render(<Page />);
+    await userEvent.click(screen.getByRole("button", { name: "新建任务" }));
+    await userEvent.click(screen.getByRole("button", { name: "日常办公" }));
+    expect(screen.getByRole("button", { name: /会议纪要 Agent/ })).toBeInTheDocument();
+
+    await openRoleRequirement();
+    await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "frontend-dev");
+    expect(screen.getByRole("heading", { name: "开发工作台" })).toBeInTheDocument();
+    await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "testing");
+    expect(screen.getByRole("heading", { name: "测试工作台" })).toBeInTheDocument();
+  });
+
   test("uses system development copy on the new-task page", async () => {
     render(<Page />);
     await userEvent.click(screen.getByRole("button", { name: "新建任务" }));
@@ -113,6 +126,17 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByText("本次自动引用 5 项上下文")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "锁定项目决策记忆" }));
     expect(screen.getByRole("button", { name: "解除锁定项目决策记忆" })).toBeInTheDocument();
+  });
+
+  test("closes automatic context and project settings with Escape", async () => {
+    render(<Page />);
+    await openCustomerPortal();
+    await userEvent.click(screen.getByRole("button", { name: "查看自动上下文来源" }));
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("complementary", { name: "自动上下文" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "项目设置" }));
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("complementary", { name: "项目设置" })).not.toBeInTheDocument();
   });
 
   test("continues the latest Agent conversation from the project", async () => {
