@@ -139,7 +139,8 @@ export function clientReducer(
       return {
         ...state,
         selectedAgentId: action.agentId,
-        lastAgentByRequirement: state.selectedRequirementId
+        lastAgentByRequirement:
+          state.view === "requirement-detail" && state.selectedRequirementId
           ? {
               ...state.lastAgentByRequirement,
               [state.selectedRequirementId]: action.agentId,
@@ -165,6 +166,10 @@ export function clientReducer(
         selectedProjectId: session.projectId,
         selectedRequirementId: session.requirementId,
         selectedAgentId: session.agentId,
+        lastAgentByRequirement: {
+          ...state.lastAgentByRequirement,
+          [session.requirementId]: session.agentId,
+        },
       };
     }
     case "toggle-context-source":

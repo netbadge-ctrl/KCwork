@@ -150,4 +150,46 @@ describe("clientReducer", () => {
     expect(selected.lastAgentByRequirement["role-permissions"]).toBe("prototype");
     expect(reopened.selectedAgentId).toBe("prototype");
   });
+
+  it("does not overwrite a remembered Agent from outside a requirement workspace", () => {
+    const opened = clientReducer(initialClientState, {
+      type: "select-requirement",
+      requirementId: "role-permissions",
+    });
+    const home = clientReducer(opened, { type: "navigate", view: "home" });
+    const selected = clientReducer(home, {
+      type: "select-agent",
+      agentId: "frontend-dev",
+    });
+    const reopened = clientReducer(selected, {
+      type: "select-requirement",
+      requirementId: "role-permissions",
+    });
+
+    expect(selected.lastAgentByRequirement["role-permissions"]).toBe("prd-writer");
+    expect(reopened.selectedAgentId).toBe("prd-writer");
+  });
+
+  it("remembers the Agent from a resumed work session", () => {
+    const opened = clientReducer(initialClientState, {
+      type: "select-requirement",
+      requirementId: "role-permissions",
+    });
+    const selected = clientReducer(opened, {
+      type: "select-agent",
+      agentId: "prototype",
+    });
+    const resumed = clientReducer(selected, {
+      type: "resume-agent-work",
+      sessionId: "session-role-prd",
+    });
+    const away = clientReducer(resumed, { type: "navigate", view: "task" });
+    const reopened = clientReducer(away, {
+      type: "select-requirement",
+      requirementId: "role-permissions",
+    });
+
+    expect(resumed.lastAgentByRequirement["role-permissions"]).toBe("prd-writer");
+    expect(reopened.selectedAgentId).toBe("prd-writer");
+  });
 });
