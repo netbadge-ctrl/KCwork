@@ -156,3 +156,28 @@ Task-session implementation commit: `75315b70948efac6d848cb0cb46c3e0ca15b65af`
 - `npm run build` — exit 0; `Build complete`.
 - `git diff --check` — exit 0, no output.
 - `git diff --check ec0c39bee7b43343271d39376fce4acdec653ad0..HEAD` — exit 0, no output.
+
+## Atomic task opening and execution routing follow-up
+
+Atomic task implementation commit: `6d66faf289b6fec4ecf361ac3702bd116b3d4f79`
+
+### Findings closed
+
+- The reducer's `open-task` action now selects the task, its exact project, explicit requirement association, exact Agent, mode, and task view in one transition. The sidebar dispatches only this atomic action after navigation guarding.
+- All four deterministic recent tasks retain their own title, content, project/requirement association, and active composer Agent; opening `实现权限配置页面` can no longer be overwritten from `frontend-dev` to the requirement's remembered PRD Agent.
+- `advance-execution` and `fail-execution` carry their originating task ID. Reducer updates, completion messages, and Agent attribution target that task even if another task is currently selected.
+- The execution effect captures the selected task ID in its timer callback and depends on both task ID and execution state, so switching tasks cancels the prior selected-task schedule instead of advancing the new task accidentally.
+
+### Atomic task TDD evidence
+
+- Reducer RED: `npm test -- app/lib/demo-state.test.ts` — 22 tests run; 3 expected failures and 19 passes, covering atomic associations and stale advance/fail routing.
+- Component RED: `npm test -- app/components/client-demo.test.tsx` — 41 tests run; 1 expected permission-UI Agent failure and 40 passes.
+- Focused GREEN: `npm test -- app/lib/demo-state.test.ts app/components/client-demo.test.tsx` — 2 files passed, 63 tests passed.
+
+### Atomic task final verification
+
+- `npm test` — 4 files passed, 65 tests passed.
+- `npm run lint` — exit 0, no findings.
+- `npm run build` — exit 0; `Build complete`.
+- `git diff --check` — exit 0, no output.
+- `git diff --check ec0c39bee7b43343271d39376fce4acdec653ad0..HEAD` — exit 0, no output.
