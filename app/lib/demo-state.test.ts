@@ -36,23 +36,57 @@ describe("clientReducer", () => {
     expect(sent.taskMessagesById["prd-role"].at(-1)?.role).toBe("user");
     expect(sent.taskExecutionsById["prd-role"]).toBe("reading");
     expect(
-      clientReducer(sent, { type: "advance-execution" })
+      clientReducer(sent, { type: "advance-execution", taskId: "prd-role" })
         .taskExecutionsById["prd-role"],
     ).toBe("analyzing");
   });
 
+  it("opens every recent task atomically with its exact associations", () => {
+    const taskAssociations = [
+      ["prd-role", "customer-portal", "role-permissions", "prd-writer", "research"],
+      ["permission-ui", "customer-portal", "role-permissions", "frontend-dev", "research"],
+      ["login-failure", "expense", null, "backend-dev", "research"],
+      ["q3-report", null, null, "data-analysis", "office"],
+    ] as const;
+
+    for (const [taskId, projectId, requirementId, agentId, mode] of taskAssociations) {
+      const opened = clientReducer(initialClientState, {
+        type: "open-task",
+        taskId,
+      });
+
+      expect(opened).toMatchObject({
+        view: "task",
+        selectedTaskId: taskId,
+        selectedProjectId: projectId,
+        selectedRequirementId: requirementId,
+        selectedAgentId: agentId,
+        mode,
+      });
+    }
+  });
+
   it("keeps messages and execution scoped to the selected recent task", () => {
     const selected = clientReducer(initialClientState, {
-      type: "select-task",
+      type: "open-task",
       taskId: "q3-report",
     });
     const sent = clientReducer(selected, {
       type: "send-message",
       text: "总结本季度趋势",
     });
-    const analyzing = clientReducer(sent, { type: "advance-execution" });
-    const generating = clientReducer(analyzing, { type: "advance-execution" });
-    const done = clientReducer(generating, { type: "advance-execution" });
+    const analyzing = clientReducer(sent, {
+      type: "advance-execution",
+      taskId: "q3-report",
+    });
+    const generating = clientReducer(analyzing, {
+      type: "advance-execution",
+      taskId: "q3-report",
+    });
+    const done = clientReducer(generating, {
+      type: "advance-execution",
+      taskId: "q3-report",
+    });
 
     expect(done.selectedTaskId).toBe("q3-report");
     expect(done.taskMessagesById["q3-report"].at(-2)?.text).toBe(
@@ -65,6 +99,35 @@ describe("clientReducer", () => {
       initialClientState.taskMessagesById["prd-role"],
     );
     expect(done.taskExecutionsById["q3-report"]).toBe("done");
+  });
+
+  it("advances and fails only the originating task after switching tasks", () => {
+    const q3 = clientReducer(initialClientState, {
+      type: "open-task",
+      taskId: "q3-report",
+    });
+    const inFlight = clientReducer(q3, {
+      type: "send-message",
+      text: "继续分析趋势",
+    });
+    const switched = clientReducer(inFlight, {
+      type: "open-task",
+      taskId: "prd-role",
+    });
+    const advanced = clientReducer(switched, {
+      type: "advance-execution",
+      taskId: "q3-report",
+    });
+    const failed = clientReducer(advanced, {
+      type: "fail-execution",
+      taskId: "q3-report",
+    });
+
+    expect(advanced.selectedTaskId).toBe("prd-role");
+    expect(advanced.taskExecutionsById["q3-report"]).toBe("analyzing");
+    expect(advanced.taskExecutionsById["prd-role"]).toBe("idle");
+    expect(failed.taskExecutionsById["q3-report"]).toBe("error");
+    expect(failed.taskExecutionsById["prd-role"]).toBe("idle");
   });
 
   it("ignores empty messages", () => {

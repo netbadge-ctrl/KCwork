@@ -74,8 +74,8 @@ export const projects: Project[] = [
 ];
 
 export const recentTasks: RecentTask[] = [
-  { id: "prd-role", title: "完善角色管理 PRD", mode: "research", projectId: "customer-portal", agentId: "prd-writer", time: "14:32" },
-  { id: "permission-ui", title: "实现权限配置页面", mode: "research", projectId: "customer-portal", agentId: "frontend-dev", time: "昨天" },
+  { id: "prd-role", title: "完善角色管理 PRD", mode: "research", projectId: "customer-portal", requirementId: "role-permissions", agentId: "prd-writer", time: "14:32" },
+  { id: "permission-ui", title: "实现权限配置页面", mode: "research", projectId: "customer-portal", requirementId: "role-permissions", agentId: "frontend-dev", time: "昨天" },
   { id: "login-failure", title: "分析登录失败问题", mode: "research", projectId: "expense", agentId: "backend-dev", time: "周一" },
   { id: "q3-report", title: "Q3 经营分析报告", mode: "office", agentId: "data-analysis", time: "7 月 12 日" },
 ];

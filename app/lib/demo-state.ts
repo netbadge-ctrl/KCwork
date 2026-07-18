@@ -47,7 +47,7 @@ export type ClientAction =
   | { type: "navigate"; view: ViewId }
   | { type: "set-mode"; mode: Mode }
   | { type: "select-agent"; agentId: string }
-  | { type: "select-task"; taskId: string }
+  | { type: "open-task"; taskId: string }
   | { type: "select-project"; projectId: string | null }
   | { type: "select-requirement"; requirementId: string }
   | { type: "resume-agent-work"; sessionId: string }
@@ -71,8 +71,8 @@ export type ClientAction =
   | { type: "open-preview"; preview: PreviewKind }
   | { type: "close-preview" }
   | { type: "send-message"; text: string }
-  | { type: "advance-execution" }
-  | { type: "fail-execution" };
+  | { type: "advance-execution"; taskId: string }
+  | { type: "fail-execution"; taskId: string };
 
 function contextIdsForRequirement(requirementId: string) {
   const requirement = requirements.find((item) => item.id === requirementId);
@@ -217,10 +217,26 @@ export function clientReducer(
             }
           : state.lastAgentByRequirement,
       };
-    case "select-task":
-      return recentTasks.some((task) => task.id === action.taskId)
-        ? { ...state, selectedTaskId: action.taskId }
-        : state;
+    case "open-task": {
+      const task = recentTasks.find((item) => item.id === action.taskId);
+      if (!task) return state;
+      const requirement = task.requirementId
+        ? requirements.find(
+            (item) =>
+              item.id === task.requirementId &&
+              item.projectId === task.projectId,
+          )
+        : null;
+      return {
+        ...state,
+        view: "task",
+        mode: task.mode,
+        selectedTaskId: task.id,
+        selectedProjectId: task.projectId ?? null,
+        selectedRequirementId: requirement?.id ?? null,
+        selectedAgentId: task.agentId,
+      };
+    }
     case "select-project":
       if (!action.projectId) {
         return {
@@ -451,47 +467,50 @@ export function clientReducer(
       };
     }
     case "advance-execution": {
+      const task = recentTasks.find((item) => item.id === action.taskId);
+      if (!task) return state;
       const currentExecution =
-        state.taskExecutionsById[state.selectedTaskId] ?? "idle";
+        state.taskExecutionsById[action.taskId] ?? "idle";
       const execution = nextExecution[currentExecution];
       if (execution !== "done" || currentExecution === "done") {
         return {
           ...state,
           taskExecutionsById: {
             ...state.taskExecutionsById,
-            [state.selectedTaskId]: execution,
+            [action.taskId]: execution,
           },
         };
       }
-      const messages = state.taskMessagesById[state.selectedTaskId] ?? [];
-      const task = recentTasks.find((item) => item.id === state.selectedTaskId);
+      const messages = state.taskMessagesById[action.taskId] ?? [];
       return {
         ...state,
         taskExecutionsById: {
           ...state.taskExecutionsById,
-          [state.selectedTaskId]: execution,
+          [action.taskId]: execution,
         },
         taskMessagesById: {
           ...state.taskMessagesById,
-          [state.selectedTaskId]: [
+          [action.taskId]: [
             ...messages,
             {
-              id: `${state.selectedTaskId}-agent-${messages.length}`,
+              id: `${action.taskId}-agent-${messages.length}`,
               role: "agent",
-              agentId: state.selectedAgentId,
-              text: `${task?.title ?? "当前任务"} 已完成。本轮结果已保留在这条任务会话中，可继续调整。`,
+              agentId: task.agentId,
+              text: `${task.title} 已完成。本轮结果已保留在这条任务会话中，可继续调整。`,
             },
           ],
         },
       };
     }
-    case "fail-execution":
+    case "fail-execution": {
+      if (!recentTasks.some((task) => task.id === action.taskId)) return state;
       return {
         ...state,
         taskExecutionsById: {
           ...state.taskExecutionsById,
-          [state.selectedTaskId]: "error",
+          [action.taskId]: "error",
         },
       };
+    }
   }
 }

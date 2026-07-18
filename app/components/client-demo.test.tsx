@@ -187,6 +187,23 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByText("读取项目上下文")).toBeInTheDocument();
   });
 
+  test("opens every recent task with its own content and active Agent", async () => {
+    render(<Page />);
+    const taskCases = [
+      ["完善角色管理 PRD14:32", "完善角色管理 PRD", /租户管理员、项目管理员和普通成员/, "prd-writer"],
+      ["实现权限配置页面昨天", "实现权限配置页面", /观察者的操作范围已分别覆盖/, "frontend-dev"],
+      ["分析登录失败问题周一", "分析登录失败问题", /登录失败集中在过期会话/, "backend-dev"],
+      ["Q3 经营分析报告7 月 12 日", "Q3 经营分析报告", /Q3 营收同比增长/, "data-analysis"],
+    ] as const;
+
+    for (const [buttonName, title, content, agentId] of taskCases) {
+      await userEvent.click(screen.getByRole("button", { name: buttonName }));
+      expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
+      expect(screen.getByText(content)).toBeInTheDocument();
+      expect(screen.getByLabelText("选择 Agent")).toHaveValue(agentId);
+    }
+  });
+
   test("opens login-failure work with its own project, Agent, and conversation", async () => {
     render(<Page />);
 

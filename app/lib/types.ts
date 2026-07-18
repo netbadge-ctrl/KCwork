@@ -89,6 +89,7 @@ export interface RecentTask {
   title: string;
   mode: Mode;
   projectId?: string;
+  requirementId?: string;
   agentId: string;
   time: string;
 }

@@ -44,12 +44,13 @@ export default function Page() {
 
   useEffect(() => {
     if (["idle", "done", "error"].includes(selectedTaskExecution)) return;
+    const taskId = state.selectedTaskId;
     const timer = window.setTimeout(
-      () => dispatch({ type: "advance-execution" }),
+      () => dispatch({ type: "advance-execution", taskId }),
       720,
     );
     return () => window.clearTimeout(timer);
-  }, [selectedTaskExecution]);
+  }, [selectedTaskExecution, state.selectedTaskId]);
 
   const selectedAgent =
     agents.find((agent) => agent.id === state.selectedAgentId) ?? agents[0];
@@ -158,13 +159,7 @@ export default function Page() {
         onNavigate={navigateFromSidebar}
         onOpenTask={(task) => {
           requestNavigation(task.title, () => {
-            dispatch({ type: "select-task", taskId: task.id });
-            dispatch({ type: "select-agent", agentId: task.agentId });
-            dispatch({
-              type: "select-project",
-              projectId: task.projectId ?? null,
-            });
-            dispatch({ type: "navigate", view: "task" });
+            dispatch({ type: "open-task", taskId: task.id });
           });
         }}
       />
