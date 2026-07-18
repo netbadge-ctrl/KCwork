@@ -142,6 +142,44 @@ describe("enterprise AI client demo", () => {
     ).toBeInTheDocument();
   });
 
+  test("keeps Agent and automatic context primary inside a requirement", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+
+    expect(screen.getByLabelText("切换工作台 Agent")).toHaveValue("prd-writer");
+    expect(
+      screen.getByRole("button", { name: "查看本次 6 项自动上下文" }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("任务输入")).toBeInTheDocument();
+    expect(screen.queryByLabelText("切换需求状态")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "更多需求操作" })).toBeInTheDocument();
+  });
+
+  test("opens automatic context from the requirement composer", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "查看本次 6 项自动上下文" }),
+    );
+
+    expect(screen.getByRole("complementary", { name: "自动上下文" })).toBeInTheDocument();
+  });
+
+  test("routes requirement governance through more actions", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+
+    await userEvent.click(screen.getByRole("button", { name: "更多需求操作" }));
+    expect(screen.getByRole("button", { name: "编辑负责人" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "归档需求" })).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "调整状态与门禁" }),
+    );
+
+    expect(screen.getByRole("complementary", { name: "项目设置" })).toBeInTheDocument();
+  });
+
   test("previews the prototype from the prototype Agent", async () => {
     render(<Page />);
     await openRoleRequirement();

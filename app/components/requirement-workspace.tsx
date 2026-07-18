@@ -1,4 +1,5 @@
-import { ArrowLeft, ShieldCheck, Users } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
 import type {
   Agent,
   DevelopmentTaskStatus,
@@ -14,7 +15,6 @@ import { WorkspaceRouter } from "./workspaces/workspace-router";
 export interface RequirementWorkspaceProps {
   requirement: Requirement;
   currentStage: RequirementStage;
-  stageRisk?: string;
   agent: Agent;
   agents: Agent[];
   project: Project;
@@ -22,12 +22,14 @@ export interface RequirementWorkspaceProps {
   selectedProjectId: string | null;
   documentDraft: string;
   developmentTaskStatuses: Record<string, DevelopmentTaskStatus>;
+  selectedContextCount: number;
   onBack(): void;
-  onSetStage(stage: RequirementStage): void;
   onSelectAgent(agentId: string): void;
   onSelectProject(projectId: string | null): void;
   onSend(text: string): void;
   onOpenPreview(kind: PreviewKind): void;
+  onOpenContext(): void;
+  onOpenSettings(): void;
   onSaveDocumentDraft(draft: string): void;
   onSetDevelopmentTaskStatus(taskId: string, status: DevelopmentTaskStatus): void;
 }
@@ -35,7 +37,6 @@ export interface RequirementWorkspaceProps {
 export function RequirementWorkspace({
   requirement,
   currentStage,
-  stageRisk,
   agent,
   agents,
   project,
@@ -43,15 +44,18 @@ export function RequirementWorkspace({
   selectedProjectId,
   documentDraft,
   developmentTaskStatuses,
+  selectedContextCount,
   onBack,
-  onSetStage,
   onSelectAgent,
   onSelectProject,
   onSend,
   onOpenPreview,
+  onOpenContext,
+  onOpenSettings,
   onSaveDocumentDraft,
   onSetDevelopmentTaskStatus,
 }: RequirementWorkspaceProps) {
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const researchAgents = agents.filter((item) => item.mode === "research" || item.mode === "both");
   const requestAgentSwitch = (agentId: string) => {
     if (
@@ -81,19 +85,8 @@ export function RequirementWorkspace({
           </div>
         </div>
         <div className="requirement-toolbar">
-          <select
-            aria-label="切换需求状态"
-            onChange={(event) => onSetStage(event.target.value as RequirementStage)}
-            value={currentStage}
-          >
-            {Object.entries(stageLabels).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-          <span className={`gate-badge ${requirement.gateStatus}`}>
-            <ShieldCheck size={12} /> {requirement.gateLabel}
-          </span>
           <span className="spec-version-chip">Spec {requirement.specVersion}</span>
+          <span className="requirement-stage-label">{stageLabels[currentStage]}</span>
           <select
             aria-label="切换工作台 Agent"
             onChange={(event) => requestAgentSwitch(event.target.value)}
@@ -103,12 +96,31 @@ export function RequirementWorkspace({
               <option key={item.id} value={item.id}>{item.name}</option>
             ))}
           </select>
-        </div>
-        <div className="requirement-context-line">
-          <span><Users size={13} /> 产品 {requirement.owners.product}</span>
-          <span>研发 {requirement.owners.development}</span>
-          <span>测试 {requirement.owners.testing}</span>
-          {stageRisk && <b>状态跳转已记录：{stageRisk}</b>}
+          <div className="requirement-more-actions">
+            <button
+              aria-expanded={isMoreMenuOpen}
+              className="secondary-button"
+              onClick={() => setIsMoreMenuOpen((isOpen) => !isOpen)}
+              type="button"
+            >
+              更多需求操作
+            </button>
+            {isMoreMenuOpen && (
+              <div className="requirement-more-menu">
+                <button
+                  onClick={() => {
+                    setIsMoreMenuOpen(false);
+                    onOpenSettings();
+                  }}
+                  type="button"
+                >
+                  调整状态与门禁
+                </button>
+                <button type="button">编辑负责人</button>
+                <button type="button">归档需求</button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -125,6 +137,14 @@ export function RequirementWorkspace({
       </div>
 
       <div className="task-composer-wrap requirement-composer-wrap">
+        <button
+          aria-label={`查看本次 ${selectedContextCount} 项自动上下文`}
+          className="composer-context-button"
+          onClick={onOpenContext}
+          type="button"
+        >
+          自动上下文 {selectedContextCount} 项 · 可调整
+        </button>
         <Composer
           agents={agents}
           mode="research"

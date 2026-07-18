@@ -2577,8 +2577,8 @@ select:focus-visible {
   background: rgb(255 255 255 / 96%);
   border-bottom: 1px solid #e9e9ed;
   display: grid;
-  gap: 10px;
-  padding: 14px 22px 11px;
+  gap: 8px;
+  padding: 13px 22px;
   position: relative;
   z-index: 3;
 }
@@ -2632,11 +2632,10 @@ select:focus-visible {
   padding: 0 9px;
 }
 
-.requirement-toolbar .gate-badge {
-  align-items: center;
-  display: inline-flex;
-  gap: 4px;
-  min-height: 26px;
+.requirement-stage-label {
+  color: #85828e;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .spec-version-chip {
@@ -2648,24 +2647,39 @@ select:focus-visible {
   padding: 6px 9px;
 }
 
-.requirement-context-line {
-  align-items: center;
-  color: #797682;
-  display: flex;
-  flex-wrap: wrap;
-  font-size: 10px;
-  gap: 12px;
+.requirement-more-actions {
+  position: relative;
 }
 
-.requirement-context-line span {
-  align-items: center;
-  display: inline-flex;
-  gap: 4px;
+.requirement-more-menu {
+  background: #fff;
+  border: 1px solid #e2dfe9;
+  border-radius: 10px;
+  box-shadow: 0 10px 26px rgb(42 36 65 / 14%);
+  display: grid;
+  gap: 2px;
+  min-width: 152px;
+  padding: 5px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 4;
 }
 
-.requirement-context-line b {
-  color: #ac5d42;
-  font-weight: 600;
+.requirement-more-menu button {
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: #47434f;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 8px 9px;
+  text-align: left;
+}
+
+.requirement-more-menu button:hover {
+  background: #f5f2ff;
+  color: #624bc2;
 }
 
 .requirement-workspace-scroll {
@@ -2676,6 +2690,23 @@ select:focus-visible {
 
 .requirement-composer-wrap {
   bottom: 0;
+}
+
+.composer-context-button {
+  align-self: flex-start;
+  background: #f4f1ff;
+  border: 1px solid #ddd5fc;
+  border-radius: 999px;
+  color: #654cc8;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 650;
+  margin: 0 0 7px 12px;
+  padding: 6px 10px;
+}
+
+.composer-context-button:hover {
+  background: #eee9ff;
 }
 
 .workspace-canvas {
@@ -2796,8 +2827,7 @@ select:focus-visible {
   }
 
   .requirement-header-main .back-button,
-  .requirement-header-main > .requirement-code,
-  .requirement-context-line {
+  .requirement-header-main > .requirement-code {
     display: none;
   }
 

@@ -156,8 +156,14 @@ export default function Page() {
             }
             developmentTaskStatuses={state.developmentTaskStatuses}
             onBack={() => dispatch({ type: "navigate", view: "project-detail" })}
+            onOpenContext={() =>
+              dispatch({ type: "open-preview", preview: "sources" })
+            }
             onOpenPreview={(preview) =>
               dispatch({ type: "open-preview", preview })
+            }
+            onOpenSettings={() =>
+              dispatch({ type: "open-preview", preview: "project-settings" })
             }
             onSelectAgent={(agentId) =>
               dispatch({ type: "select-agent", agentId })
@@ -176,22 +182,14 @@ export default function Page() {
                 draft,
               })
             }
-            onSetStage={(stage) =>
-              dispatch({
-                type: "set-requirement-stage",
-                requirementId: selectedRequirement.id,
-                stage,
-                reason: "由需求工作区直接调整",
-              })
-            }
             onSetDevelopmentTaskStatus={(taskId, status) =>
               dispatch({ type: "set-development-task-status", taskId, status })
             }
             project={selectedProject}
             projects={projects}
             requirement={selectedRequirement}
+            selectedContextCount={state.selectedContextIds.length}
             selectedProjectId={state.selectedProjectId}
-            stageRisk={state.stageRisks[selectedRequirement.id]}
           />
         )}
 
