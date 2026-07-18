@@ -32,6 +32,8 @@ export interface ClientState {
   selectedAssetId: string | null;
   preview: PreviewKind | null;
   selectedTaskId: string;
+  taskAgentIdsById: Record<string, string>;
+  taskInvocationAgentIdsById: Partial<Record<string, string>>;
   taskExecutionsById: Record<string, ExecutionState>;
   taskMessagesById: Record<string, Message[]>;
   requirementExecutions: Record<string, ExecutionState>;
@@ -113,6 +115,10 @@ export const initialClientState: ClientState = {
   selectedAssetId: null,
   preview: null,
   selectedTaskId: "prd-role",
+  taskAgentIdsById: Object.fromEntries(
+    recentTasks.map((task) => [task.id, task.agentId]),
+  ),
+  taskInvocationAgentIdsById: {},
   taskExecutionsById: Object.fromEntries(
     recentTasks.map((task) => [task.id, "idle"]),
   ),
@@ -209,6 +215,13 @@ export function clientReducer(
       return {
         ...state,
         selectedAgentId: action.agentId,
+        taskAgentIdsById:
+          state.view === "task"
+            ? {
+                ...state.taskAgentIdsById,
+                [state.selectedTaskId]: action.agentId,
+              }
+            : state.taskAgentIdsById,
         lastAgentByRequirement:
           state.view === "requirement-detail" && state.selectedRequirementId
           ? {
@@ -234,7 +247,7 @@ export function clientReducer(
         selectedTaskId: task.id,
         selectedProjectId: task.projectId ?? null,
         selectedRequirementId: requirement?.id ?? null,
-        selectedAgentId: task.agentId,
+        selectedAgentId: state.taskAgentIdsById[task.id] ?? task.agentId,
       };
     }
     case "select-project":
@@ -453,6 +466,10 @@ export function clientReducer(
           ...state.taskExecutionsById,
           [state.selectedTaskId]: "reading",
         },
+        taskInvocationAgentIdsById: {
+          ...state.taskInvocationAgentIdsById,
+          [state.selectedTaskId]: state.selectedAgentId,
+        },
         taskMessagesById: {
           ...state.taskMessagesById,
           [state.selectedTaskId]: [
@@ -482,6 +499,10 @@ export function clientReducer(
         };
       }
       const messages = state.taskMessagesById[action.taskId] ?? [];
+      const invocationAgentId =
+        state.taskInvocationAgentIdsById[action.taskId] ??
+        state.taskAgentIdsById[action.taskId] ??
+        task.agentId;
       return {
         ...state,
         taskExecutionsById: {
@@ -495,7 +516,7 @@ export function clientReducer(
             {
               id: `${action.taskId}-agent-${messages.length}`,
               role: "agent",
-              agentId: task.agentId,
+              agentId: invocationAgentId,
               text: `${task.title} 已完成。本轮结果已保留在这条任务会话中，可继续调整。`,
             },
           ],

@@ -66,6 +66,75 @@ describe("clientReducer", () => {
     }
   });
 
+  it("persists the selected Agent independently for each task", () => {
+    const permissionTask = clientReducer(initialClientState, {
+      type: "open-task",
+      taskId: "permission-ui",
+    });
+    const reviewed = clientReducer(permissionTask, {
+      type: "select-agent",
+      agentId: "code-review",
+    });
+    const q3 = clientReducer(reviewed, {
+      type: "open-task",
+      taskId: "q3-report",
+    });
+    const reopened = clientReducer(q3, {
+      type: "open-task",
+      taskId: "permission-ui",
+    });
+
+    expect(reopened.selectedAgentId).toBe("code-review");
+    expect(reopened.taskAgentIdsById["permission-ui"]).toBe("code-review");
+    expect(reopened.taskAgentIdsById["q3-report"]).toBe("data-analysis");
+  });
+
+  it("attributes completion to the invocation Agent despite a mid-flight switch", () => {
+    const permissionTask = clientReducer(initialClientState, {
+      type: "open-task",
+      taskId: "permission-ui",
+    });
+    const reviewed = clientReducer(permissionTask, {
+      type: "select-agent",
+      agentId: "code-review",
+    });
+    const sent = clientReducer(reviewed, {
+      type: "send-message",
+      text: "复核权限配置实现",
+    });
+    const switched = clientReducer(sent, {
+      type: "select-agent",
+      agentId: "frontend-dev",
+    });
+    const failed = clientReducer(switched, {
+      type: "fail-execution",
+      taskId: "permission-ui",
+    });
+    const analyzing = clientReducer(switched, {
+      type: "advance-execution",
+      taskId: "permission-ui",
+    });
+    const generating = clientReducer(analyzing, {
+      type: "advance-execution",
+      taskId: "permission-ui",
+    });
+    const done = clientReducer(generating, {
+      type: "advance-execution",
+      taskId: "permission-ui",
+    });
+
+    expect(sent.taskInvocationAgentIdsById["permission-ui"]).toBe(
+      "code-review",
+    );
+    expect(failed.taskInvocationAgentIdsById["permission-ui"]).toBe(
+      "code-review",
+    );
+    expect(done.taskAgentIdsById["permission-ui"]).toBe("frontend-dev");
+    expect(done.taskMessagesById["permission-ui"].at(-1)?.agentId).toBe(
+      "code-review",
+    );
+  });
+
   it("keeps messages and execution scoped to the selected recent task", () => {
     const selected = clientReducer(initialClientState, {
       type: "open-task",

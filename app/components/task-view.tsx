@@ -24,6 +24,7 @@ export interface TaskViewProps {
   messages: Message[];
   execution: ExecutionState;
   agent: Agent;
+  executionAgent: Agent;
   project: Project | null;
   agents: Agent[];
   projects: Project[];
@@ -47,6 +48,7 @@ export function TaskView({
   messages,
   execution,
   agent,
+  executionAgent,
   project,
   agents,
   projects,
@@ -134,9 +136,9 @@ export function TaskView({
 
           {!["idle", "done", "error"].includes(execution) && (
             <article className="message-turn agent">
-              <span className="message-avatar agent">{agent.shortName}</span>
+              <span className="message-avatar agent">{executionAgent.shortName}</span>
               <div className="message-content">
-                <span className="message-agent-name">✦ {agent.name}</span>
+                <span className="message-agent-name">✦ {executionAgent.name}</span>
                 <div className="execution-card">
                   <div className="execution-heading">
                     <span><Clock3 size={15} /> 正在执行</span>
@@ -167,7 +169,7 @@ export function TaskView({
           {execution === "error" && (
             <article className="error-card">
               <strong>执行失败</strong>
-              <p>当前 Agent 暂时无法完成请求，请重试或更换 Agent。</p>
+              <p>{executionAgent.name} 暂时无法完成请求，请重试或更换 Agent。</p>
               <div><button type="button"><RotateCcw size={14} /> 重试</button><button type="button">更换 Agent</button></div>
             </article>
           )}

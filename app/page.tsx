@@ -57,6 +57,12 @@ export default function Page() {
   const selectedTask =
     recentTasks.find((task) => task.id === state.selectedTaskId) ??
     recentTasks[0];
+  const taskExecutionAgentId =
+    state.taskInvocationAgentIdsById[selectedTask.id] ??
+    state.taskAgentIdsById[selectedTask.id] ??
+    selectedTask.agentId;
+  const taskExecutionAgent =
+    agents.find((agent) => agent.id === taskExecutionAgentId) ?? selectedAgent;
   const selectedProject = useMemo(
     () =>
       projects.find((project) => project.id === state.selectedProjectId) ??
@@ -300,6 +306,7 @@ export default function Page() {
             execution={selectedTaskExecution}
             task={selectedTask}
             agent={selectedAgent}
+            executionAgent={taskExecutionAgent}
             project={selectedProject}
             agents={agents}
             projects={projects}

@@ -204,6 +204,28 @@ describe("enterprise AI client demo", () => {
     }
   });
 
+  test("restores a task-specific Agent after switching tasks", async () => {
+    render(<Page />);
+    await userEvent.click(
+      screen.getByRole("button", { name: "实现权限配置页面昨天" }),
+    );
+    await userEvent.selectOptions(
+      screen.getByLabelText("选择 Agent"),
+      "code-review",
+    );
+    expect(screen.getByLabelText("选择 Agent")).toHaveValue("code-review");
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Q3 经营分析报告7 月 12 日" }),
+    );
+    expect(screen.getByLabelText("选择 Agent")).toHaveValue("data-analysis");
+    await userEvent.click(
+      screen.getByRole("button", { name: "实现权限配置页面昨天" }),
+    );
+
+    expect(screen.getByLabelText("选择 Agent")).toHaveValue("code-review");
+  });
+
   test("opens login-failure work with its own project, Agent, and conversation", async () => {
     render(<Page />);
 
