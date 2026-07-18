@@ -38,6 +38,8 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   prototype: "页面预览",
   pdf: "PDF 预览",
   members: "成员管理",
+  sources: "自动上下文",
+  "project-settings": "项目设置",
   asset: "资产详情",
   diff: "代码差异",
   test: "测试报告",
@@ -87,11 +89,19 @@ export function PreviewDrawer({
             {preview === "prd" && <PrdPreview />}
             {preview === "diff" && <DiffPreview />}
             {preview === "context" && <ContextPreview />}
+            {preview === "sources" && <ContextPreview />}
             {preview === "log" && <LogPreview />}
             {preview === "test" && <TestPreview />}
             {preview === "prototype" && <PrototypePreview />}
             {preview === "pdf" && <PdfPreview />}
             {preview === "members" && (
+              <MemberManager
+                members={members}
+                onChangeRole={onChangeMemberRole}
+                roles={memberRoles}
+              />
+            )}
+            {preview === "project-settings" && (
               <MemberManager
                 members={members}
                 onChangeRole={onChangeMemberRole}

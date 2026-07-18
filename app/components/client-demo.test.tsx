@@ -67,6 +67,28 @@ describe("enterprise AI client demo", () => {
     expect(screen.queryByRole("combobox", { name: "切换 角色与成员权限重构 状态" })).not.toBeInTheDocument();
   });
 
+  test("keeps project role editing reachable from project settings", async () => {
+    render(<Page />);
+    await openCustomerPortal();
+    await userEvent.click(screen.getByRole("button", { name: "项目设置" }));
+
+    expect(screen.getByRole("complementary", { name: "项目设置" })).toBeInTheDocument();
+    await userEvent.selectOptions(
+      screen.getByLabelText("修改林川的项目角色"),
+      "testing",
+    );
+    expect(screen.getByLabelText("修改林川的项目角色")).toHaveValue("testing");
+  });
+
+  test("opens a non-empty interim automatic context summary", async () => {
+    render(<Page />);
+    await openCustomerPortal();
+    await userEvent.click(screen.getByRole("button", { name: "查看自动上下文来源" }));
+
+    expect(screen.getByRole("complementary", { name: "自动上下文" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "本次引用 4 项上下文" })).toBeInTheDocument();
+  });
+
   test("continues the latest Agent conversation from the project", async () => {
     render(<Page />);
     await openCustomerPortal();
