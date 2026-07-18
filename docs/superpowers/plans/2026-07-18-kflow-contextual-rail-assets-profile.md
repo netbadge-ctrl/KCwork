@@ -310,4 +310,3 @@ Expected: exit 0 with no output.
 git add app/components/profile-view.tsx app/lib/types.ts app/components/sidebar.tsx app/page.tsx app/components/client-demo.test.tsx app/globals.css README.md
 git commit -m "feat: add personal Agent preferences workspace"
 ```
-
