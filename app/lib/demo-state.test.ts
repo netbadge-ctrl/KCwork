@@ -131,4 +131,23 @@ describe("clientReducer", () => {
 
     expect(next.selectedAgentId).toBe("prd-writer");
   });
+
+  it("remembers an Agent selected in a requirement workspace", () => {
+    const opened = clientReducer(initialClientState, {
+      type: "select-requirement",
+      requirementId: "role-permissions",
+    });
+    const selected = clientReducer(opened, {
+      type: "select-agent",
+      agentId: "prototype",
+    });
+    const navigated = clientReducer(selected, { type: "navigate", view: "task" });
+    const reopened = clientReducer(navigated, {
+      type: "select-requirement",
+      requirementId: "role-permissions",
+    });
+
+    expect(selected.lastAgentByRequirement["role-permissions"]).toBe("prototype");
+    expect(reopened.selectedAgentId).toBe("prototype");
+  });
 });

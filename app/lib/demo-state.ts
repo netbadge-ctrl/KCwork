@@ -136,7 +136,16 @@ export function clientReducer(
           action.mode === "office" ? "meeting-notes" : "prd-writer",
       };
     case "select-agent":
-      return { ...state, selectedAgentId: action.agentId };
+      return {
+        ...state,
+        selectedAgentId: action.agentId,
+        lastAgentByRequirement: state.selectedRequirementId
+          ? {
+              ...state.lastAgentByRequirement,
+              [state.selectedRequirementId]: action.agentId,
+            }
+          : state.lastAgentByRequirement,
+      };
     case "select-project":
       return { ...state, selectedProjectId: action.projectId };
     case "select-requirement":
