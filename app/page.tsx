@@ -221,6 +221,11 @@ export default function Page() {
       </section>
 
       <PreviewDrawer
+        currentRequirementStage={
+          selectedRequirement
+            ? state.requirementStages[selectedRequirement.id] ?? selectedRequirement.stage
+            : null
+        }
         lockedContextIds={state.lockedContextIds.filter((id) =>
           activeContextSourceIds.includes(id),
         )}
@@ -231,6 +236,14 @@ export default function Page() {
         onChangeMemberRole={(memberId, role) =>
           dispatch({ type: "set-member-role", memberId, role })
         }
+        onSetRequirementStage={(requirementId, stage) =>
+          dispatch({
+            type: "set-requirement-stage",
+            requirementId,
+            stage,
+            reason: "从项目设置调整",
+          })
+        }
         onToggleContextLock={(sourceId) =>
           dispatch({ type: "toggle-context-lock", sourceId })
         }
@@ -238,6 +251,7 @@ export default function Page() {
           dispatch({ type: "toggle-context-source", sourceId })
         }
         preview={state.preview}
+        selectedRequirement={selectedRequirement}
         selectedContextIds={state.selectedContextIds.filter((id) =>
           activeContextSourceIds.includes(id),
         )}

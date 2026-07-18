@@ -2345,6 +2345,43 @@ select:focus-visible {
   gap: 18px;
 }
 
+.requirement-governance-settings {
+  border-top: 1px solid #e7e3ef;
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+  padding-top: 22px;
+}
+
+.requirement-governance-settings h3,
+.requirement-governance-settings p {
+  margin: 0;
+}
+
+.requirement-governance-settings label {
+  color: #66616f;
+  display: grid;
+  font-size: 12px;
+  gap: 6px;
+}
+
+.requirement-governance-settings select {
+  background: #fff;
+  border: 1px solid #ded9e8;
+  border-radius: 8px;
+  color: #423d49;
+  min-height: 36px;
+  padding: 0 9px;
+}
+
+.requirement-gate-summary {
+  background: #f8f6ff;
+  border-radius: 8px;
+  color: #635f6b;
+  font-size: 12px;
+  padding: 9px 10px;
+}
+
 .member-manager-summary {
   align-items: center;
   background: #f8f6ff;

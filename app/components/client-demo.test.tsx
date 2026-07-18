@@ -178,6 +178,12 @@ describe("enterprise AI client demo", () => {
     );
 
     expect(screen.getByRole("complementary", { name: "项目设置" })).toBeInTheDocument();
+    await userEvent.selectOptions(
+      screen.getByLabelText("设置角色与成员权限重构状态"),
+      "testing",
+    );
+    expect(screen.getByLabelText("设置角色与成员权限重构状态")).toHaveValue("testing");
+    expect(screen.getByText(/产品方案已确认/)).toBeInTheDocument();
   });
 
   test("previews the prototype from the prototype Agent", async () => {

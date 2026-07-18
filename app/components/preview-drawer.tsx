@@ -15,16 +15,21 @@ import type {
   PreviewKind,
   ProjectMember,
   ProjectRole,
+  Requirement,
+  RequirementStage,
 } from "../lib/types";
 import { ContextSourcesPanel } from "./context-sources-panel";
 import { MemberManager } from "./member-manager";
 import { PreviewErrorState, type PreviewErrorKind } from "./preview-error-state";
+import { stageLabels } from "./requirement-list";
 
 export interface PreviewDrawerProps {
   preview: PreviewKind | null;
   members: ProjectMember[];
   memberRoles: Record<string, ProjectRole>;
   sources: ContextSource[];
+  selectedRequirement: Requirement | null;
+  currentRequirementStage: RequirementStage | null;
   selectedContextIds: string[];
   lockedContextIds: string[];
   selectedAssetId: string | null;
@@ -33,6 +38,7 @@ export interface PreviewDrawerProps {
   onToggleContextSource(sourceId: string): void;
   onToggleContextLock(sourceId: string): void;
   onChangeMemberRole(memberId: string, role: ProjectRole): void;
+  onSetRequirementStage(requirementId: string, stage: RequirementStage): void;
   onClose(): void;
   onRetryPreview?(): void;
 }
@@ -61,6 +67,8 @@ export function PreviewDrawer({
   members,
   memberRoles,
   sources,
+  selectedRequirement,
+  currentRequirementStage,
   selectedContextIds,
   lockedContextIds,
   selectedAssetId,
@@ -69,6 +77,7 @@ export function PreviewDrawer({
   onToggleContextSource,
   onToggleContextLock,
   onChangeMemberRole,
+  onSetRequirementStage,
   onClose,
   onRetryPreview,
 }: PreviewDrawerProps) {
@@ -126,11 +135,42 @@ export function PreviewDrawer({
               />
             )}
             {preview === "project-settings" && (
-              <MemberManager
-                members={members}
-                onChangeRole={onChangeMemberRole}
-                roles={memberRoles}
-              />
+              <>
+                <MemberManager
+                  members={members}
+                  onChangeRole={onChangeMemberRole}
+                  roles={memberRoles}
+                />
+                {selectedRequirement && currentRequirementStage && (
+                  <section className="requirement-governance-settings">
+                    <div>
+                      <p className="eyebrow">需求治理</p>
+                      <h3>需求状态与门禁</h3>
+                    </div>
+                    <p><strong>{selectedRequirement.title}</strong></p>
+                    <label>
+                      当前状态
+                      <select
+                        aria-label={`设置${selectedRequirement.title}状态`}
+                        onChange={(event) =>
+                          onSetRequirementStage(
+                            selectedRequirement.id,
+                            event.target.value as RequirementStage,
+                          )
+                        }
+                        value={currentRequirementStage}
+                      >
+                        {Object.entries(stageLabels).map(([value, label]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <p className="requirement-gate-summary">
+                      当前门禁：{selectedRequirement.gateLabel}（{selectedRequirement.gateStatus}）
+                    </p>
+                  </section>
+                )}
+              </>
             )}
             {preview === "asset" && <AssetDetail assetId={selectedAssetId} />}
               </>
