@@ -1225,6 +1225,46 @@ select:focus-visible {
   font-size: 10px;
 }
 
+.asset-toggle {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.asset-toggle.active {
+  border-color: #c9b8ff;
+  background: #f1edff;
+  color: #6247c7;
+}
+
+.asset-detail-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.asset-detail-line span,
+.asset-capabilities span {
+  border-radius: 999px;
+  background: #f3f1f8;
+  color: #645d74;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.asset-detail-line small { color: var(--muted); }
+
+.asset-capabilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 13px;
+}
+
 .task-view {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;

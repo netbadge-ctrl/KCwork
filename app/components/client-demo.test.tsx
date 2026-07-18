@@ -610,9 +610,30 @@ describe("enterprise AI client demo", () => {
   test("shows all governed smart asset categories", async () => {
     render(<Page />);
     await userEvent.click(screen.getByRole("button", { name: "智能资产" }));
-    for (const label of ["Agent", "知识库", "记忆库", "代码库", "工具"]) {
+    for (const label of [
+      "Agent",
+      "Skill",
+      "插件",
+      "知识库",
+      "记忆库",
+      "代码库",
+      "工具连接",
+    ]) {
       expect(screen.getByRole("tab", { name: label })).toBeInTheDocument();
     }
+  });
+
+  test("shows reusable Skills and connected plugins as Agent assets", async () => {
+    render(<Page />);
+    await userEvent.click(screen.getByRole("button", { name: "智能资产" }));
+
+    await userEvent.click(screen.getByRole("tab", { name: "Skill" }));
+    expect(screen.getByRole("heading", { name: "PRD 专业写作" })).toBeInTheDocument();
+    expect(screen.getByText("团队 Skill")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("tab", { name: "插件" }));
+    expect(screen.getByRole("heading", { name: "GitHub" })).toBeInTheDocument();
+    expect(screen.getByText("代码、Pull Request 与 Issue")).toBeInTheDocument();
   });
 
   test("sends a task with the selected Agent", async () => {

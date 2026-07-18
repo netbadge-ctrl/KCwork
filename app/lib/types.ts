@@ -9,6 +9,8 @@ export type ViewId =
   | "task";
 export type AssetKind =
   | "agent"
+  | "skill"
+  | "plugin"
   | "knowledge"
   | "memory"
   | "repository"
@@ -113,6 +115,10 @@ export interface AssetItem {
   description: string;
   status: string;
   meta: string;
+  scope?: "个人 Skill" | "团队 Skill" | "系统 Skill";
+  trigger?: string;
+  capabilities?: string[];
+  enabled?: boolean;
 }
 
 export interface Message {

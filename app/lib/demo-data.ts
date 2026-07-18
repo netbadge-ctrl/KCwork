@@ -142,6 +142,12 @@ export const recentTaskMessages: Record<string, Message[]> = {
 };
 
 export const assetGroups: AssetItem[] = [
+  { id: "prd-writing", kind: "skill", name: "PRD 专业写作", description: "基于原型、需求上下文和组织规范生成可评审 PRD", status: "已启用", meta: "产品设计 Agent", scope: "团队 Skill", trigger: "撰写或修改产品文档", enabled: true },
+  { id: "spec-development", kind: "skill", name: "Spec 开发", description: "将需求转成可确认的规格、任务和验收依据", status: "已启用", meta: "系统开发 Agent", scope: "系统 Skill", trigger: "进入研发实现前", enabled: true },
+  { id: "meeting-summary", kind: "skill", name: "会议结论提炼", description: "从会议材料中提取决策、待办和风险", status: "已启用", meta: "日常办公 Agent", scope: "个人 Skill", trigger: "上传会议录音或纪要", enabled: true },
+  { id: "github-plugin", kind: "plugin", name: "GitHub", description: "代码、Pull Request 与 Issue", status: "已连接", meta: "3 个代码库", capabilities: ["读取代码", "比较 Diff", "创建 PR"], enabled: true },
+  { id: "figma-plugin", kind: "plugin", name: "Figma", description: "设计稿、组件与页面原型", status: "已连接", meta: "产品中心", capabilities: ["读取页面", "引用组件", "生成预览"], enabled: true },
+  { id: "test-plugin", kind: "plugin", name: "企业测试平台", description: "测试用例、执行结果与缺陷", status: "未启用", meta: "质量保障", capabilities: ["读取用例", "同步报告", "创建缺陷"], enabled: false },
   { id: "product-kb", kind: "knowledge", name: "产品规范知识库", description: "PRD、交互和验收规范", status: "已同步", meta: "286 篇文档" },
   { id: "engineering-kb", kind: "knowledge", name: "研发规范知识库", description: "架构、编码、安全与发布规范", status: "已同步", meta: "194 篇文档" },
   { id: "project-memory", kind: "memory", name: "项目决策记忆", description: "人工确认的范围与技术决策", status: "可用", meta: "23 条记忆" },
