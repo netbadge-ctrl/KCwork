@@ -65,7 +65,11 @@ export function TaskView({
               <span style={{ background: project.color }} /> {project.name}
             </span>
           )}
-          <button className="context-count" type="button">
+          <button
+            className="context-count"
+            onClick={() => onOpenPreview("sources")}
+            type="button"
+          >
             {project?.contextCount ?? 0} 项上下文
           </button>
           <button aria-label="更多任务操作" className="icon-button" type="button">

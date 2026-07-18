@@ -45,6 +45,15 @@ describe("enterprise AI client demo", () => {
     ).not.toBeInTheDocument();
   });
 
+  test("opens adjustable automatic context from the task context count", async () => {
+    render(<Page />);
+
+    await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
+
+    expect(screen.getByRole("complementary", { name: "自动上下文" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "本次自动引用 6 项上下文" })).toBeInTheDocument();
+  });
+
   test("opens the Agent-first project launcher without a fixed workflow", async () => {
     render(<Page />);
     await userEvent.click(screen.getByRole("button", { name: "项目" }));
