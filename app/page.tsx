@@ -49,6 +49,14 @@ export default function Page() {
       ) ?? null,
     [state.selectedRequirementId],
   );
+  const activeContextSources = useMemo(
+    () =>
+      contextSources.filter(
+        (source) => source.projectId === state.selectedProjectId,
+      ),
+    [state.selectedProjectId],
+  );
+  const activeContextSourceIds = activeContextSources.map((source) => source.id);
 
   const openProject = (projectId: string) => {
     dispatch({ type: "select-project", projectId });
@@ -215,6 +223,9 @@ export default function Page() {
       </section>
 
       <PreviewDrawer
+        lockedContextIds={state.lockedContextIds.filter((id) =>
+          activeContextSourceIds.includes(id),
+        )}
         memberRoles={state.memberRoles}
         members={projectMembers.filter(
           (member) => member.projectId === state.selectedProjectId,
@@ -222,10 +233,20 @@ export default function Page() {
         onChangeMemberRole={(memberId, role) =>
           dispatch({ type: "set-member-role", memberId, role })
         }
+        onToggleContextLock={(sourceId) =>
+          dispatch({ type: "toggle-context-lock", sourceId })
+        }
+        onToggleContextSource={(sourceId) =>
+          dispatch({ type: "toggle-context-source", sourceId })
+        }
         preview={state.preview}
+        selectedContextIds={state.selectedContextIds.filter((id) =>
+          activeContextSourceIds.includes(id),
+        )}
         selectedAssetId={state.selectedAssetId}
         onSelect={(preview) => dispatch({ type: "open-preview", preview })}
         onClose={() => dispatch({ type: "close-preview" })}
+        sources={activeContextSources}
       />
     </main>
   );

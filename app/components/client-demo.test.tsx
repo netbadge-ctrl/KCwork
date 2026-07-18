@@ -80,13 +80,17 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByLabelText("修改林川的项目角色")).toHaveValue("testing");
   });
 
-  test("opens a non-empty interim automatic context summary", async () => {
+  test("shows and adjusts Agent-selected context", async () => {
     render(<Page />);
     await openCustomerPortal();
     await userEvent.click(screen.getByRole("button", { name: "查看自动上下文来源" }));
 
     expect(screen.getByRole("complementary", { name: "自动上下文" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "本次引用 4 项上下文" })).toBeInTheDocument();
+    expect(screen.getByText("本次自动引用 6 项上下文")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("checkbox", { name: "引用角色权限访谈纪要" }));
+    expect(screen.getByText("本次自动引用 5 项上下文")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "锁定项目决策记忆" }));
+    expect(screen.getByRole("button", { name: "解除锁定项目决策记忆" })).toBeInTheDocument();
   });
 
   test("continues the latest Agent conversation from the project", async () => {

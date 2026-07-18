@@ -1733,6 +1733,126 @@ select:focus-visible {
   color: var(--success);
 }
 
+.context-sources-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.context-sources-summary,
+.context-source-group {
+  padding: 13px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.context-sources-summary .eyebrow {
+  margin-bottom: 5px;
+}
+
+.context-sources-summary h3,
+.context-source-group h4 {
+  margin: 0;
+}
+
+.context-sources-summary h3 {
+  font-size: 13px;
+}
+
+.context-sources-summary > p:last-child {
+  margin: 7px 0 0;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.context-source-group {
+  padding: 0 13px;
+}
+
+.context-source-group h4 {
+  padding: 10px 0 7px;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.context-source-record {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.context-source-selection {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.context-source-selection input {
+  margin: 2px 0 0;
+  accent-color: var(--accent);
+}
+
+.context-source-selection input:disabled {
+  cursor: not-allowed;
+}
+
+.context-source-selection span {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.context-source-selection strong {
+  font-size: 10px;
+}
+
+.context-source-selection small {
+  color: var(--text-secondary);
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.context-source-actions {
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+  flex: 0 0 auto;
+}
+
+.context-source-status {
+  color: var(--success);
+  font-size: 8px;
+}
+
+.context-source-status.syncing {
+  color: var(--warning);
+}
+
+.context-source-status.unavailable {
+  color: var(--text-muted);
+}
+
+.context-lock {
+  padding: 3px 6px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 8px;
+}
+
+.context-lock.is-locked {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: transparent;
+}
+
 .log-preview p {
   margin: 0;
   padding: 7px 0;

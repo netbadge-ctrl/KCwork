@@ -50,6 +50,8 @@ export type ContextSourceKind =
   | "repository"
   | "test";
 
+export type ContextSourceStatus = "available" | "syncing" | "unavailable";
+
 export interface AgentWorkSession {
   id: string;
   projectId: string;
@@ -68,7 +70,7 @@ export interface ContextSource {
   kind: ContextSourceKind;
   name: string;
   detail: string;
-  status: "available" | "syncing" | "unavailable";
+  status: ContextSourceStatus;
   autoSelected: boolean;
 }
 

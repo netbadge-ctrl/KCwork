@@ -10,7 +10,13 @@ import {
   X,
 } from "lucide-react";
 import { useEffect } from "react";
-import type { PreviewKind, ProjectMember, ProjectRole } from "../lib/types";
+import type {
+  ContextSource,
+  PreviewKind,
+  ProjectMember,
+  ProjectRole,
+} from "../lib/types";
+import { ContextSourcesPanel } from "./context-sources-panel";
 import { MemberManager } from "./member-manager";
 import { PreviewErrorState, type PreviewErrorKind } from "./preview-error-state";
 
@@ -18,9 +24,14 @@ export interface PreviewDrawerProps {
   preview: PreviewKind | null;
   members: ProjectMember[];
   memberRoles: Record<string, ProjectRole>;
+  sources: ContextSource[];
+  selectedContextIds: string[];
+  lockedContextIds: string[];
   selectedAssetId: string | null;
   previewError?: PreviewErrorKind | null;
   onSelect(kind: PreviewKind): void;
+  onToggleContextSource(sourceId: string): void;
+  onToggleContextLock(sourceId: string): void;
   onChangeMemberRole(memberId: string, role: ProjectRole): void;
   onClose(): void;
   onRetryPreview?(): void;
@@ -49,9 +60,14 @@ export function PreviewDrawer({
   preview,
   members,
   memberRoles,
+  sources,
+  selectedContextIds,
+  lockedContextIds,
   selectedAssetId,
   previewError,
   onSelect,
+  onToggleContextSource,
+  onToggleContextLock,
   onChangeMemberRole,
   onClose,
   onRetryPreview,
@@ -89,7 +105,15 @@ export function PreviewDrawer({
             {preview === "prd" && <PrdPreview />}
             {preview === "diff" && <DiffPreview />}
             {preview === "context" && <ContextPreview />}
-            {preview === "sources" && <ContextPreview />}
+            {preview === "sources" && (
+              <ContextSourcesPanel
+                lockedIds={lockedContextIds}
+                onToggle={onToggleContextSource}
+                onToggleLock={onToggleContextLock}
+                selectedIds={selectedContextIds}
+                sources={sources}
+              />
+            )}
             {preview === "log" && <LogPreview />}
             {preview === "test" && <TestPreview />}
             {preview === "prototype" && <PrototypePreview />}
