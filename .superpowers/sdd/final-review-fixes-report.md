@@ -181,3 +181,28 @@ Atomic task implementation commit: `6d66faf289b6fec4ecf361ac3702bd116b3d4f79`
 - `npm run build` — exit 0; `Build complete`.
 - `git diff --check` — exit 0, no output.
 - `git diff --check ec0c39bee7b43343271d39376fce4acdec653ad0..HEAD` — exit 0, no output.
+
+## Task Agent invocation consistency follow-up
+
+Task Agent implementation commit: `5cd8ea1894bd9a6799c695d8590976b49ffa723c`
+
+### Findings closed
+
+- Each task now stores its current selected Agent independently. `open-task` restores that task's current Agent, using the deterministic fixture Agent only until the user changes it.
+- Selecting an Agent inside TaskView updates both the global active Agent and that task's Agent record without changing requirement-workspace Agent memory semantics.
+- Sending captures the invocation Agent for the task. Live execution, failure attribution, and the eventual completion message use that captured Agent even if the user changes Agent during execution.
+- Agent switching remains unrestricted: a mid-flight switch becomes the active Agent for future work, while the in-flight response remains attributed to the invocation Agent.
+
+### Task Agent TDD evidence
+
+- Reducer RED: `npm test -- app/lib/demo-state.test.ts` — 24 tests run; 2 expected failures and 22 passes, covering per-task Agent restoration and captured invocation attribution.
+- Component RED: `npm test -- app/components/client-demo.test.tsx` — 42 tests run; 1 expected task-Agent restoration failure and 41 passes.
+- Focused GREEN: `npm test -- app/lib/demo-state.test.ts app/components/client-demo.test.tsx` — 2 files passed, 66 tests passed.
+
+### Task Agent final verification
+
+- `npm test` — 4 files passed, 68 tests passed.
+- `npm run lint` — exit 0, no findings.
+- `npm run build` — exit 0; `Build complete`.
+- `git diff --check` — exit 0, no output.
+- `git diff --check ec0c39bee7b43343271d39376fce4acdec653ad0..HEAD` — exit 0, no output.
