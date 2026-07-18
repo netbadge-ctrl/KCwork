@@ -8,6 +8,7 @@ export interface ContextSourcesPanelProps {
   sources: ContextSource[];
   selectedIds: string[];
   lockedIds: string[];
+  canEdit: boolean;
   onToggle(sourceId: string): void;
   onToggleLock(sourceId: string): void;
 }
@@ -31,6 +32,7 @@ export function ContextSourcesPanel({
   sources,
   selectedIds,
   lockedIds,
+  canEdit,
   onToggle,
   onToggleLock,
 }: ContextSourcesPanelProps) {
@@ -64,7 +66,7 @@ export function ContextSourcesPanel({
                   <input
                     aria-label={`引用${source.name}`}
                     checked={isSelected}
-                    disabled={isUnavailable || isLocked}
+                    disabled={!canEdit || isUnavailable || isLocked}
                     onChange={() => onToggle(source.id)}
                     type="checkbox"
                   />
@@ -80,6 +82,7 @@ export function ContextSourcesPanel({
                   <button
                     aria-label={`${isLocked ? "解除锁定" : "锁定"}${source.name}`}
                     className={isLocked ? "context-lock is-locked" : "context-lock"}
+                    disabled={!canEdit || isUnavailable}
                     onClick={() => onToggleLock(source.id)}
                     type="button"
                   >

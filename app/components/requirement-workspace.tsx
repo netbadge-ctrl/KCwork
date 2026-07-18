@@ -84,10 +84,16 @@ export function RequirementWorkspace({
         <div className="requirement-toolbar">
           <span className="spec-version-chip">Spec {requirement.specVersion}</span>
           <span className="requirement-stage-label">{stageLabels[currentStage]}</span>
-          {currentRole === "viewer" && <span className="read-only-notice">当前角色仅可查看</span>}
+          {!canEdit && (
+            <span className="read-only-notice">
+              {currentRole === "viewer"
+                ? "当前角色仅可查看"
+                : "当前角色无此工作区编辑权限"}
+            </span>
+          )}
           <select
             aria-label="切换工作台 Agent"
-            disabled={!canEdit}
+            disabled={currentRole === "viewer"}
             onChange={(event) => onSelectAgent(event.target.value)}
             value={agent.id}
           >
@@ -166,7 +172,9 @@ export function RequirementWorkspace({
         <p className="composer-hint">
           {canEdit
             ? "当前 Agent 读写同一份需求 Spec，执行结果由你确认。"
-            : `${projectRoleLabels[currentRole]}角色仅可查看当前需求与产物。`}
+            : currentRole === "viewer"
+              ? `${projectRoleLabels[currentRole]}角色仅可查看当前需求与产物。`
+              : `${projectRoleLabels[currentRole]}角色无此工作区编辑权限。`}
         </p>
       </div>
     </div>

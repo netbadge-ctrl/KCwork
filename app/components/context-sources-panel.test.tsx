@@ -6,6 +6,7 @@ describe("ContextSourcesPanel", () => {
   test("keeps unavailable context readable but prevents selecting it", () => {
     render(
       <ContextSourcesPanel
+        canEdit
         lockedIds={[]}
         onToggle={vi.fn()}
         onToggleLock={vi.fn()}

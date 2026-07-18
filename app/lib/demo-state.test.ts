@@ -283,4 +283,25 @@ describe("clientReducer", () => {
       initialClientState.requirementMessages["role-permissions"],
     );
   });
+
+  it("rejects context mutations when the signed-in project member is a viewer", () => {
+    const viewer = clientReducer(initialClientState, {
+      type: "set-member-role",
+      memberId: "member-chen",
+      role: "viewer",
+    });
+    const toggled = clientReducer(viewer, {
+      type: "toggle-context-source",
+      requirementId: "role-permissions",
+      sourceId: "context-role-interview",
+    });
+    const locked = clientReducer(viewer, {
+      type: "toggle-context-lock",
+      requirementId: "role-permissions",
+      sourceId: "context-project-memory",
+    });
+
+    expect(toggled).toEqual(viewer);
+    expect(locked).toEqual(viewer);
+  });
 });

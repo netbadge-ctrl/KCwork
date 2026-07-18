@@ -64,7 +64,11 @@ export function ProjectDetailView({
         </div>
         <div className="project-meta-row">
           <span>更新于 {project.updatedAt}</span>
-          <span>Agent 协作上下文已就绪</span>
+          <span>
+            {contextSources.length > 0
+              ? "Agent 协作上下文已就绪"
+              : "项目上下文尚未连接"}
+          </span>
         </div>
       </header>
 

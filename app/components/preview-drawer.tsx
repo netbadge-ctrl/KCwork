@@ -127,11 +127,12 @@ export function PreviewDrawer({
               <PreviewErrorState kind={previewError} onRetry={onRetryPreview ?? (() => undefined)} />
             ) : (
               <>
-            {preview === "prd" && <PrdPreview canEdit={capabilities.canEditAgentWork} requirement={selectedRequirement} />}
-            {preview === "diff" && <DiffPreview canEdit={capabilities.canEditAgentWork} requirement={selectedRequirement} />}
+            {preview === "prd" && <PrdPreview canEdit={capabilities.canEditProductArtifacts} requirement={selectedRequirement} />}
+            {preview === "diff" && <DiffPreview canEdit={capabilities.canEditDevelopmentArtifacts} requirement={selectedRequirement} />}
             {preview === "context" && <ContextPreview selectedIds={selectedContextIds} sources={sources} />}
             {preview === "sources" && (
               <ContextSourcesPanel
+                canEdit={capabilities.canEditAgentWork}
                 lockedIds={lockedContextIds}
                 onToggle={onToggleContextSource}
                 onToggleLock={onToggleContextLock}
@@ -140,8 +141,8 @@ export function PreviewDrawer({
               />
             )}
             {preview === "log" && <LogPreview requirement={selectedRequirement} />}
-            {preview === "test" && <TestPreview canEdit={capabilities.canEditAgentWork} requirement={selectedRequirement} />}
-            {preview === "prototype" && <PrototypePreview canEdit={capabilities.canEditAgentWork} requirement={selectedRequirement} />}
+            {preview === "test" && <TestPreview canEdit={capabilities.canEditTestArtifacts} requirement={selectedRequirement} />}
+            {preview === "prototype" && <PrototypePreview canEdit={capabilities.canEditProductArtifacts} requirement={selectedRequirement} />}
             {preview === "pdf" && <PdfPreview requirement={selectedRequirement} />}
             {preview === "members" && (
               <MemberManager

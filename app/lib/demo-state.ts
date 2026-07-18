@@ -179,6 +179,19 @@ const nextExecution: Record<ExecutionState, ExecutionState> = {
   error: "reading",
 };
 
+function canEditRequirementContext(
+  state: ClientState,
+  requirementId: string,
+) {
+  const requirement = requirements.find((item) => item.id === requirementId);
+  const currentMember = projectMembers.find(
+    (member) =>
+      member.projectId === requirement?.projectId && member.name === "陈楠",
+  );
+  if (!currentMember) return false;
+  return (state.memberRoles[currentMember.id] ?? currentMember.role) !== "viewer";
+}
+
 export function clientReducer(
   state: ClientState,
   action: ClientAction,
@@ -261,6 +274,7 @@ export function clientReducer(
       };
     }
     case "toggle-context-source": {
+      if (!canEditRequirementContext(state, action.requirementId)) return state;
       const selectedIds =
         state.selectedContextIdsByRequirement[action.requirementId] ?? [];
       const lockedIds =
@@ -289,6 +303,7 @@ export function clientReducer(
       };
     }
     case "toggle-context-lock": {
+      if (!canEditRequirementContext(state, action.requirementId)) return state;
       const lockedIds =
         state.lockedContextIdsByRequirement[action.requirementId] ?? [];
       const selectedIds =

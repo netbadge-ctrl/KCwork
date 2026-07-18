@@ -22,8 +22,12 @@ import {
   requirements,
 } from "./lib/demo-data";
 import { clientReducer, initialClientState } from "./lib/demo-state";
-import { getProjectCapabilities } from "./lib/project-capabilities";
-import type { ViewId } from "./lib/types";
+import {
+  canEditAgentWorkspace,
+  getProjectCapabilities,
+  unscopedCapabilities,
+} from "./lib/project-capabilities";
+import type { ProjectSection, ViewId } from "./lib/types";
 
 interface PendingNavigation {
   destination: string;
@@ -82,7 +86,13 @@ export default function Page() {
   const currentRole = currentMember
     ? state.memberRoles[currentMember.id] ?? currentMember.role
     : "viewer";
-  const capabilities = getProjectCapabilities(currentRole);
+  const capabilities = selectedProject
+    ? getProjectCapabilities(currentRole)
+    : unscopedCapabilities;
+  const canEditSelectedWorkspace = canEditAgentWorkspace(
+    capabilities,
+    selectedAgent.id,
+  );
   const activeContextSources = useMemo(
     () =>
       contextSources.filter(
@@ -157,7 +167,7 @@ export default function Page() {
         {state.view === "home" && (
           <HomeView
             mode={state.mode}
-            canEdit={capabilities.canEditAgentWork}
+            canEdit={canEditSelectedWorkspace}
             currentRole={currentRole}
             agents={agents}
             projects={projects}
@@ -230,7 +240,7 @@ export default function Page() {
             currentStage={
               state.requirementStages[selectedRequirement.id] ?? selectedRequirement.stage
             }
-            canEdit={capabilities.canEditAgentWork}
+            canEdit={canEditSelectedWorkspace}
             currentRole={currentRole}
             documentDraft={selectedPrdDocument
               ? state.documentDrafts[selectedPrdDocument.id] ?? ""
@@ -292,7 +302,7 @@ export default function Page() {
             agents={agents}
             projects={projects}
             selectedProjectId={state.selectedProjectId}
-            canEdit={capabilities.canEditAgentWork}
+            canEdit={canEditSelectedWorkspace}
             currentRole={currentRole}
             onSelectAgent={(agentId) =>
               dispatch({ type: "select-agent", agentId })
@@ -328,8 +338,16 @@ export default function Page() {
           })
         }
         onOpenAsset={(section) => {
-          dispatch({ type: "close-preview" });
-          dispatch({ type: "select-project-section", section });
+          const destinations: Record<Exclude<ProjectSection, "overview">, string> = {
+            documents: "产品文档",
+            memory: "项目记忆",
+            repositories: "代码库",
+            tests: "测试资产",
+          };
+          requestNavigation(destinations[section], () => {
+            dispatch({ type: "close-preview" });
+            dispatch({ type: "select-project-section", section });
+          });
         }}
         onToggleContextLock={(sourceId) =>
           state.selectedRequirementId &&

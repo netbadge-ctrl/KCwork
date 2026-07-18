@@ -134,6 +134,9 @@ export type ProjectRole =
 
 export interface ProjectCapabilities {
   canEditAgentWork: boolean;
+  canEditProductArtifacts: boolean;
+  canEditDevelopmentArtifacts: boolean;
+  canEditTestArtifacts: boolean;
   canManageMembers: boolean;
   canManageRequirements: boolean;
   canManageAssets: boolean;
