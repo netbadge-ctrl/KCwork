@@ -22,7 +22,9 @@ export type PreviewKind =
   | "log"
   | "test"
   | "members"
-  | "asset";
+  | "asset"
+  | "sources"
+  | "project-settings";
 export type ExecutionState =
   | "idle"
   | "reading"
@@ -38,6 +40,36 @@ export interface Agent {
   mode: Mode | "both";
   description: string;
   category: string;
+}
+
+export type ContextSourceKind =
+  | "requirement"
+  | "document"
+  | "prototype"
+  | "memory"
+  | "repository"
+  | "test";
+
+export interface AgentWorkSession {
+  id: string;
+  projectId: string;
+  requirementId: string;
+  agentId: string;
+  title: string;
+  summary: string;
+  pendingAction: string;
+  updatedAt: string;
+}
+
+export interface ContextSource {
+  id: string;
+  projectId: string;
+  requirementId?: string;
+  kind: ContextSourceKind;
+  name: string;
+  detail: string;
+  status: "available" | "syncing" | "unavailable";
+  autoSelected: boolean;
 }
 
 export interface Project {

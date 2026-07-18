@@ -9,12 +9,21 @@ import type {
   RequirementStage,
   ViewId,
 } from "./types";
-import { developmentTasks, projectMembers, requirements } from "./demo-data";
+import {
+  agentWorkSessions,
+  contextSources,
+  developmentTasks,
+  projectMembers,
+  requirements,
+} from "./demo-data";
 
 export interface ClientState {
   view: ViewId;
   mode: Mode;
   selectedAgentId: string;
+  lastAgentByRequirement: Record<string, string>;
+  selectedContextIds: string[];
+  lockedContextIds: string[];
   selectedProjectId: string | null;
   selectedRequirementId: string | null;
   projectSection: ProjectSection;
@@ -35,6 +44,9 @@ export type ClientAction =
   | { type: "select-agent"; agentId: string }
   | { type: "select-project"; projectId: string | null }
   | { type: "select-requirement"; requirementId: string }
+  | { type: "resume-agent-work"; sessionId: string }
+  | { type: "toggle-context-source"; sourceId: string }
+  | { type: "toggle-context-lock"; sourceId: string }
   | {
       type: "set-requirement-stage";
       requirementId: string;
@@ -60,6 +72,13 @@ export const initialClientState: ClientState = {
   view: "task",
   mode: "research",
   selectedAgentId: "prd-writer",
+  lastAgentByRequirement: Object.fromEntries(
+    agentWorkSessions.map((session) => [session.requirementId, session.agentId]),
+  ),
+  selectedContextIds: contextSources
+    .filter((source) => source.autoSelected)
+    .map((source) => source.id),
+  lockedContextIds: ["context-role-spec"],
   selectedProjectId: "customer-portal",
   selectedRequirementId: null,
   projectSection: "overview",
@@ -125,7 +144,33 @@ export function clientReducer(
         ...state,
         view: "requirement-detail",
         selectedRequirementId: action.requirementId,
-        selectedAgentId: "requirement-analysis",
+        selectedAgentId:
+          state.lastAgentByRequirement[action.requirementId] ?? "requirement-analysis",
+      };
+    case "resume-agent-work": {
+      const session = agentWorkSessions.find((item) => item.id === action.sessionId);
+      if (!session) return state;
+      return {
+        ...state,
+        view: "requirement-detail",
+        selectedProjectId: session.projectId,
+        selectedRequirementId: session.requirementId,
+        selectedAgentId: session.agentId,
+      };
+    }
+    case "toggle-context-source":
+      return {
+        ...state,
+        selectedContextIds: state.selectedContextIds.includes(action.sourceId)
+          ? state.selectedContextIds.filter((id) => id !== action.sourceId)
+          : [...state.selectedContextIds, action.sourceId],
+      };
+    case "toggle-context-lock":
+      return {
+        ...state,
+        lockedContextIds: state.lockedContextIds.includes(action.sourceId)
+          ? state.lockedContextIds.filter((id) => id !== action.sourceId)
+          : [...state.lockedContextIds, action.sourceId],
       };
     case "set-requirement-stage":
       return {

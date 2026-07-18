@@ -57,7 +57,7 @@ describe("clientReducer", () => {
 
     expect(next.selectedRequirementId).toBe("role-permissions");
     expect(next.view).toBe("requirement-detail");
-    expect(next.selectedAgentId).toBe("requirement-analysis");
+    expect(next.selectedAgentId).toBe("prd-writer");
   });
 
   it("moves a requirement to any stage and records skipped-gate risk", () => {
@@ -96,5 +96,39 @@ describe("clientReducer", () => {
 
     expect(saved.developmentTaskStatuses["dev-role-panel"]).toBe("in-progress");
     expect(saved.documentDrafts["prd-role-permissions"]).toContain("二次确认");
+  });
+
+  it("restores the last Agent for a requirement", () => {
+    const next = clientReducer(initialClientState, {
+      type: "resume-agent-work",
+      sessionId: "session-role-prd",
+    });
+
+    expect(next.view).toBe("requirement-detail");
+    expect(next.selectedRequirementId).toBe("role-permissions");
+    expect(next.selectedAgentId).toBe("prd-writer");
+  });
+
+  it("lets a user adjust and lock automatically selected context", () => {
+    const removed = clientReducer(initialClientState, {
+      type: "toggle-context-source",
+      sourceId: "context-role-interview",
+    });
+    const locked = clientReducer(removed, {
+      type: "toggle-context-lock",
+      sourceId: "context-project-memory",
+    });
+
+    expect(removed.selectedContextIds).not.toContain("context-role-interview");
+    expect(locked.lockedContextIds).toContain("context-project-memory");
+  });
+
+  it("opens a requirement with its remembered Agent", () => {
+    const next = clientReducer(initialClientState, {
+      type: "select-requirement",
+      requirementId: "role-permissions",
+    });
+
+    expect(next.selectedAgentId).toBe("prd-writer");
   });
 });

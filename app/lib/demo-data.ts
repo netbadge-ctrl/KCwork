@@ -1,7 +1,9 @@
 import type {
   Agent,
+  AgentWorkSession,
   AssetItem,
   CodeChange,
+  ContextSource,
   DevelopmentTask,
   ProductDocument,
   Project,
@@ -26,6 +28,38 @@ export const agents: Agent[] = [
   { id: "data-analysis", name: "数据分析 Agent", shortName: "数", mode: "office", category: "办公", description: "分析表格并生成洞察" },
   { id: "presentation", name: "演示文稿 Agent", shortName: "演", mode: "office", category: "办公", description: "生成提纲、页面与讲稿" },
   { id: "email", name: "邮件助手 Agent", shortName: "邮", mode: "office", category: "办公", description: "撰写、总结和跟进企业邮件" },
+];
+
+export const agentWorkSessions: AgentWorkSession[] = [
+  {
+    id: "session-role-prd",
+    projectId: "customer-portal",
+    requirementId: "role-permissions",
+    agentId: "prd-writer",
+    title: "角色与成员权限重构",
+    summary: "已生成 PRD v1.4，并补充 4 条可测试验收标准",
+    pendingAction: "等待确认 PRD 修订",
+    updatedAt: "8 分钟前",
+  },
+  {
+    id: "session-sso-test",
+    projectId: "customer-portal",
+    requirementId: "sso-login",
+    agentId: "testing",
+    title: "企业 SSO 登录体验优化",
+    summary: "核心回归完成，发现 2 项失败用例",
+    pendingAction: "等待确认测试结论",
+    updatedAt: "昨天",
+  },
+];
+
+export const contextSources: ContextSource[] = [
+  { id: "context-role-spec", projectId: "customer-portal", requirementId: "role-permissions", kind: "requirement", name: "REQ-032 Spec v1.4", detail: "需求、规则与 12 条验收标准", status: "available", autoSelected: true },
+  { id: "context-role-interview", projectId: "customer-portal", requirementId: "role-permissions", kind: "document", name: "角色权限访谈纪要", detail: "2026-07-12 · 产品确认", status: "available", autoSelected: true },
+  { id: "context-role-prototype", projectId: "customer-portal", requirementId: "role-permissions", kind: "prototype", name: "角色配置原型 V3", detail: "12 个交互热点", status: "available", autoSelected: true },
+  { id: "context-project-memory", projectId: "customer-portal", kind: "memory", name: "项目决策记忆", detail: "权限范围与兼容性决策", status: "available", autoSelected: true },
+  { id: "context-portal-repo", projectId: "customer-portal", kind: "repository", name: "customer-portal", detail: "main · 8 分钟前同步", status: "available", autoSelected: true },
+  { id: "context-role-tests", projectId: "customer-portal", requirementId: "role-permissions", kind: "test", name: "角色管理测试资产", detail: "26 个用例 · 1 份报告", status: "available", autoSelected: true },
 ];
 
 export const projects: Project[] = [
