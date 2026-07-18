@@ -140,7 +140,11 @@ export function ProjectSettingsPanel({
               <div className="project-settings-asset" key={section}>
                 <span><Icon size={16} /></span>
                 <div><strong>{label}</strong><small>{description}</small></div>
-                <button onClick={() => onOpenAsset(section)} type="button">管理全部</button>
+                <button
+                  aria-label={`管理全部${label}`}
+                  onClick={() => onOpenAsset(section)}
+                  type="button"
+                >管理全部</button>
               </div>
             ))}
           </div>

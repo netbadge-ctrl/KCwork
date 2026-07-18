@@ -84,6 +84,8 @@ describe("enterprise AI client demo", () => {
 
     expect(screen.getByRole("complementary", { name: "项目设置" })).toBeInTheDocument();
     expect(screen.getByText("当前角色：项目管理员")).toBeInTheDocument();
+    expect(screen.queryByLabelText("修改林川的项目角色")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("设置角色与成员权限重构状态")).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "成员与角色" }));
     await userEvent.selectOptions(
       screen.getByLabelText("修改林川的项目角色"),
@@ -93,6 +95,11 @@ describe("enterprise AI client demo", () => {
     await userEvent.click(screen.getByRole("button", { name: "需求状态与门禁" }));
     await userEvent.selectOptions(screen.getByLabelText("设置角色与成员权限重构状态"), "testing");
     expect(screen.getByLabelText("设置角色与成员权限重构状态")).toHaveValue("testing");
+    expect(screen.getByText(/产品方案已确认/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "上下文维护" }));
+    await userEvent.click(screen.getByRole("button", { name: "管理全部产品文档" }));
+    expect(screen.getByRole("heading", { name: "产品文档" })).toBeInTheDocument();
+    expect(screen.queryByRole("complementary", { name: "项目设置" })).not.toBeInTheDocument();
   });
 
   test("shows and adjusts Agent-selected context", async () => {
