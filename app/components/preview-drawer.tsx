@@ -1,12 +1,8 @@
 import {
   Braces,
   Check,
-  FileCode2,
   FileText,
-  ListTree,
   PanelRightClose,
-  ScrollText,
-  TestTube2,
   X,
 } from "lucide-react";
 import { useEffect } from "react";
@@ -16,6 +12,7 @@ import {
   testCases,
   testReports,
 } from "../lib/demo-data";
+import { contextualPreviewKinds, type ContextualTool } from "../lib/contextual-tools";
 import type {
   ContextSource,
   PreviewKind,
@@ -27,12 +24,14 @@ import type {
   RequirementStage,
 } from "../lib/types";
 import { ContextSourcesPanel } from "./context-sources-panel";
+import { ContextualScenePreview } from "./contextual-scene-preview";
 import { MemberManager } from "./member-manager";
 import { PreviewErrorState, type PreviewErrorKind } from "./preview-error-state";
 import { ProjectSettingsPanel } from "./project-settings-panel";
 
 export interface PreviewDrawerProps {
   preview: PreviewKind | null;
+  tools: ContextualTool[];
   members: ProjectMember[];
   memberRoles: Record<string, ProjectRole>;
   requirements: Requirement[];
@@ -55,15 +54,8 @@ export interface PreviewDrawerProps {
   onRetryPreview?(): void;
 }
 
-const tools: { kind: PreviewKind; label: string; icon: typeof FileText }[] = [
-  { kind: "prd", label: "产物预览", icon: FileText },
-  { kind: "diff", label: "代码差异", icon: FileCode2 },
-  { kind: "context", label: "引用上下文", icon: ListTree },
-  { kind: "log", label: "执行日志", icon: ScrollText },
-  { kind: "test", label: "测试报告", icon: TestTube2 },
-];
-
 const contextualLabels: Partial<Record<PreviewKind, string>> = {
+  prd: "产物预览",
   prototype: "页面预览",
   pdf: "PDF 预览",
   members: "成员管理",
@@ -76,6 +68,7 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
 
 export function PreviewDrawer({
   preview,
+  tools,
   members,
   memberRoles,
   requirements,
@@ -97,6 +90,8 @@ export function PreviewDrawer({
   onClose,
   onRetryPreview,
 }: PreviewDrawerProps) {
+  const selectedTool = tools.find((tool) => tool.kind === preview);
+
   useEffect(() => {
     if (!preview) return;
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -106,17 +101,22 @@ export function PreviewDrawer({
     return () => document.removeEventListener("keydown", closeOnEscape);
   }, [preview, onClose]);
 
+  useEffect(() => {
+    if (!preview || !contextualPreviewKinds.has(preview)) return;
+    if (!tools.some((tool) => tool.kind === preview)) onClose();
+  }, [preview, tools, onClose]);
+
   return (
     <div className="auxiliary" aria-label="辅助工具">
       {preview && (
         <aside
           className="preview-drawer"
-          aria-label={contextualLabels[preview] ?? "产物预览"}
+          aria-label={contextualLabels[preview] ?? selectedTool?.label ?? "产物预览"}
         >
           <header className="drawer-header">
             <div>
               <p className="eyebrow">辅助面板</p>
-              <h2>{contextualLabels[preview] ?? tools.find((tool) => tool.kind === preview)?.label}</h2>
+              <h2>{selectedTool?.label ?? contextualLabels[preview] ?? "辅助内容"}</h2>
             </div>
             <button aria-label="关闭预览" className="icon-button" onClick={onClose} type="button">
               <X size={18} />
@@ -166,6 +166,7 @@ export function PreviewDrawer({
               />
             )}
             {preview === "asset" && <AssetDetail assetId={selectedAssetId} canEdit={capabilities.canManageAssets} requirement={selectedRequirement} />}
+            <ContextualScenePreview kind={preview} />
               </>
             )}
           </div>

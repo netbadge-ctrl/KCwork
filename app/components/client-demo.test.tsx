@@ -661,4 +661,29 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByRole("button", { name: /会议纪要 Agent/ })).toBeInTheDocument();
   });
 
+  test("changes the auxiliary rail with the active office and product Agent", async () => {
+    render(<Page />);
+    await userEvent.click(
+      screen.getByRole("button", { name: "Q3 经营分析报告7 月 12 日" }),
+    );
+    expect(screen.getByRole("button", { name: "图表预览" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "代码差异" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "测试报告" })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "项目" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "打开企业客户门户 V3.2" }),
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "恢复角色与成员权限重构工作区" }),
+    );
+    await userEvent.selectOptions(
+      screen.getByLabelText("切换工作台 Agent"),
+      "prototype",
+    );
+    expect(screen.getByRole("button", { name: "页面预览" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "组件结构" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "测试报告" })).not.toBeInTheDocument();
+  });
+
 });

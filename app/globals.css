@@ -2183,6 +2183,15 @@ select:focus-visible {
   font-size: 10px;
 }
 
+.contextual-scene-preview { display: grid; gap: 16px; }
+.scene-preview-heading { display: flex; align-items: center; gap: 12px; }
+.scene-preview-heading > span { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; color: #6550c9; background: #f0ecff; }
+.scene-preview-heading h3, .scene-preview-heading p, .contextual-scene-preview > p { margin: 0; }
+.contextual-scene-preview > p { color: #716d78; line-height: 1.65; }
+.scene-preview-list { display: grid; gap: 8px; }
+.scene-preview-list > div { display: flex; gap: 9px; padding: 11px 12px; border: 1px solid #ebe8ef; border-radius: 10px; background: #fbfafc; font-size: 13px; }
+.scene-preview-list svg { color: #6f5bd2; flex: 0 0 auto; margin-top: 1px; }
+
 .requirement-section {
   padding-bottom: 70px;
 }

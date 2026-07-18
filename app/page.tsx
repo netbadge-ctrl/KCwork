@@ -22,6 +22,7 @@ import {
   requirements,
 } from "./lib/demo-data";
 import { clientReducer, initialClientState } from "./lib/demo-state";
+import { resolveContextualTools } from "./lib/contextual-tools";
 import {
   canEditAgentWorkspace,
   getProjectCapabilities,
@@ -122,6 +123,16 @@ export default function Page() {
   const activeLockedContextIds = state.selectedRequirementId
     ? state.lockedContextIdsByRequirement[state.selectedRequirementId] ?? []
     : [];
+  const activeExecution = selectedRequirement
+    ? state.requirementExecutions[selectedRequirement.id] ?? "idle"
+    : selectedTaskExecution;
+  const contextualTools = resolveContextualTools({
+    agentId: selectedAgent.id,
+    hasExecution: activeExecution !== "idle",
+    hasTestEvidence: Boolean(selectedRequirement?.counts.tests),
+    mode: selectedAgent.mode === "office" ? "office" : "research",
+    view: state.view,
+  });
 
   const requestNavigation = (
     destination: string,
@@ -375,6 +386,7 @@ export default function Page() {
           })
         }
         preview={state.preview}
+        tools={contextualTools}
         requirementStages={state.requirementStages}
         requirements={requirements.filter(
           (requirement) => requirement.projectId === state.selectedProjectId,

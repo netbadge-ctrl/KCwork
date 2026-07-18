@@ -24,7 +24,19 @@ export type PreviewKind =
   | "members"
   | "asset"
   | "sources"
-  | "project-settings";
+  | "project-settings"
+  | "actions"
+  | "chart"
+  | "slides"
+  | "outline"
+  | "export"
+  | "analysis"
+  | "questions"
+  | "components"
+  | "interaction"
+  | "files"
+  | "issues"
+  | "failures";
 export type ExecutionState =
   | "idle"
   | "reading"
