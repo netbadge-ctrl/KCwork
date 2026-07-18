@@ -5,6 +5,7 @@ import { AssetsView } from "./components/assets-view";
 import { HomeView } from "./components/home-view";
 import { NavigationGuardDialog } from "./components/navigation-guard-dialog";
 import { PreviewDrawer } from "./components/preview-drawer";
+import { ProfileView } from "./components/profile-view";
 import { ProjectAssetsView } from "./components/project-assets-view";
 import { ProjectsView } from "./components/projects-view";
 import { RequirementWorkspace } from "./components/requirement-workspace";
@@ -158,6 +159,7 @@ export default function Page() {
       "project-asset": "项目资产",
       "requirement-detail": "需求工作区",
       assets: "智能资产",
+      profile: "个人设置",
       task: "任务",
     };
     requestNavigation(labels[view], () => dispatch({ type: "navigate", view }));
@@ -174,6 +176,7 @@ export default function Page() {
         activeView={state.view}
         recentTasks={recentTasks}
         onNavigate={navigateFromSidebar}
+        onOpenProfile={() => navigateFromSidebar("profile")}
         onOpenTask={(task) => {
           requestNavigation(task.title, () => {
             dispatch({ type: "open-task", taskId: task.id });
@@ -310,6 +313,8 @@ export default function Page() {
         {state.view === "assets" && (
           <AssetsView agents={agents} assets={assetGroups} />
         )}
+
+        {state.view === "profile" && <ProfileView />}
 
         {state.view === "task" && (
           <TaskView

@@ -122,6 +122,7 @@ export const contextualPreviewKinds = new Set<PreviewKind>([
 ]);
 
 export function resolveContextualTools(context: ContextualToolContext): ContextualTool[] {
+  if (!["home", "task", "requirement-detail"].includes(context.view)) return [];
   const mapped = context.mode === "office"
     ? officeTools[context.agentId] ?? officeTools.default
     : developmentTools[context.agentId] ?? developmentTools.default;

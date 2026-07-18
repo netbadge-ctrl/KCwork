@@ -6,6 +6,7 @@ export type ViewId =
   | "project-asset"
   | "requirement-detail"
   | "assets"
+  | "profile"
   | "task";
 export type AssetKind =
   | "agent"

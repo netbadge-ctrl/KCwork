@@ -12,6 +12,7 @@ export interface SidebarProps {
   recentTasks: RecentTask[];
   onNavigate(view: ViewId): void;
   onOpenTask(task: RecentTask): void;
+  onOpenProfile(): void;
 }
 
 export function Sidebar({
@@ -19,6 +20,7 @@ export function Sidebar({
   recentTasks,
   onNavigate,
   onOpenTask,
+  onOpenProfile,
 }: SidebarProps) {
   const links = [
     { label: "新建任务", icon: Plus, view: "home" as const },
@@ -73,13 +75,15 @@ export function Sidebar({
         ))}
       </div>
 
-      <div className="profile">
-        <span className="profile-avatar">陈</span>
-        <span className="profile-copy">
-          <strong>陈楠</strong>
-          <small>研发中心</small>
-        </span>
-        <button aria-label="设置" className="icon-button" type="button">
+      <div className={`profile ${activeView === "profile" ? "active" : ""}`}>
+        <button aria-label="打开陈楠个人页面" className="profile-main" onClick={onOpenProfile} type="button">
+          <span className="profile-avatar">陈</span>
+          <span className="profile-copy">
+            <strong>陈楠</strong>
+            <small>研发中心</small>
+          </span>
+        </button>
+        <button aria-label="个人设置" className="icon-button" onClick={onOpenProfile} type="button">
           <Settings size={17} />
         </button>
       </div>

@@ -636,6 +636,24 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByText("代码、Pull Request 与 Issue")).toBeInTheDocument();
   });
 
+  test("opens a Codex-inspired personal Agent settings page", async () => {
+    render(<Page />);
+    await userEvent.click(
+      screen.getByRole("button", { name: "打开陈楠个人页面" }),
+    );
+
+    expect(screen.getByRole("heading", { name: "个人设置" })).toBeInTheDocument();
+    for (const section of [
+      "账号与企业工作区",
+      "Agent 偏好",
+      "Skill 与插件",
+      "连接与权限",
+      "通知",
+    ]) {
+      expect(screen.getByRole("heading", { name: section })).toBeInTheDocument();
+    }
+  });
+
   test("sends a task with the selected Agent", async () => {
     render(<Page />);
     await userEvent.click(screen.getByRole("button", { name: "新建任务" }));
@@ -705,6 +723,18 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByRole("button", { name: "页面预览" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "组件结构" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "测试报告" })).not.toBeInTheDocument();
+  });
+
+  test("closes task-specific evidence when switching to an incompatible Agent", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.selectOptions(screen.getByLabelText("切换工作台 Agent"), "testing");
+    await userEvent.click(screen.getByRole("button", { name: "测试报告" }));
+    expect(screen.getByRole("complementary", { name: "测试报告" })).toBeInTheDocument();
+
+    await userEvent.selectOptions(screen.getByLabelText("切换工作台 Agent"), "prototype");
+    expect(screen.queryByRole("complementary", { name: "测试报告" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "页面预览" })).toBeInTheDocument();
   });
 
 });
