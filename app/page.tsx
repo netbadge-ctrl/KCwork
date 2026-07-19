@@ -481,14 +481,14 @@ export default function Page() {
             }
             onOpenPreview={(assetId, preview) => {
               const run = () => {
-                dispatch({ type: "select-project-asset", assetId });
+                dispatch({
+                  type: "select-project-asset",
+                  assetId,
+                  previewKind: preview,
+                });
                 dispatch({ type: "open-preview", preview });
               };
-              if (preview === "prd" || preview === "prototype") {
-                requestNavigation("查看产品文档", run);
-              } else {
-                run();
-              }
+              requestNavigation("查看项目资产", run);
             }}
             requirements={requirements.filter(
               (requirement) => requirement.projectId === state.selectedProjectId,
@@ -584,7 +584,11 @@ export default function Page() {
       </section>
 
       <PreviewDrawer
-        allowExplicitPreview={state.view === "project-asset"}
+        explicitPreviewKind={
+          state.view === "project-asset"
+            ? state.selectedAssetPreviewKind
+            : null
+        }
         capabilities={capabilities}
         currentRole={currentRole}
         lockedContextIds={activeLockedContextIds.filter((id) =>

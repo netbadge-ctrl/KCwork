@@ -1037,6 +1037,91 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByText(/添加成员 → 邀请同事/)).toBeInTheDocument();
   });
 
+  test("opens the selected Project Assets test report instead of reusing the active requirement", async () => {
+    render(<Page />);
+    await openCustomerPortal();
+    await userEvent.click(screen.getByRole("button", { name: "项目设置" }));
+    await userEvent.click(screen.getByRole("button", { name: "上下文维护" }));
+    await userEvent.click(screen.getByRole("button", { name: "管理全部测试资产" }));
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "查看角色管理回归测试报告" }),
+    );
+    let drawer = screen.getByRole("complementary", { name: "测试报告" });
+    expect(
+      within(drawer).getByRole("heading", { name: "角色管理回归测试报告" }),
+    ).toBeInTheDocument();
+    expect(within(drawer).getByText("92%")).toBeInTheDocument();
+    expect(
+      within(drawer).getByText(/失败：批量修改角色需要二次确认/),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "查看SSO 登录端到端用例" }),
+    );
+    drawer = screen.getByRole("complementary", { name: "测试报告" });
+    expect(
+      within(drawer).getByRole("heading", { name: "SSO 登录核心回归报告" }),
+    ).toBeInTheDocument();
+    expect(within(drawer).getByText("91%")).toBeInTheDocument();
+    expect(
+      within(drawer).getByText(/失败：租户选择失败时可重新发起 SSO/),
+    ).toBeInTheDocument();
+    expect(
+      within(drawer).queryByRole("heading", {
+        name: "角色管理回归测试报告",
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  test("guards a Project Assets test report while prototype work is pending", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "预览角色配置页面" }),
+    );
+    const prototypeDrawer = screen.getByRole("complementary", {
+      name: "页面预览",
+    });
+    await userEvent.click(
+      within(prototypeDrawer).getByRole("button", {
+        name: "选择添加成员按钮",
+      }),
+    );
+    await userEvent.clear(within(prototypeDrawer).getByLabelText("元素文案"));
+    await userEvent.type(
+      within(prototypeDrawer).getByLabelText("元素文案"),
+      "邀请同事",
+    );
+    await userEvent.click(
+      within(prototypeDrawer).getByRole("button", { name: "预览修改" }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
+    await userEvent.click(screen.getByRole("button", { name: "保留修改并离开" }));
+    await userEvent.click(screen.getByRole("button", { name: "更多需求操作" }));
+    await userEvent.click(screen.getByRole("button", { name: "调整状态与门禁" }));
+    await userEvent.click(screen.getByRole("button", { name: "上下文维护" }));
+    await userEvent.click(screen.getByRole("button", { name: "管理全部测试资产" }));
+    await userEvent.click(screen.getByRole("button", { name: "保留修改并离开" }));
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "查看角色管理回归测试报告" }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: "未确认的原型修改" }),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "保留修改并离开" }));
+    expect(
+      screen.getByRole("complementary", { name: "测试报告" }),
+    ).toBeInTheDocument();
+    expect(document.querySelector(".client-shell")).toHaveAttribute(
+      "data-prototype-pending",
+      "true",
+    );
+  });
+
   test("marks a development task and opens the code diff", async () => {
     render(<Page />);
     await openRoleRequirement();

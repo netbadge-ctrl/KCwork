@@ -58,7 +58,7 @@ export interface PreviewDrawerProps {
   lockedContextIds: string[];
   selectedAssetId: string | null;
   previewError?: PreviewErrorKind | null;
-  allowExplicitPreview?: boolean;
+  explicitPreviewKind?: PreviewKind | null;
   onSelect(kind: PreviewKind): void;
   onToggleContextSource(sourceId: string): void;
   onToggleContextLock(sourceId: string): void;
@@ -99,7 +99,7 @@ export function PreviewDrawer({
   lockedContextIds,
   selectedAssetId,
   previewError,
-  allowExplicitPreview = false,
+  explicitPreviewKind = null,
   onSelect,
   onToggleContextSource,
   onToggleContextLock,
@@ -147,9 +147,9 @@ export function PreviewDrawer({
 
   useEffect(() => {
     if (!preview || !contextualPreviewKinds.has(preview)) return;
-    if (allowExplicitPreview) return;
+    if (explicitPreviewKind === preview) return;
     if (!tools.some((tool) => tool.kind === preview)) onClose();
-  }, [allowExplicitPreview, preview, tools, onClose]);
+  }, [explicitPreviewKind, preview, tools, onClose]);
 
   return (
     <div className="auxiliary" aria-label="辅助工具">
@@ -253,7 +253,16 @@ export function PreviewDrawer({
               />
             )}
             {preview === "log" && <LogPreview requirement={selectedRequirement} />}
-            {preview === "test" && <TestPreview canEdit={capabilities.canEditTestArtifacts} requirement={selectedRequirement} />}
+            {preview === "test" && (
+              <TestPreview
+                canEdit={capabilities.canEditTestArtifacts}
+                requirement={selectedRequirement}
+                requirements={requirements}
+                selectedAssetId={
+                  explicitPreviewKind === "test" ? selectedAssetId : null
+                }
+              />
+            )}
             {preview === "prototype" && <PrototypePreview canEdit={capabilities.canEditProductArtifacts} requirement={selectedRequirement} />}
             {preview === "pdf" && <PdfPreview requirement={selectedRequirement} />}
             {preview === "members" && (
@@ -468,19 +477,30 @@ function LogPreview({ requirement }: { requirement: Requirement | null }) {
 
 function TestPreview({
   requirement,
+  requirements,
+  selectedAssetId,
   canEdit,
 }: {
   requirement: Requirement | null;
+  requirements: Requirement[];
+  selectedAssetId: string | null;
   canEdit: boolean;
 }) {
-  const report = testReports.find((item) => item.requirementId === requirement?.id);
+  const report = selectedAssetId
+    ? testReports.find((item) => item.id === selectedAssetId)
+    : testReports.find((item) => item.requirementId === requirement?.id);
+  const reportRequirement = report
+    ? requirements.find((item) => item.id === report.requirementId) ??
+      (requirement?.id === report.requirementId ? requirement : null)
+    : null;
   const failedCase = testCases.find(
-    (item) => item.requirementId === requirement?.id && item.status === "failed",
+    (item) =>
+      item.requirementId === reportRequirement?.id && item.status === "failed",
   );
-  if (!requirement || !report) {
+  if (!reportRequirement || !report) {
     return <EmptyPreview message="当前需求暂无测试报告。" />;
   }
-  return <div className="test-preview"><div className="test-score"><strong>{report.passRate}%</strong><span>测试通过率</span></div><h3>{report.title}</h3><p>通过 {report.passed}　失败 {report.failed}　跳过 {report.skipped}</p><div className="test-bar"><span style={{ width: `${report.passRate}%` }} /></div>{failedCase && <article className="test-failure-detail"><b>失败：{failedCase.title}</b><span>对应 {failedCase.specRef}</span><p>该结果仅属于 {requirement.code}，等待用户确认后再创建修复任务。</p></article>}<button className="primary-small" disabled={!canEdit} type="button">创建修复任务</button></div>;
+  return <div className="test-preview"><div className="test-score"><strong>{report.passRate}%</strong><span>测试通过率</span></div><h3>{report.title}</h3><p>通过 {report.passed}　失败 {report.failed}　跳过 {report.skipped}</p><div className="test-bar"><span style={{ width: `${report.passRate}%` }} /></div>{failedCase && <article className="test-failure-detail"><b>失败：{failedCase.title}</b><span>对应 {failedCase.specRef}</span><p>该结果仅属于 {reportRequirement.code}，等待用户确认后再创建修复任务。</p></article>}<button className="primary-small" disabled={!canEdit} type="button">创建修复任务</button></div>;
 }
 
 function EmptyPreview({ message }: { message: string }) {

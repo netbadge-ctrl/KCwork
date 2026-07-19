@@ -32,6 +32,7 @@ export interface ClientState {
   selectedRequirementId: string | null;
   projectSection: ProjectSection;
   selectedAssetId: string | null;
+  selectedAssetPreviewKind: PreviewKind | null;
   preview: PreviewKind | null;
   selectedTaskId: string;
   taskAgentIdsById: Record<string, string>;
@@ -65,7 +66,11 @@ export type ClientAction =
       reason: string;
     }
   | { type: "select-project-section"; section: ProjectSection }
-  | { type: "select-project-asset"; assetId: string | null }
+  | {
+      type: "select-project-asset";
+      assetId: string | null;
+      previewKind: PreviewKind | null;
+    }
   | { type: "set-member-role"; memberId: string; role: ProjectRole }
   | {
       type: "set-development-task-status";
@@ -117,6 +122,7 @@ export const initialClientState: ClientState = {
   selectedRequirementId: "role-permissions",
   projectSection: "overview",
   selectedAssetId: null,
+  selectedAssetPreviewKind: null,
   preview: null,
   selectedTaskId: "prd-role",
   taskAgentIdsById: Object.fromEntries(
@@ -395,10 +401,15 @@ export function clientReducer(
         ...state,
         projectSection: action.section,
         selectedAssetId: null,
+        selectedAssetPreviewKind: null,
         view: action.section === "overview" ? "project-detail" : "project-asset",
       };
     case "select-project-asset":
-      return { ...state, selectedAssetId: action.assetId };
+      return {
+        ...state,
+        selectedAssetId: action.assetId,
+        selectedAssetPreviewKind: action.previewKind,
+      };
     case "set-member-role":
       return {
         ...state,
@@ -423,7 +434,7 @@ export function clientReducer(
     case "open-preview":
       return { ...state, preview: action.preview };
     case "close-preview":
-      return { ...state, preview: null };
+      return { ...state, preview: null, selectedAssetPreviewKind: null };
     case "send-message": {
       const text = action.text.trim();
       if (!text) return state;

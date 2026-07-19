@@ -86,3 +86,27 @@ No dependency, backend, hosting, or non-demo workflow change was introduced.
 
 - No functional concerns remain in the requested Demo-only scope.
 - Verification retains the pre-existing Node `module.register()` deprecation warning and vinext dynamic-route classification notice.
+
+## Final Important re-review fix
+
+Base commit: `931e97af0e7ba837205590f9a5d8bf0e29c47782`
+
+### Scope completed
+
+1. The drawer compatibility exemption now receives `explicitPreviewKind` and bypasses contextual compatibility only when it exactly matches the active preview. Project Assets stores that requested kind alongside the selected asset ID and clears it when the preview closes or the asset section changes.
+2. Every Project Assets preview action—View and Edit across documents, memory, repositories, and tests—now runs through the shared pending PRD/prototype navigation guard.
+3. Test asset rows now select their backing report IDs. `TestPreview` resolves explicit Project Assets reports from `selectedAssetId`, then resolves the matching requirement and failure evidence. Requirement Agent previews continue to resolve from `selectedRequirement` whenever there is no explicit test-asset selection.
+
+### TDD and verification evidence
+
+- RED: `npm test -- --run app/components/preview-drawer.test.tsx app/components/client-demo.test.tsx` — 3 expected failures and 69 passes. The failures reproduced the missing exact-kind exemption, the SSO row incorrectly rendering the role report, and the test-asset View bypassing the pending-prototype guard.
+- Focused GREEN: the same command — 2 files passed, 72 tests passed.
+- Full suite: `npm test` — 10 files passed, 129 tests passed.
+- Lint: `npm run lint` — exit 0, no findings.
+- Production build: `npm run build` — exit 0; `/` and `/prototype` remain present.
+- Diff integrity: `git diff --check` — exit 0, no output before staging.
+
+### Final concerns
+
+- No functional concerns remain in this focused fix.
+- Verification retains only the pre-existing Node `module.register()` deprecation warning and vinext dynamic-route classification notice.

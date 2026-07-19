@@ -30,8 +30,8 @@ const staticAssets = {
     { id: "repo-e2e", name: "portal-e2e", meta: "release/3.2 · 42 个场景", status: "可用" },
   ],
   tests: [
-    { id: "test-role", name: "角色管理回归测试报告", meta: "REQ-032 · 92% 通过", status: "有失败" },
-    { id: "test-sso", name: "SSO 登录端到端用例", meta: "REQ-029 · 34 个用例", status: "执行中" },
+    { id: "report-role-regression", name: "角色管理回归测试报告", meta: "REQ-032 · 92% 通过", status: "有失败" },
+    { id: "report-sso-regression", name: "SSO 登录端到端用例", meta: "REQ-029 · 34 个用例", status: "执行中" },
     { id: "test-permission", name: "权限接口契约测试", meta: "自动化 · 最近通过", status: "已通过" },
   ],
 };
