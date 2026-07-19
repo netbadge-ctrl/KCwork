@@ -37,7 +37,7 @@ export function canEditAgentWorkspace(
   capabilities: ProjectCapabilities,
   agentId: string,
 ) {
-  if (["requirement-analysis", "prd-writer", "prototype"].includes(agentId)) {
+  if (agentId === "product-design") {
     return capabilities.canEditProductArtifacts;
   }
   if (["frontend-dev", "backend-dev", "code-review"].includes(agentId)) {
