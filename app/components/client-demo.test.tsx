@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test } from "vitest";
 import Page from "../page";
@@ -677,6 +677,27 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("complementary", { name: "页面预览" }),
     ).toBeInTheDocument();
     expect(screen.getByText("成员与角色")).toBeInTheDocument();
+  });
+
+  test("opens the editable prototype drawer with a standalone browser link", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "预览角色配置页面" }),
+    );
+
+    const drawer = screen.getByRole("complementary", { name: "页面预览" });
+    expect(
+      within(drawer).getByRole("link", { name: "在浏览器打开" }),
+    ).toHaveAttribute(
+      "href",
+      "/prototype?project=customer-portal&requirement=role-permissions&version=V3&inspect=1",
+    );
+    await userEvent.click(
+      within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
+    );
+    expect(within(drawer).getByText("关联 Spec：AC-07")).toBeInTheDocument();
   });
 
   test("revises a PRD with natural language and opens PDF preview", async () => {

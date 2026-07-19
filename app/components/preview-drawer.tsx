@@ -29,6 +29,10 @@ import { MemberManager } from "./member-manager";
 import { PreviewErrorState, type PreviewErrorKind } from "./preview-error-state";
 import { ProjectSettingsPanel } from "./project-settings-panel";
 import {
+  PROTOTYPE_BROWSER_URL,
+  PrototypeEditor,
+} from "./prototype-editor";
+import {
   clampRightPanelWidthForShell,
   DEFAULT_RIGHT_PANEL_WIDTH,
   getEffectiveRightPanelWidth,
@@ -341,18 +345,16 @@ function PrototypePreview({
   }
   return (
     <article className="prototype-preview-shell">
-      <div className="document-toolbar"><span>{prototype.title} {prototype.version}</span><button disabled={!canEdit} type="button">在画布中编辑</button></div>
-      <div className="prototype-preview-app">
-        <aside><b>KFlow</b><span>项目总览</span><span className="active">成员管理</span><span>操作审计</span></aside>
-        <main>
-          <p className="eyebrow">企业客户门户 V3.2</p>
-          <div className="prototype-screen-heading"><h3>成员与角色预览</h3><button type="button">添加成员</button></div>
-          <div className="prototype-filter">搜索成员、邮箱或角色 <span>全部角色⌄</span></div>
-          {["陈楠", "林川", "周祺", "顾言"].map((name, index) => (
-            <div className="prototype-member-line" key={name}><i>{name.slice(0, 1)}</i><span>{name}<small>{index === 0 ? "项目管理员" : index === 2 ? "测试" : "研发"}</small></span><b>{index === 0 ? "全部权限" : "按角色编辑"}</b><em>•••</em></div>
-          ))}
-        </main>
+      <div className="document-toolbar">
+        <span>{prototype.title} {prototype.version}</span>
+        <div className="prototype-preview-actions">
+          <button disabled={!canEdit} type="button">在画布中编辑</button>
+          <a href={PROTOTYPE_BROWSER_URL} rel="noreferrer" target="_blank">
+            在浏览器打开
+          </a>
+        </div>
       </div>
+      <PrototypeEditor canEdit={canEdit} compact />
       <footer>桌面端 · 1440 × 900 · 12 个交互热点</footer>
     </article>
   );

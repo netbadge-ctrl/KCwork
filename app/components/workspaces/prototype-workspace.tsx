@@ -9,6 +9,7 @@ import { useState } from "react";
 import { productDocuments } from "../../lib/demo-data";
 import type { WorkspaceRouterProps } from "./workspace-router";
 import { WorkspaceEmptyState } from "./workspace-empty-state";
+import { PROTOTYPE_BROWSER_URL } from "../prototype-editor";
 
 const pages = ["总览", "成员与角色", "角色详情", "操作审计"];
 
@@ -36,11 +37,21 @@ export function PrototypeWorkspace({
           <h2>原型设计工作台</h2>
           <p>页面结构与交互说明直接引用 {requirement.code} 的用户故事。</p>
         </div>
-        <button
-          className="primary-small"
-          onClick={() => onOpenPreview("prototype")}
-          type="button"
-        >预览角色配置页面</button>
+        <div className="prototype-workspace-actions">
+          <a
+            className="secondary-button"
+            href={PROTOTYPE_BROWSER_URL}
+            rel="noreferrer"
+            target="_blank"
+          >
+            在浏览器打开
+          </a>
+          <button
+            className="primary-small"
+            onClick={() => onOpenPreview("prototype")}
+            type="button"
+          >预览角色配置页面</button>
+        </div>
       </div>
 
       <div className="prototype-layout">
