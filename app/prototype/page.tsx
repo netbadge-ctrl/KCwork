@@ -9,6 +9,7 @@ function PrototypeRouteContent() {
   const requirement = searchParams.get("requirement") ?? "role-permissions";
   const version = searchParams.get("version") ?? "V3";
   const project = searchParams.get("project") ?? "customer-portal";
+  const canEdit = searchParams.get("readonly") !== "1";
 
   return (
     <main className="prototype-page">
@@ -20,7 +21,7 @@ function PrototypeRouteContent() {
         </div>
         <span className="prototype-page-version">{version}</span>
       </header>
-      <PrototypeEditor canEdit />
+      <PrototypeEditor canEdit={canEdit} />
     </main>
   );
 }

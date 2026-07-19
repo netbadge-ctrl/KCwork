@@ -9,12 +9,13 @@ import { useState } from "react";
 import { productDocuments } from "../../lib/demo-data";
 import type { WorkspaceRouterProps } from "./workspace-router";
 import { WorkspaceEmptyState } from "./workspace-empty-state";
-import { PROTOTYPE_BROWSER_URL } from "../prototype-editor";
+import { getPrototypeBrowserUrl } from "../prototype-editor";
 
 const pages = ["总览", "成员与角色", "角色详情", "操作审计"];
 
 export function PrototypeWorkspace({
   requirement,
+  canEdit,
   onOpenPreview,
 }: WorkspaceRouterProps) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
@@ -40,7 +41,7 @@ export function PrototypeWorkspace({
         <div className="prototype-workspace-actions">
           <a
             className="secondary-button"
-            href={PROTOTYPE_BROWSER_URL}
+            href={getPrototypeBrowserUrl(canEdit)}
             rel="noreferrer"
             target="_blank"
           >

@@ -29,7 +29,7 @@ import { MemberManager } from "./member-manager";
 import { PreviewErrorState, type PreviewErrorKind } from "./preview-error-state";
 import { ProjectSettingsPanel } from "./project-settings-panel";
 import {
-  PROTOTYPE_BROWSER_URL,
+  getPrototypeBrowserUrl,
   PrototypeEditor,
 } from "./prototype-editor";
 import {
@@ -349,7 +349,7 @@ function PrototypePreview({
         <span>{prototype.title} {prototype.version}</span>
         <div className="prototype-preview-actions">
           <button disabled={!canEdit} type="button">在画布中编辑</button>
-          <a href={PROTOTYPE_BROWSER_URL} rel="noreferrer" target="_blank">
+          <a href={getPrototypeBrowserUrl(canEdit)} rel="noreferrer" target="_blank">
             在浏览器打开
           </a>
         </div>

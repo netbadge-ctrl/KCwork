@@ -700,6 +700,34 @@ describe("enterprise AI client demo", () => {
     expect(within(drawer).getByText("关联 Spec：AC-07")).toBeInTheDocument();
   });
 
+  test("keeps viewer prototype browser links and drawer controls read only", async () => {
+    render(<Page />);
+    await setCurrentUserRole("viewer");
+    await userEvent.click(
+      screen.getByRole("button", { name: "恢复角色与成员权限重构工作区" }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
+
+    expect(screen.getByRole("link", { name: "在浏览器打开" })).toHaveAttribute(
+      "href",
+      "/prototype?project=customer-portal&requirement=role-permissions&version=V3&inspect=1&readonly=1",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "预览角色配置页面" }),
+    );
+    const drawer = screen.getByRole("complementary", { name: "页面预览" });
+    expect(
+      within(drawer).getByRole("link", { name: "在浏览器打开" }),
+    ).toHaveAttribute(
+      "href",
+      "/prototype?project=customer-portal&requirement=role-permissions&version=V3&inspect=1&readonly=1",
+    );
+    await userEvent.click(
+      within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
+    );
+    expect(within(drawer).getByLabelText("元素文案")).toBeDisabled();
+  });
+
   test("revises a PRD with natural language and opens PDF preview", async () => {
     render(<Page />);
     await openRoleRequirement();

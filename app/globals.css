@@ -4267,6 +4267,20 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
   padding: 8px 9px;
 }
 
+.prototype-element-meta {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.prototype-element-meta span {
+  background: #f7f6f9;
+  border-radius: 7px;
+  color: #6f6a77;
+  font-size: 9px;
+  padding: 7px 8px;
+}
+
 .prototype-preview-change,
 .prototype-element-inspector > .primary-small {
   justify-content: center;

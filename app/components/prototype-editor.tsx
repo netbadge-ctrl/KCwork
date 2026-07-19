@@ -5,6 +5,10 @@ import { useMemo, useState, type MouseEvent } from "react";
 export const PROTOTYPE_BROWSER_URL =
   "/prototype?project=customer-portal&requirement=role-permissions&version=V3&inspect=1";
 
+export function getPrototypeBrowserUrl(canEdit: boolean) {
+  return canEdit ? PROTOTYPE_BROWSER_URL : `${PROTOTYPE_BROWSER_URL}&readonly=1`;
+}
+
 export interface PrototypeElement {
   id: string;
   name: string;
@@ -12,6 +16,7 @@ export interface PrototypeElement {
   text: string;
   tone: "primary" | "secondary" | "neutral";
   spec: string;
+  page: string;
 }
 
 export interface PrototypeElementDraft {
@@ -34,6 +39,7 @@ const initialElements: PrototypeElement[] = [
     text: "添加成员",
     tone: "primary",
     spec: "AC-07",
+    page: "成员与角色",
   },
   {
     id: "member-search",
@@ -42,6 +48,7 @@ const initialElements: PrototypeElement[] = [
     text: "搜索成员、邮箱或角色",
     tone: "neutral",
     spec: "US-04",
+    page: "成员与角色",
   },
   {
     id: "member-row-lin",
@@ -50,6 +57,7 @@ const initialElements: PrototypeElement[] = [
     text: "林川 · 研发",
     tone: "neutral",
     spec: "AC-09",
+    page: "成员与角色",
   },
 ];
 
@@ -57,6 +65,14 @@ const toneLabels: Record<PrototypeElement["tone"], string> = {
   primary: "主要",
   secondary: "次要",
   neutral: "中性",
+};
+
+const typeLabels: Record<PrototypeElement["type"], string> = {
+  button: "按钮",
+  input: "输入框",
+  heading: "标题",
+  navigation: "导航",
+  row: "成员行",
 };
 
 function interpretDraft(
@@ -122,7 +138,15 @@ export function PrototypeEditor({
   };
 
   const clearFromCanvas = (event: MouseEvent<HTMLDivElement>) => {
-    if (event.target === event.currentTarget) clearSelection();
+    const target = event.target as HTMLElement;
+    if (!target.closest("[data-prototype-element]")) clearSelection();
+  };
+
+  const updateDraft = (changes: Partial<PrototypeElementDraft>) => {
+    setDraft((current) =>
+      current ? { ...current, ...changes } : current,
+    );
+    setPendingDiff(null);
   };
 
   const previewDraft = () => {
@@ -186,6 +210,7 @@ export function PrototypeEditor({
         }
         aria-pressed={selectedId === element.id}
         className={`${className} prototype-selectable ${selectedId === element.id ? "selected" : ""}`}
+        data-prototype-element={element.id}
         onClick={() => selectElement(element)}
         type="button"
       >
@@ -268,16 +293,16 @@ export function PrototypeEditor({
         {selectedElement && draft ? (
           <>
             <p className="prototype-spec-link">关联 Spec：{selectedElement.spec}</p>
+            <div className="prototype-element-meta">
+              <span>元素类型：{typeLabels[selectedElement.type]}</span>
+              <span>所属页面：{selectedElement.page}</span>
+            </div>
             <label>
               <span>元素文案</span>
               <input
                 aria-label="元素文案"
                 disabled={!canEdit}
-                onChange={(event) =>
-                  setDraft((current) =>
-                    current ? { ...current, text: event.target.value } : current,
-                  )
-                }
+                onChange={(event) => updateDraft({ text: event.target.value })}
                 value={draft.text}
               />
             </label>
@@ -287,14 +312,9 @@ export function PrototypeEditor({
                 aria-label="视觉层级"
                 disabled={!canEdit}
                 onChange={(event) =>
-                  setDraft((current) =>
-                    current
-                      ? {
-                          ...current,
-                          tone: event.target.value as PrototypeElement["tone"],
-                        }
-                      : current,
-                  )
+                  updateDraft({
+                    tone: event.target.value as PrototypeElement["tone"],
+                  })
                 }
                 value={draft.tone}
               >
@@ -309,11 +329,7 @@ export function PrototypeEditor({
                 aria-label="描述对选中元素的修改"
                 disabled={!canEdit}
                 onChange={(event) =>
-                  setDraft((current) =>
-                    current
-                      ? { ...current, instruction: event.target.value }
-                      : current,
-                  )
+                  updateDraft({ instruction: event.target.value })
                 }
                 placeholder="例如：改为次要按钮，或文案改成“邀请成员”"
                 value={draft.instruction}
