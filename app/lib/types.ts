@@ -1,4 +1,5 @@
 export type Mode = "research" | "office";
+export type ProductWorkMode = "analysis" | "prototype" | "prd";
 export type ViewId =
   | "home"
   | "projects"
@@ -72,6 +73,7 @@ export interface AgentWorkSession {
   projectId: string;
   requirementId: string;
   agentId: string;
+  productWorkMode?: ProductWorkMode;
   title: string;
   summary: string;
   pendingAction: string;
@@ -106,6 +108,7 @@ export interface RecentTask {
   projectId?: string;
   requirementId?: string;
   agentId: string;
+  productWorkMode?: ProductWorkMode;
   time: string;
 }
 

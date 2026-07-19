@@ -1,7 +1,36 @@
 import { describe, expect, it } from "vitest";
+import { agents } from "./demo-data";
 import { clientReducer, initialClientState } from "./demo-state";
 
 describe("clientReducer", () => {
+  it("exposes one product design Agent", () => {
+    expect(
+      agents
+        .filter((agent) => agent.category === "产品")
+        .map((agent) => agent.id),
+    ).toEqual(["product-design"]);
+  });
+
+  it("switches product work mode without changing the conversation", () => {
+    const next = clientReducer(initialClientState, {
+      type: "set-product-work-mode",
+      mode: "prototype",
+    });
+
+    expect(next.productWorkMode).toBe("prototype");
+    expect(next.requirementMessages).toBe(initialClientState.requirementMessages);
+  });
+
+  it("opens the existing PRD task in product PRD mode", () => {
+    const next = clientReducer(initialClientState, {
+      type: "open-task",
+      taskId: "prd-role",
+    });
+
+    expect(next.selectedAgentId).toBe("product-design");
+    expect(next.productWorkMode).toBe("prd");
+  });
+
   it("switches mode and Agent without creating workflow state", () => {
     const office = clientReducer(initialClientState, {
       type: "set-mode",
@@ -43,7 +72,7 @@ describe("clientReducer", () => {
 
   it("opens every recent task atomically with its exact associations", () => {
     const taskAssociations = [
-      ["prd-role", "customer-portal", "role-permissions", "prd-writer", "research"],
+      ["prd-role", "customer-portal", "role-permissions", "product-design", "research"],
       ["permission-ui", "customer-portal", "role-permissions", "frontend-dev", "research"],
       ["login-failure", "expense", null, "backend-dev", "research"],
       ["q3-report", null, null, "data-analysis", "office"],
@@ -216,7 +245,7 @@ describe("clientReducer", () => {
 
     expect(next.selectedRequirementId).toBe("role-permissions");
     expect(next.view).toBe("requirement-detail");
-    expect(next.selectedAgentId).toBe("prd-writer");
+    expect(next.selectedAgentId).toBe("product-design");
   });
 
   it("moves a requirement to any stage and records skipped-gate risk", () => {
@@ -265,7 +294,7 @@ describe("clientReducer", () => {
 
     expect(next.view).toBe("requirement-detail");
     expect(next.selectedRequirementId).toBe("role-permissions");
-    expect(next.selectedAgentId).toBe("prd-writer");
+    expect(next.selectedAgentId).toBe("product-design");
   });
 
   it("lets a user adjust and lock automatically selected context", () => {
@@ -294,7 +323,7 @@ describe("clientReducer", () => {
       requirementId: "role-permissions",
     });
 
-    expect(next.selectedAgentId).toBe("prd-writer");
+    expect(next.selectedAgentId).toBe("product-design");
   });
 
   it("remembers an Agent selected in a requirement workspace", () => {
@@ -304,7 +333,7 @@ describe("clientReducer", () => {
     });
     const selected = clientReducer(opened, {
       type: "select-agent",
-      agentId: "prototype",
+      agentId: "product-design",
     });
     const navigated = clientReducer(selected, { type: "navigate", view: "task" });
     const reopened = clientReducer(navigated, {
@@ -312,8 +341,8 @@ describe("clientReducer", () => {
       requirementId: "role-permissions",
     });
 
-    expect(selected.lastAgentByRequirement["role-permissions"]).toBe("prototype");
-    expect(reopened.selectedAgentId).toBe("prototype");
+    expect(selected.lastAgentByRequirement["role-permissions"]).toBe("product-design");
+    expect(reopened.selectedAgentId).toBe("product-design");
   });
 
   it("does not overwrite a remembered Agent from outside a requirement workspace", () => {
@@ -331,8 +360,8 @@ describe("clientReducer", () => {
       requirementId: "role-permissions",
     });
 
-    expect(selected.lastAgentByRequirement["role-permissions"]).toBe("prd-writer");
-    expect(reopened.selectedAgentId).toBe("prd-writer");
+    expect(selected.lastAgentByRequirement["role-permissions"]).toBe("product-design");
+    expect(reopened.selectedAgentId).toBe("product-design");
   });
 
   it("remembers the Agent from a resumed work session", () => {
@@ -342,7 +371,7 @@ describe("clientReducer", () => {
     });
     const selected = clientReducer(opened, {
       type: "select-agent",
-      agentId: "prototype",
+      agentId: "product-design",
     });
     const resumed = clientReducer(selected, {
       type: "resume-agent-work",
@@ -354,8 +383,8 @@ describe("clientReducer", () => {
       requirementId: "role-permissions",
     });
 
-    expect(resumed.lastAgentByRequirement["role-permissions"]).toBe("prd-writer");
-    expect(reopened.selectedAgentId).toBe("prd-writer");
+    expect(resumed.lastAgentByRequirement["role-permissions"]).toBe("product-design");
+    expect(reopened.selectedAgentId).toBe("product-design");
   });
 
   it("atomically matches a selected requirement to its project", () => {

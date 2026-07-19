@@ -4,6 +4,7 @@ import type {
   Message,
   Mode,
   PreviewKind,
+  ProductWorkMode,
   ProjectRole,
   ProjectSection,
   RequirementStage,
@@ -23,6 +24,7 @@ export interface ClientState {
   view: ViewId;
   mode: Mode;
   selectedAgentId: string;
+  productWorkMode: ProductWorkMode;
   lastAgentByRequirement: Record<string, string>;
   selectedContextIdsByRequirement: Record<string, string[]>;
   lockedContextIdsByRequirement: Record<string, string[]>;
@@ -48,6 +50,7 @@ export interface ClientState {
 export type ClientAction =
   | { type: "navigate"; view: ViewId }
   | { type: "set-mode"; mode: Mode }
+  | { type: "set-product-work-mode"; mode: ProductWorkMode }
   | { type: "select-agent"; agentId: string }
   | { type: "open-task"; taskId: string }
   | { type: "select-project"; projectId: string | null }
@@ -99,7 +102,8 @@ const selectedContextIdsByRequirement = Object.fromEntries(
 export const initialClientState: ClientState = {
   view: "task",
   mode: "research",
-  selectedAgentId: "prd-writer",
+  selectedAgentId: "product-design",
+  productWorkMode: "prd",
   lastAgentByRequirement: Object.fromEntries(
     agentWorkSessions.map((session) => [session.requirementId, session.agentId]),
   ),
@@ -141,7 +145,7 @@ export const initialClientState: ClientState = {
       {
         id: "role-session-agent",
         role: "agent",
-        agentId: "prd-writer",
+        agentId: "product-design",
         text: "REQ-032 PRD v1.4 已生成，等待确认本轮修订。",
         artifact: "prd",
       },
@@ -209,8 +213,10 @@ export function clientReducer(
         ...state,
         mode: action.mode,
         selectedAgentId:
-          action.mode === "office" ? "meeting-notes" : "prd-writer",
+          action.mode === "office" ? "meeting-notes" : "product-design",
       };
+    case "set-product-work-mode":
+      return { ...state, productWorkMode: action.mode };
     case "select-agent":
       return {
         ...state,
@@ -248,6 +254,7 @@ export function clientReducer(
         selectedProjectId: task.projectId ?? null,
         selectedRequirementId: requirement?.id ?? null,
         selectedAgentId: state.taskAgentIdsById[task.id] ?? task.agentId,
+        productWorkMode: task.productWorkMode ?? state.productWorkMode,
       };
     }
     case "select-project":
@@ -271,7 +278,7 @@ export function clientReducer(
           selectedProjectId: action.projectId,
           selectedRequirementId: nextRequirement?.id ?? null,
           selectedAgentId: nextRequirement
-            ? state.lastAgentByRequirement[nextRequirement.id] ?? "requirement-analysis"
+            ? state.lastAgentByRequirement[nextRequirement.id] ?? "product-design"
             : state.selectedAgentId,
         };
       }
@@ -287,7 +294,7 @@ export function clientReducer(
           selectedProjectId: requirement.projectId,
           selectedRequirementId: requirement.id,
           selectedAgentId:
-            state.lastAgentByRequirement[requirement.id] ?? "requirement-analysis",
+            state.lastAgentByRequirement[requirement.id] ?? "product-design",
         };
       }
     case "resume-agent-work": {
@@ -299,6 +306,7 @@ export function clientReducer(
         selectedProjectId: session.projectId,
         selectedRequirementId: session.requirementId,
         selectedAgentId: session.agentId,
+        productWorkMode: session.productWorkMode ?? state.productWorkMode,
         lastAgentByRequirement: {
           ...state.lastAgentByRequirement,
           [session.requirementId]: session.agentId,
@@ -451,8 +459,10 @@ export function clientReducer(
                     : state.selectedAgentId.includes("dev") ||
                         state.selectedAgentId === "code-review"
                       ? "diff"
-                      : state.selectedAgentId === "prototype"
-                        ? "prototype"
+                      : state.selectedAgentId === "product-design"
+                        ? state.productWorkMode === "analysis"
+                          ? "prd"
+                          : state.productWorkMode
                         : "prd",
               },
             ],

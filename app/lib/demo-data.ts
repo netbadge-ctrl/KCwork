@@ -17,9 +17,7 @@ import type {
 } from "./types";
 
 export const agents: Agent[] = [
-  { id: "prd-writer", name: "PRD 撰写 Agent", shortName: "产", mode: "research", category: "产品", description: "基于项目上下文完善 PRD 与验收标准" },
-  { id: "requirement-analysis", name: "需求分析 Agent", shortName: "析", mode: "research", category: "产品", description: "识别范围、依赖、冲突和业务边界" },
-  { id: "prototype", name: "原型设计 Agent", shortName: "设", mode: "research", category: "产品", description: "将需求转化为页面结构与交互原型" },
+  { id: "product-design", name: "产品设计 Agent", shortName: "产", mode: "research", category: "产品", description: "从需求分析、原型设计与审计或 PRD 撰写任一环节开始" },
   { id: "frontend-dev", name: "前端开发 Agent", shortName: "前", mode: "research", category: "研发", description: "理解代码库并完成前端实现" },
   { id: "backend-dev", name: "后端开发 Agent", shortName: "后", mode: "research", category: "研发", description: "实现接口、服务和数据逻辑" },
   { id: "code-review", name: "代码审查 Agent", shortName: "审", mode: "research", category: "研发", description: "检查质量、安全与需求覆盖" },
@@ -36,7 +34,8 @@ export const agentWorkSessions: AgentWorkSession[] = [
     id: "session-role-prd",
     projectId: "customer-portal",
     requirementId: "role-permissions",
-    agentId: "prd-writer",
+    agentId: "product-design",
+    productWorkMode: "prd",
     title: "角色与成员权限重构",
     summary: "已生成 PRD v1.4，并补充 4 条可测试验收标准",
     pendingAction: "等待确认 PRD 修订",
@@ -74,7 +73,7 @@ export const projects: Project[] = [
 ];
 
 export const recentTasks: RecentTask[] = [
-  { id: "prd-role", title: "完善角色管理 PRD", mode: "research", projectId: "customer-portal", requirementId: "role-permissions", agentId: "prd-writer", time: "14:32" },
+  { id: "prd-role", title: "完善角色管理 PRD", mode: "research", projectId: "customer-portal", requirementId: "role-permissions", agentId: "product-design", productWorkMode: "prd", time: "14:32" },
   { id: "permission-ui", title: "实现权限配置页面", mode: "research", projectId: "customer-portal", requirementId: "role-permissions", agentId: "frontend-dev", time: "昨天" },
   { id: "login-failure", title: "分析登录失败问题", mode: "research", projectId: "expense", agentId: "backend-dev", time: "周一" },
   { id: "q3-report", title: "Q3 经营分析报告", mode: "office", agentId: "data-analysis", time: "7 月 12 日" },
@@ -90,7 +89,7 @@ export const recentTaskMessages: Record<string, Message[]> = {
     {
       id: "prd-role-agent",
       role: "agent",
-      agentId: "prd-writer",
+      agentId: "product-design",
       text: "PRD 已更新。我补充了租户管理员、项目管理员和普通成员三类角色的权限边界，并新增了 12 条可测试的验收标准。",
       artifact: "prd",
       artifactTitle: "角色管理模块 PRD v1.3",
