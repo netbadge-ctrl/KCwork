@@ -1,7 +1,31 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import Page from "../page";
+
+const storedValues = new Map<string, string>();
+Object.defineProperty(window, "localStorage", {
+  configurable: true,
+  value: {
+    clear: () => storedValues.clear(),
+    getItem: (key: string) => storedValues.get(key) ?? null,
+    key: (index: number) => [...storedValues.keys()][index] ?? null,
+    get length() {
+      return storedValues.size;
+    },
+    removeItem: (key: string) => storedValues.delete(key),
+    setItem: (key: string, value: string) => storedValues.set(key, value),
+  } satisfies Storage,
+});
+
+beforeEach(() => {
+  window.localStorage.clear();
+  Object.defineProperty(window, "innerWidth", {
+    configurable: true,
+    value: 1400,
+    writable: true,
+  });
+});
 
 async function openCustomerPortal() {
   await userEvent.click(screen.getByRole("button", { name: "项目" }));
@@ -33,6 +57,150 @@ async function setCurrentUserRole(
 }
 
 describe("enterprise AI client demo", () => {
+  test("collapses the left navigation and remembers the state", async () => {
+    render(<Page />);
+    await userEvent.click(
+      screen.getByRole("button", { name: "收起左侧导航" }),
+    );
+    expect(screen.getByRole("navigation", { name: "主导航" })).toHaveClass(
+      "collapsed",
+    );
+    expect(window.localStorage.getItem("kflow.sidebar.collapsed")).toBe("true");
+  });
+
+  test("does not overwrite a sidebar toggle made during preference hydration", async () => {
+    render(<Page />);
+    fireEvent.click(screen.getByRole("button", { name: "收起左侧导航" }));
+    await waitFor(() => {
+      expect(screen.getByRole("navigation", { name: "主导航" })).toHaveClass(
+        "collapsed",
+      );
+      expect(window.localStorage.getItem("kflow.sidebar.collapsed")).toBe(
+        "true",
+      );
+    });
+  });
+
+  test("opens a wider adjustable right panel", async () => {
+    render(<Page />);
+    await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
+    expect(
+      screen.getByRole("separator", { name: "调整辅助面板宽度" }),
+    ).toHaveAttribute("aria-valuenow", "560");
+  });
+
+  test("restores the collapsed navigation preference", async () => {
+    window.localStorage.setItem("kflow.sidebar.collapsed", "true");
+    render(<Page />);
+    await screen.findByRole("button", { name: "展开左侧导航" });
+    expect(screen.getByRole("navigation", { name: "主导航" })).toHaveClass(
+      "collapsed",
+    );
+    expect(
+      screen.getByRole("button", { name: "展开左侧导航" }),
+    ).toBeInTheDocument();
+  });
+
+  test("restores the saved right panel width", async () => {
+    window.localStorage.setItem("kflow.rightPanel.width", "640");
+    render(<Page />);
+    await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
+    expect(
+      screen.getByRole("separator", { name: "调整辅助面板宽度" }),
+    ).toHaveAttribute("aria-valuenow", "640");
+  });
+
+  test("resizes the right panel from the keyboard and persists the width", async () => {
+    render(<Page />);
+    await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
+    const separator = screen.getByRole("separator", {
+      name: "调整辅助面板宽度",
+    });
+    separator.focus();
+    await userEvent.keyboard("{ArrowLeft}");
+    expect(separator).toHaveAttribute("aria-valuenow", "576");
+    expect(window.localStorage.getItem("kflow.rightPanel.width")).toBe("576");
+    await userEvent.keyboard("{ArrowRight}");
+    expect(separator).toHaveAttribute("aria-valuenow", "560");
+  });
+
+  test("resets the right panel width on double click", async () => {
+    window.localStorage.setItem("kflow.rightPanel.width", "640");
+    render(<Page />);
+    await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
+    const separator = screen.getByRole("separator", {
+      name: "调整辅助面板宽度",
+    });
+    await userEvent.dblClick(separator);
+    expect(separator).toHaveAttribute("aria-valuenow", "560");
+  });
+
+  test("resizes the right panel with a pointer within its bounds", async () => {
+    render(<Page />);
+    await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
+    const separator = screen.getByRole("separator", {
+      name: "调整辅助面板宽度",
+    });
+    fireEvent.pointerDown(separator, {
+      button: 0,
+      clientX: 800,
+      isPrimary: true,
+      pointerId: 1,
+    });
+    fireEvent.pointerMove(separator, {
+      clientX: 700,
+      isPrimary: true,
+      pointerId: 1,
+    });
+    expect(separator).toHaveAttribute("aria-valuenow", "660");
+    fireEvent.pointerMove(separator, { clientX: -1000, pointerId: 1 });
+    expect(separator).toHaveAttribute("aria-valuenow", "980");
+    fireEvent.pointerMove(separator, { clientX: 2000, pointerId: 1 });
+    expect(separator).toHaveAttribute("aria-valuenow", "420");
+    fireEvent.pointerUp(separator, { pointerId: 1 });
+  });
+
+  test("ignores non-primary pointer resizing", async () => {
+    render(<Page />);
+    await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
+    const separator = screen.getByRole("separator", {
+      name: "调整辅助面板宽度",
+    });
+    fireEvent.pointerDown(separator, {
+      button: 2,
+      clientX: 800,
+      isPrimary: true,
+      pointerId: 1,
+    });
+    fireEvent.pointerMove(separator, { clientX: 700, pointerId: 1 });
+    expect(separator).toHaveAttribute("aria-valuenow", "560");
+  });
+
+  test("reclamps a saved right panel width when the viewport narrows", async () => {
+    window.localStorage.setItem("kflow.rightPanel.width", "900");
+    render(<Page />);
+    await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
+    const separator = screen.getByRole("separator", {
+      name: "调整辅助面板宽度",
+    });
+    expect(separator).toHaveAttribute("aria-valuenow", "900");
+    window.innerWidth = 1000;
+    fireEvent(window, new Event("resize"));
+    expect(separator).toHaveAttribute("aria-valuemax", "700");
+    expect(separator).toHaveAttribute("aria-valuenow", "700");
+  });
+
+  test("matches the overlay resize bounds to the space beside the sidebar", async () => {
+    window.innerWidth = 800;
+    render(<Page />);
+    await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
+    const separator = screen.getByRole("separator", {
+      name: "调整辅助面板宽度",
+    });
+    expect(separator).toHaveAttribute("aria-valuemax", "552");
+    expect(separator).toHaveAttribute("aria-valuenow", "552");
+  });
+
   test("navigates to projects from the fixed sidebar", async () => {
     render(<Page />);
     await userEvent.click(screen.getByRole("button", { name: "项目" }));

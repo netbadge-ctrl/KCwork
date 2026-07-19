@@ -5,7 +5,7 @@ import {
   PanelRightClose,
   X,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   codeChanges,
   productDocuments,
@@ -28,9 +28,17 @@ import { ContextualScenePreview } from "./contextual-scene-preview";
 import { MemberManager } from "./member-manager";
 import { PreviewErrorState, type PreviewErrorKind } from "./preview-error-state";
 import { ProjectSettingsPanel } from "./project-settings-panel";
+import {
+  clampRightPanelWidthForShell,
+  DEFAULT_RIGHT_PANEL_WIDTH,
+  getRightPanelMaxWidth,
+  MIN_RIGHT_PANEL_WIDTH,
+} from "../lib/layout-preferences";
 
 export interface PreviewDrawerProps {
   preview: PreviewKind | null;
+  sidebarWidth: number;
+  width: number;
   tools: ContextualTool[];
   members: ProjectMember[];
   memberRoles: Record<string, ProjectRole>;
@@ -52,6 +60,7 @@ export interface PreviewDrawerProps {
   onOpenAsset(section: Exclude<ProjectSection, "overview">): void;
   onClose(): void;
   onRetryPreview?(): void;
+  onWidthChange(width: number): void;
 }
 
 const contextualLabels: Partial<Record<PreviewKind, string>> = {
@@ -68,6 +77,8 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
 
 export function PreviewDrawer({
   preview,
+  sidebarWidth,
+  width,
   tools,
   members,
   memberRoles,
@@ -89,8 +100,24 @@ export function PreviewDrawer({
   onOpenAsset,
   onClose,
   onRetryPreview,
+  onWidthChange,
 }: PreviewDrawerProps) {
   const selectedTool = tools.find((tool) => tool.kind === preview);
+  const [viewportWidth, setViewportWidth] = useState(
+    Math.ceil(DEFAULT_RIGHT_PANEL_WIDTH / 0.7),
+  );
+  const dragStart = useRef<{
+    pointerId: number;
+    width: number;
+    x: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const updateViewportWidth = () => setViewportWidth(window.innerWidth);
+    updateViewportWidth();
+    window.addEventListener("resize", updateViewportWidth);
+    return () => window.removeEventListener("resize", updateViewportWidth);
+  }, []);
 
   useEffect(() => {
     if (!preview) return;
@@ -109,10 +136,77 @@ export function PreviewDrawer({
   return (
     <div className="auxiliary" aria-label="辅助工具">
       {preview && (
-        <aside
-          className="preview-drawer"
-          aria-label={contextualLabels[preview] ?? selectedTool?.label ?? "产物预览"}
-        >
+        <>
+          <div
+            aria-label="调整辅助面板宽度"
+            aria-orientation="vertical"
+            aria-valuemax={getRightPanelMaxWidth(viewportWidth, sidebarWidth)}
+            aria-valuemin={MIN_RIGHT_PANEL_WIDTH}
+            aria-valuenow={width}
+            className="drawer-resize-handle"
+            onDoubleClick={() =>
+              onWidthChange(
+                clampRightPanelWidthForShell(
+                  DEFAULT_RIGHT_PANEL_WIDTH,
+                  viewportWidth,
+                  sidebarWidth,
+                ),
+              )
+            }
+            onKeyDown={(event) => {
+              if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
+                return;
+              }
+              event.preventDefault();
+              const delta = event.key === "ArrowLeft" ? 16 : -16;
+              onWidthChange(
+                clampRightPanelWidthForShell(
+                  width + delta,
+                  viewportWidth,
+                  sidebarWidth,
+                ),
+              );
+            }}
+            onLostPointerCapture={() => {
+              dragStart.current = null;
+            }}
+            onPointerDown={(event) => {
+              if (event.button !== 0 || event.isPrimary === false) return;
+              dragStart.current = {
+                pointerId: event.pointerId,
+                width,
+                x: event.clientX,
+              };
+              event.currentTarget.setPointerCapture?.(event.pointerId);
+              event.preventDefault();
+            }}
+            onPointerMove={(event) => {
+              if (
+                !dragStart.current ||
+                dragStart.current.pointerId !== event.pointerId
+              ) {
+                return;
+              }
+              onWidthChange(
+                clampRightPanelWidthForShell(
+                  dragStart.current.width + dragStart.current.x - event.clientX,
+                  viewportWidth,
+                  sidebarWidth,
+                ),
+              );
+            }}
+            onPointerUp={(event) => {
+              if (dragStart.current?.pointerId !== event.pointerId) return;
+              dragStart.current = null;
+              event.currentTarget.releasePointerCapture?.(event.pointerId);
+            }}
+            role="separator"
+            tabIndex={0}
+          />
+          <aside
+            className="preview-drawer"
+            aria-label={contextualLabels[preview] ?? selectedTool?.label ?? "产物预览"}
+          >
           <header className="drawer-header">
             <div>
               <p className="eyebrow">辅助面板</p>
@@ -170,7 +264,8 @@ export function PreviewDrawer({
               </>
             )}
           </div>
-        </aside>
+          </aside>
+        </>
       )}
       <aside className="right-rail" aria-label="辅助工具栏">
         {tools.map(({ kind, label, icon: Icon }) => (

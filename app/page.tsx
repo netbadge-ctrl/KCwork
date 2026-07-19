@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useState, type CSSProperties } from "react";
 import { AssetsView } from "./components/assets-view";
 import { HomeView } from "./components/home-view";
 import { NavigationGuardDialog } from "./components/navigation-guard-dialog";
@@ -30,6 +30,68 @@ import {
   unscopedCapabilities,
 } from "./lib/project-capabilities";
 import type { ProjectSection, ViewId } from "./lib/types";
+import {
+  clampRightPanelWidthForShell,
+  COLLAPSED_SIDEBAR_WIDTH,
+  DEFAULT_RIGHT_PANEL_WIDTH,
+  EXPANDED_SIDEBAR_WIDTH,
+  readStoredBoolean,
+  readStoredNumber,
+} from "./lib/layout-preferences";
+
+const SIDEBAR_COLLAPSED_STORAGE_KEY = "kflow.sidebar.collapsed";
+const RIGHT_PANEL_WIDTH_STORAGE_KEY = "kflow.rightPanel.width";
+
+interface LayoutPreferencesState {
+  hydrated: boolean;
+  isSidebarCollapsed: boolean;
+  rightPanelWidth: number;
+}
+
+type LayoutPreferencesAction =
+  | {
+      type: "hydrate";
+      isSidebarCollapsed: boolean;
+      rightPanelWidth: number;
+    }
+  | { type: "toggle-sidebar"; viewportWidth: number }
+  | { type: "set-right-panel-width"; width: number };
+
+const initialLayoutPreferences: LayoutPreferencesState = {
+  hydrated: false,
+  isSidebarCollapsed: false,
+  rightPanelWidth: DEFAULT_RIGHT_PANEL_WIDTH,
+};
+
+function layoutPreferencesReducer(
+  state: LayoutPreferencesState,
+  action: LayoutPreferencesAction,
+): LayoutPreferencesState {
+  switch (action.type) {
+    case "hydrate":
+      return {
+        hydrated: true,
+        isSidebarCollapsed: action.isSidebarCollapsed,
+        rightPanelWidth: action.rightPanelWidth,
+      };
+    case "toggle-sidebar": {
+      const isSidebarCollapsed = !state.isSidebarCollapsed;
+      return {
+        ...state,
+        isSidebarCollapsed,
+        rightPanelWidth: clampRightPanelWidthForShell(
+          state.rightPanelWidth,
+          action.viewportWidth,
+          isSidebarCollapsed
+            ? COLLAPSED_SIDEBAR_WIDTH
+            : EXPANDED_SIDEBAR_WIDTH,
+        ),
+      };
+    }
+    case "set-right-panel-width":
+      return { ...state, rightPanelWidth: action.width };
+  }
+}
 
 interface PendingNavigation {
   destination: string;
@@ -41,8 +103,68 @@ export default function Page() {
   const [state, dispatch] = useReducer(clientReducer, initialClientState);
   const [pendingNavigation, setPendingNavigation] =
     useState<PendingNavigation | null>(null);
+  const [layoutPreferences, dispatchLayoutPreferences] = useReducer(
+    layoutPreferencesReducer,
+    initialLayoutPreferences,
+  );
   const selectedTaskExecution =
     state.taskExecutionsById[state.selectedTaskId] ?? "idle";
+
+  useEffect(() => {
+    const isSidebarCollapsed = readStoredBoolean(
+      window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY),
+      false,
+    );
+    dispatchLayoutPreferences({
+      type: "hydrate",
+      isSidebarCollapsed,
+      rightPanelWidth: clampRightPanelWidthForShell(
+        readStoredNumber(
+          window.localStorage.getItem(RIGHT_PANEL_WIDTH_STORAGE_KEY),
+          DEFAULT_RIGHT_PANEL_WIDTH,
+        ),
+        window.innerWidth,
+        isSidebarCollapsed
+          ? COLLAPSED_SIDEBAR_WIDTH
+          : EXPANDED_SIDEBAR_WIDTH,
+      ),
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!layoutPreferences.hydrated) return;
+    window.localStorage.setItem(
+      SIDEBAR_COLLAPSED_STORAGE_KEY,
+      String(layoutPreferences.isSidebarCollapsed),
+    );
+  }, [layoutPreferences.hydrated, layoutPreferences.isSidebarCollapsed]);
+
+  useEffect(() => {
+    if (!layoutPreferences.hydrated) return;
+    window.localStorage.setItem(
+      RIGHT_PANEL_WIDTH_STORAGE_KEY,
+      String(layoutPreferences.rightPanelWidth),
+    );
+  }, [layoutPreferences.hydrated, layoutPreferences.rightPanelWidth]);
+
+  useEffect(() => {
+    const clampToViewport = () =>
+      dispatchLayoutPreferences({
+        type: "set-right-panel-width",
+        width: clampRightPanelWidthForShell(
+          layoutPreferences.rightPanelWidth,
+          window.innerWidth,
+          layoutPreferences.isSidebarCollapsed
+            ? COLLAPSED_SIDEBAR_WIDTH
+            : EXPANDED_SIDEBAR_WIDTH,
+        ),
+      });
+    window.addEventListener("resize", clampToViewport);
+    return () => window.removeEventListener("resize", clampToViewport);
+  }, [
+    layoutPreferences.isSidebarCollapsed,
+    layoutPreferences.rightPanelWidth,
+  ]);
 
   useEffect(() => {
     if (["idle", "done", "error"].includes(selectedTaskExecution)) return;
@@ -172,9 +294,22 @@ export default function Page() {
   };
 
   return (
-    <main className={`client-shell ${state.preview ? "drawer-open" : ""}`}>
+    <main
+      className={`client-shell ${state.preview ? "drawer-open" : ""}`}
+      style={
+        {
+          "--sidebar-width": `${
+            layoutPreferences.isSidebarCollapsed
+              ? COLLAPSED_SIDEBAR_WIDTH
+              : EXPANDED_SIDEBAR_WIDTH
+          }px`,
+          "--right-panel-width": `${layoutPreferences.rightPanelWidth}px`,
+        } as CSSProperties
+      }
+    >
       <Sidebar
         activeView={state.view}
+        collapsed={layoutPreferences.isSidebarCollapsed}
         recentTasks={recentTasks}
         onNavigate={navigateFromSidebar}
         onOpenProfile={() => navigateFromSidebar("profile")}
@@ -183,6 +318,12 @@ export default function Page() {
             dispatch({ type: "open-task", taskId: task.id });
           });
         }}
+        onToggleCollapsed={() =>
+          dispatchLayoutPreferences({
+            type: "toggle-sidebar",
+            viewportWidth: window.innerWidth,
+          })
+        }
       />
 
       <section className="main-stage">
@@ -400,6 +541,12 @@ export default function Page() {
           })
         }
         preview={state.preview}
+        sidebarWidth={
+          layoutPreferences.isSidebarCollapsed
+            ? COLLAPSED_SIDEBAR_WIDTH
+            : EXPANDED_SIDEBAR_WIDTH
+        }
+        width={layoutPreferences.rightPanelWidth}
         tools={contextualTools}
         requirementStages={state.requirementStages}
         requirements={requirements.filter(
@@ -412,6 +559,9 @@ export default function Page() {
         selectedAssetId={state.selectedAssetId}
         onSelect={(preview) => dispatch({ type: "open-preview", preview })}
         onClose={() => dispatch({ type: "close-preview" })}
+        onWidthChange={(width) =>
+          dispatchLayoutPreferences({ type: "set-right-panel-width", width })
+        }
         sources={activeContextSources}
       />
       {pendingNavigation && (
