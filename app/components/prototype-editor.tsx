@@ -1,6 +1,14 @@
 "use client";
 
-import { useMemo, useState, type MouseEvent } from "react";
+import { useMemo, type MouseEvent } from "react";
+import {
+  type PrototypeElement,
+  type PrototypeElementDraft,
+  type PrototypePageName,
+  usePrototypeDocumentState,
+} from "../lib/prototype-state";
+
+export type { PrototypeElement, PrototypeElementDraft } from "../lib/prototype-state";
 
 export const PROTOTYPE_BROWSER_URL =
   "/prototype?project=customer-portal&requirement=role-permissions&version=V3&inspect=1";
@@ -8,58 +16,6 @@ export const PROTOTYPE_BROWSER_URL =
 export function getPrototypeBrowserUrl(canEdit: boolean) {
   return canEdit ? PROTOTYPE_BROWSER_URL : `${PROTOTYPE_BROWSER_URL}&readonly=1`;
 }
-
-export interface PrototypeElement {
-  id: string;
-  name: string;
-  type: "button" | "input" | "heading" | "navigation" | "row";
-  text: string;
-  tone: "primary" | "secondary" | "neutral";
-  spec: string;
-  page: string;
-}
-
-export interface PrototypeElementDraft {
-  text: string;
-  tone: PrototypeElement["tone"];
-  instruction: string;
-}
-
-interface PrototypeElementDiff {
-  before: PrototypeElement;
-  after: PrototypeElement;
-  instruction: string | null;
-}
-
-const initialElements: PrototypeElement[] = [
-  {
-    id: "add-member",
-    name: "添加成员按钮",
-    type: "button",
-    text: "添加成员",
-    tone: "primary",
-    spec: "AC-07",
-    page: "成员与角色",
-  },
-  {
-    id: "member-search",
-    name: "成员搜索输入框",
-    type: "input",
-    text: "搜索成员、邮箱或角色",
-    tone: "neutral",
-    spec: "US-04",
-    page: "成员与角色",
-  },
-  {
-    id: "member-row-lin",
-    name: "林川成员行",
-    type: "row",
-    text: "林川 · 研发",
-    tone: "neutral",
-    spec: "AC-09",
-    page: "成员与角色",
-  },
-];
 
 const toneLabels: Record<PrototypeElement["tone"], string> = {
   primary: "主要",
@@ -73,6 +29,27 @@ const typeLabels: Record<PrototypeElement["type"], string> = {
   heading: "标题",
   navigation: "导航",
   row: "成员行",
+};
+
+const pageDetails: Record<
+  Exclude<PrototypePageName, "成员与角色">,
+  { heading: string; path: string; detail: string }
+> = {
+  总览: {
+    heading: "项目总览",
+    path: "overview",
+    detail: "项目关键指标与最近活动预览",
+  },
+  角色详情: {
+    heading: "角色详情",
+    path: "roles/product",
+    detail: "产品角色的权限范围与成员预览",
+  },
+  操作审计: {
+    heading: "操作审计",
+    path: "audit",
+    detail: "角色变更与成员操作记录预览",
+  },
 };
 
 function interpretDraft(
@@ -105,17 +82,20 @@ function interpretDraft(
 }
 
 export function PrototypeEditor({
+  activePage = "成员与角色",
   canEdit,
   compact = false,
+  inspectionEnabled = true,
+  requirementId = "role-permissions",
 }: {
+  activePage?: PrototypePageName;
   canEdit: boolean;
   compact?: boolean;
+  inspectionEnabled?: boolean;
+  requirementId?: string;
 }) {
-  const [elements, setElements] = useState(initialElements);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [draft, setDraft] = useState<PrototypeElementDraft | null>(null);
-  const [pendingDiff, setPendingDiff] = useState<PrototypeElementDiff | null>(null);
-  const [undoSnapshot, setUndoSnapshot] = useState<PrototypeElement[] | null>(null);
+  const { state, updateState } = usePrototypeDocumentState(requirementId);
+  const { elements, selectedId, draft, pendingDiff, undoSnapshot } = state;
   const selectedElement = useMemo(
     () => elements.find((element) => element.id === selectedId) ?? null,
     [elements, selectedId],
@@ -126,15 +106,25 @@ export function PrototypeEditor({
   );
 
   const selectElement = (element: PrototypeElement) => {
-    setSelectedId(element.id);
-    setDraft({ text: element.text, tone: element.tone, instruction: "" });
-    setPendingDiff(null);
+    if (!inspectionEnabled) return;
+    updateState((current) => ({
+      ...current,
+      selectedId: element.id,
+      draft: { text: element.text, tone: element.tone, instruction: "" },
+      pendingDiff: null,
+      validationError: null,
+    }));
   };
 
   const clearSelection = () => {
-    setSelectedId(null);
-    setDraft(null);
-    setPendingDiff(null);
+    if (!inspectionEnabled) return;
+    updateState((current) => ({
+      ...current,
+      selectedId: null,
+      draft: null,
+      pendingDiff: null,
+      validationError: null,
+    }));
   };
 
   const clearFromCanvas = (event: MouseEvent<HTMLDivElement>) => {
@@ -143,10 +133,12 @@ export function PrototypeEditor({
   };
 
   const updateDraft = (changes: Partial<PrototypeElementDraft>) => {
-    setDraft((current) =>
-      current ? { ...current, ...changes } : current,
-    );
-    setPendingDiff(null);
+    updateState((current) => ({
+      ...current,
+      draft: current.draft ? { ...current.draft, ...changes } : null,
+      pendingDiff: null,
+      validationError: null,
+    }));
   };
 
   const previewDraft = () => {
@@ -155,48 +147,62 @@ export function PrototypeEditor({
       selectedElement,
       draft,
     );
-    setPendingDiff({
-      before: selectedElement,
-      after,
-      instruction:
-        draft.instruction.trim() && !understoodInstruction
-          ? draft.instruction.trim()
+    const changed =
+      after.text !== selectedElement.text || after.tone !== selectedElement.tone;
+    const unsupported = Boolean(draft.instruction.trim()) && !understoodInstruction;
+    updateState((current) => ({
+      ...current,
+      pendingDiff:
+        changed && !unsupported
+          ? { before: selectedElement, after }
           : null,
-    });
+      validationError: unsupported
+        ? "无法理解这条修改要求，请调整文案、视觉层级或使用支持的描述。"
+        : changed
+          ? null
+          : "未检测到可应用的修改。",
+    }));
   };
 
   const applyDraft = () => {
     if (!canEdit || !pendingDiff) return;
-    setUndoSnapshot(elements);
-    setElements((current) =>
-      current.map((element) =>
+    updateState((current) => ({
+      ...current,
+      undoSnapshot: current.elements,
+      elements: current.elements.map((element) =>
         element.id === pendingDiff.after.id ? pendingDiff.after : element,
       ),
-    );
-    setDraft({
-      text: pendingDiff.after.text,
-      tone: pendingDiff.after.tone,
-      instruction: "",
-    });
-    setPendingDiff(null);
+      draft: {
+        text: pendingDiff.after.text,
+        tone: pendingDiff.after.tone,
+        instruction: "",
+      },
+      pendingDiff: null,
+      validationError: null,
+    }));
   };
 
   const undoLastChange = () => {
     if (!canEdit || !undoSnapshot) return;
-    const restored = undoSnapshot;
-    setElements(restored);
-    setUndoSnapshot(null);
-    setPendingDiff(null);
-    const restoredSelection = restored.find(
-      (element) => element.id === selectedId,
-    );
-    if (restoredSelection) {
-      setDraft({
-        text: restoredSelection.text,
-        tone: restoredSelection.tone,
-        instruction: "",
-      });
-    }
+    updateState((current) => {
+      const restoredSelection = undoSnapshot.find(
+        (element) => element.id === current.selectedId,
+      );
+      return {
+        ...current,
+        elements: undoSnapshot,
+        undoSnapshot: null,
+        pendingDiff: null,
+        validationError: null,
+        draft: restoredSelection
+          ? {
+              text: restoredSelection.text,
+              tone: restoredSelection.tone,
+              instruction: "",
+            }
+          : current.draft,
+      };
+    });
   };
 
   const renderSelector = (id: string, className: string) => {
@@ -210,7 +216,9 @@ export function PrototypeEditor({
         }
         aria-pressed={selectedId === element.id}
         className={`${className} prototype-selectable ${selectedId === element.id ? "selected" : ""}`}
+        data-interaction-state={element.interactionState}
         data-prototype-element={element.id}
+        data-size={element.size}
         onClick={() => selectElement(element)}
         type="button"
       >
@@ -228,11 +236,59 @@ export function PrototypeEditor({
     );
   };
 
+  const renderMemberPage = () => (
+    <>
+      <div className="prototype-browser-bar">
+        <i /><i /><i /><span>portal.local/members</span>
+      </div>
+      <div className="prototype-editor-app">
+        <aside>
+          <b>KFlow</b>
+          <span>项目总览</span>
+          {renderSelector("members-navigation", "prototype-editor-navigation active")}
+          <span>操作审计</span>
+        </aside>
+        <main>
+          <p>企业客户门户 V3.2</p>
+          <div className="prototype-screen-heading">
+            <h3>{renderSelector("members-heading", "prototype-editor-heading")}</h3>
+            {renderSelector("add-member", `prototype-element-${elementById["add-member"].tone}`)}
+          </div>
+          {renderSelector("member-search", "prototype-editor-search")}
+          <div className="prototype-editor-member-list">
+            <div className="prototype-member-line prototype-static-row">
+              <i>陈</i><span>陈楠 · 项目管理员</span><b>管理全部</b><em>•••</em>
+            </div>
+            {renderSelector("member-row-lin", "prototype-member-line")}
+            <div className="prototype-member-line prototype-static-row">
+              <i>周</i><span>周祺 · 测试</span><b>按角色编辑</b><em>•••</em>
+            </div>
+          </div>
+        </main>
+      </div>
+    </>
+  );
+
+  const renderOtherPage = () => {
+    const detail = pageDetails[activePage as Exclude<PrototypePageName, "成员与角色">];
+    return (
+      <>
+        <div className="prototype-browser-bar">
+          <i /><i /><i /><span>portal.local/{detail.path}</span>
+        </div>
+        <div className="prototype-editor-placeholder">
+          <b>KFlow</b>
+          <div><p>企业客户门户 V3.2</p><h3>{detail.heading}</h3><span>{detail.detail}</span></div>
+        </div>
+      </>
+    );
+  };
+
   return (
     <section
       className={`prototype-editor ${compact ? "compact" : ""}`}
       onKeyDown={(event) => {
-        if (event.key !== "Escape" || !selectedId) return;
+        if (event.key !== "Escape" || !selectedId || !inspectionEnabled) return;
         event.preventDefault();
         event.stopPropagation();
         clearSelection();
@@ -245,37 +301,7 @@ export function PrototypeEditor({
         role="application"
         tabIndex={-1}
       >
-        <div className="prototype-browser-bar">
-          <i />
-          <i />
-          <i />
-          <span>portal.local/members</span>
-        </div>
-        <div className="prototype-editor-app">
-          <aside>
-            <b>KFlow</b>
-            <span>项目总览</span>
-            <span className="active">成员管理</span>
-            <span>操作审计</span>
-          </aside>
-          <main>
-            <p>企业客户门户 V3.2</p>
-            <div className="prototype-screen-heading">
-              <h3>成员与角色管理</h3>
-              {renderSelector("add-member", `prototype-element-${elementById["add-member"].tone}`)}
-            </div>
-            {renderSelector("member-search", "prototype-editor-search")}
-            <div className="prototype-editor-member-list">
-              <div className="prototype-member-line prototype-static-row">
-                <i>陈</i><span>陈楠 · 项目管理员</span><b>管理全部</b><em>•••</em>
-              </div>
-              {renderSelector("member-row-lin", "prototype-member-line")}
-              <div className="prototype-member-line prototype-static-row">
-                <i>周</i><span>周祺 · 测试</span><b>按角色编辑</b><em>•••</em>
-              </div>
-            </div>
-          </main>
-        </div>
+        {activePage === "成员与角色" ? renderMemberPage() : renderOtherPage()}
       </div>
 
       <aside className="prototype-element-inspector" aria-label="元素检查器">
@@ -284,7 +310,7 @@ export function PrototypeEditor({
             <p className="eyebrow">Inspect</p>
             <h3>{selectedElement?.name ?? "选择页面元素"}</h3>
           </div>
-          {selectedElement && (
+          {selectedElement && inspectionEnabled && (
             <button className="text-button" onClick={clearSelection} type="button">
               清除选择
             </button>
@@ -296,6 +322,8 @@ export function PrototypeEditor({
             <div className="prototype-element-meta">
               <span>元素类型：{typeLabels[selectedElement.type]}</span>
               <span>所属页面：{selectedElement.page}</span>
+              <span>尺寸：{selectedElement.size}</span>
+              <span>交互状态：{selectedElement.interactionState}</span>
             </div>
             <label>
               <span>元素文案</span>
@@ -343,6 +371,11 @@ export function PrototypeEditor({
             >
               预览修改
             </button>
+            {state.validationError && (
+              <p className="prototype-change-error" role="alert">
+                {state.validationError}
+              </p>
+            )}
             {pendingDiff && (
               <div className="prototype-change-summary" role="status">
                 <strong>确认本次修改</strong>
@@ -351,9 +384,6 @@ export function PrototypeEditor({
                 )}
                 {pendingDiff.before.tone !== pendingDiff.after.tone && (
                   <p>{toneLabels[pendingDiff.before.tone]} → {toneLabels[pendingDiff.after.tone]}</p>
-                )}
-                {pendingDiff.instruction && (
-                  <p>待执行指令：{pendingDiff.instruction}</p>
                 )}
               </div>
             )}
@@ -378,7 +408,9 @@ export function PrototypeEditor({
           </>
         ) : (
           <p className="prototype-inspector-empty">
-            点击画布中的按钮、输入框或成员行，查看属性并起草修改。
+            {inspectionEnabled
+              ? "点击画布中的按钮、输入框、标题、导航或成员行，查看属性并起草修改。"
+              : "检查模式已关闭；画布控件按预览方式展示，不会改变当前选择。"}
           </p>
         )}
       </aside>

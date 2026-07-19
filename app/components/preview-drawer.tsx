@@ -30,8 +30,8 @@ import { PreviewErrorState, type PreviewErrorKind } from "./preview-error-state"
 import { ProjectSettingsPanel } from "./project-settings-panel";
 import {
   getPrototypeBrowserUrl,
-  PrototypeEditor,
 } from "./prototype-editor";
+import { PrototypePreviewShell } from "./prototype-preview-shell";
 import {
   clampRightPanelWidthForShell,
   DEFAULT_RIGHT_PANEL_WIDTH,
@@ -354,7 +354,11 @@ function PrototypePreview({
           </a>
         </div>
       </div>
-      <PrototypeEditor canEdit={canEdit} compact />
+      <PrototypePreviewShell
+        canEdit={canEdit}
+        compact
+        requirementId={requirement.id}
+      />
       <footer>桌面端 · 1440 × 900 · 12 个交互热点</footer>
     </article>
   );

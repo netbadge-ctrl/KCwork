@@ -154,7 +154,7 @@ describe("enterprise AI client demo", () => {
     });
     expect(separator).toHaveAttribute("aria-valuenow", "660");
     fireEvent.pointerMove(separator, { clientX: -1000, pointerId: 1 });
-    expect(separator).toHaveAttribute("aria-valuenow", "980");
+    expect(separator).toHaveAttribute("aria-valuenow", "732");
     fireEvent.pointerMove(separator, { clientX: 2000, pointerId: 1 });
     expect(separator).toHaveAttribute("aria-valuenow", "420");
     fireEvent.pointerUp(separator, { pointerId: 1 });
@@ -183,7 +183,7 @@ describe("enterprise AI client demo", () => {
     const separator = screen.getByRole("separator", {
       name: "调整辅助面板宽度",
     });
-    expect(separator).toHaveAttribute("aria-valuenow", "900");
+    expect(separator).toHaveAttribute("aria-valuenow", "732");
     window.innerWidth = 1000;
     fireEvent(window, new Event("resize"));
     expect(separator).toHaveAttribute("aria-valuemax", "700");
@@ -199,6 +199,21 @@ describe("enterprise AI client demo", () => {
     });
     expect(separator).toHaveAttribute("aria-valuemax", "552");
     expect(separator).toHaveAttribute("aria-valuenow", "552");
+  });
+
+  test("preserves the center stage at the inline breakpoint for both sidebar states", async () => {
+    window.innerWidth = 1121;
+    render(<Page />);
+    await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
+    const separator = screen.getByRole("separator", {
+      name: "调整辅助面板宽度",
+    });
+    expect(separator).toHaveAttribute("aria-valuemax", "453");
+    expect(separator).toHaveAttribute("aria-valuenow", "453");
+
+    await userEvent.click(screen.getByRole("button", { name: "收起左侧导航" }));
+    expect(separator).toHaveAttribute("aria-valuemax", "637");
+    expect(separator).toHaveAttribute("aria-valuenow", "453");
   });
 
   test("preserves the desktop panel preference across the mobile overlay", async () => {
@@ -698,6 +713,160 @@ describe("enterprise AI client demo", () => {
       within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
     );
     expect(within(drawer).getByText("关联 Spec：AC-07")).toBeInTheDocument();
+  });
+
+  test("keeps applied prototype edits after closing and reopening the drawer", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "预览角色配置页面" }),
+    );
+    let drawer = screen.getByRole("complementary", { name: "页面预览" });
+    await userEvent.click(
+      within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
+    );
+    await userEvent.clear(within(drawer).getByLabelText("元素文案"));
+    await userEvent.type(within(drawer).getByLabelText("元素文案"), "邀请成员");
+    await userEvent.click(within(drawer).getByRole("button", { name: "预览修改" }));
+    await userEvent.click(within(drawer).getByRole("button", { name: "应用修改" }));
+    await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
+
+    await userEvent.click(screen.getByRole("button", { name: "页面预览" }));
+    drawer = screen.getByRole("complementary", { name: "页面预览" });
+    expect(
+      within(drawer).getByRole("button", { name: "选择邀请成员按钮" }),
+    ).toBeInTheDocument();
+  });
+
+  test("retains an unconfirmed prototype preview when closing the drawer", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "预览角色配置页面" }),
+    );
+    const drawer = screen.getByRole("complementary", { name: "页面预览" });
+    await userEvent.click(
+      within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
+    );
+    await userEvent.clear(within(drawer).getByLabelText("元素文案"));
+    await userEvent.type(within(drawer).getByLabelText("元素文案"), "邀请同事");
+    await userEvent.click(within(drawer).getByRole("button", { name: "预览修改" }));
+    expect(document.querySelector(".client-shell")).toHaveAttribute(
+      "data-prototype-pending",
+      "true",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
+
+    expect(
+      screen.getByRole("dialog", { name: "未确认的原型修改" }),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "保留修改并离开" }));
+    await userEvent.click(screen.getByRole("button", { name: "页面预览" }));
+    expect(screen.getByText(/添加成员 → 邀请同事/)).toBeInTheDocument();
+  });
+
+  test("discards only the pending prototype draft on a product-mode switch", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "预览角色配置页面" }),
+    );
+    const drawer = screen.getByRole("complementary", { name: "页面预览" });
+    await userEvent.click(
+      within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
+    );
+    await userEvent.clear(within(drawer).getByLabelText("元素文案"));
+    await userEvent.type(within(drawer).getByLabelText("元素文案"), "邀请成员");
+    await userEvent.click(within(drawer).getByRole("button", { name: "预览修改" }));
+    await userEvent.click(within(drawer).getByRole("button", { name: "应用修改" }));
+    await userEvent.clear(within(drawer).getByLabelText("元素文案"));
+    await userEvent.type(within(drawer).getByLabelText("元素文案"), "邀请同事");
+    await userEvent.click(within(drawer).getByRole("button", { name: "预览修改" }));
+
+    await userEvent.click(screen.getByRole("button", { name: "PRD 撰写" }));
+    expect(
+      screen.getByRole("dialog", { name: "未确认的原型修改" }),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "放弃修改并离开" }));
+    expect(
+      screen.getByRole("heading", { name: "PRD 撰写工作台" }),
+    ).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "原型设计与审计" }),
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "预览角色配置页面" }),
+    );
+    const updatedDrawer = screen.getByRole("complementary", {
+      name: "页面预览",
+    });
+    expect(
+      within(updatedDrawer).getByRole("button", { name: "选择邀请成员按钮" }),
+    ).toBeInTheDocument();
+    expect(
+      within(updatedDrawer).queryByText(/邀请成员 → 邀请同事/),
+    ).not.toBeInTheDocument();
+  });
+
+  test("guards requirement navigation from a resumed Agent session", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "预览角色配置页面" }),
+    );
+    const drawer = screen.getByRole("complementary", { name: "页面预览" });
+    await userEvent.click(
+      within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
+    );
+    await userEvent.clear(within(drawer).getByLabelText("元素文案"));
+    await userEvent.type(within(drawer).getByLabelText("元素文案"), "邀请同事");
+    await userEvent.click(within(drawer).getByRole("button", { name: "预览修改" }));
+    await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
+    await userEvent.click(screen.getByRole("button", { name: "保留修改并离开" }));
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /企业客户门户 V3.2/ }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "保留修改并离开" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "继续 测试 Agent 对话" }),
+    );
+
+    expect(
+      screen.getByRole("dialog", { name: "未确认的原型修改" }),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "放弃修改并离开" }));
+    expect(
+      screen.getByRole("heading", { name: "企业 SSO 登录体验优化" }),
+    ).toBeInTheDocument();
+  });
+
+  test("publishes the signed-in project product capability for standalone tabs", async () => {
+    render(<Page />);
+    await waitFor(() => {
+      expect(
+        JSON.parse(
+          window.localStorage.getItem(
+            "kflow.projectCapability.customer-portal",
+          ) ?? "{}",
+        ),
+      ).toMatchObject({ canEditProductArtifacts: true, role: "admin" });
+    });
+
+    await setCurrentUserRole("viewer");
+    await waitFor(() => {
+      expect(
+        JSON.parse(
+          window.localStorage.getItem(
+            "kflow.projectCapability.customer-portal",
+          ) ?? "{}",
+        ),
+      ).toMatchObject({ canEditProductArtifacts: false, role: "viewer" });
+    });
   });
 
   test("keeps viewer prototype browser links and drawer controls read only", async () => {

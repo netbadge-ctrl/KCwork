@@ -29,7 +29,12 @@ import {
   getProjectCapabilities,
   unscopedCapabilities,
 } from "./lib/project-capabilities";
-import type { ProjectSection, ViewId } from "./lib/types";
+import { publishProjectCapability } from "./lib/project-capability-store";
+import {
+  discardPrototypeDraft,
+  usePrototypeDocumentStatus,
+} from "./lib/prototype-state";
+import type { PreviewKind, ProjectSection, ViewId } from "./lib/types";
 import {
   clampPreferredRightPanelWidth,
   COLLAPSED_SIDEBAR_WIDTH,
@@ -95,7 +100,8 @@ function layoutPreferencesReducer(
 
 interface PendingNavigation {
   destination: string;
-  draftId: string;
+  kind: "prd" | "prototype" | "combined";
+  discard(): void;
   run(): void;
 }
 
@@ -225,6 +231,22 @@ export default function Page() {
   const capabilities = selectedProject
     ? getProjectCapabilities(currentRole)
     : unscopedCapabilities;
+  const prototypeStatus = usePrototypeDocumentStatus(
+    selectedRequirement?.id ?? null,
+  );
+
+  useEffect(() => {
+    if (!selectedProject) return;
+    publishProjectCapability(
+      selectedProject.id,
+      currentRole,
+      capabilities.canEditProductArtifacts,
+    );
+  }, [
+    capabilities.canEditProductArtifacts,
+    currentRole,
+    selectedProject,
+  ]);
   const canEditSelectedWorkspace = canEditAgentWorkspace(
     capabilities,
     selectedAgent.id,
@@ -261,17 +283,52 @@ export default function Page() {
   const requestNavigation = (
     destination: string,
     run: () => void,
+    options: { includePrd?: boolean; includePrototype?: boolean } = {},
   ) => {
+    const { includePrd = true, includePrototype = true } = options;
     const draftId = selectedPrdDocument?.id;
     const hasUnconfirmedDraft =
+      includePrd &&
       state.view === "requirement-detail" &&
       draftId &&
       Boolean(state.documentDrafts[draftId]);
-    if (hasUnconfirmedDraft) {
-      setPendingNavigation({ destination, draftId, run });
+    const hasUnconfirmedPrototype =
+      includePrototype &&
+      selectedRequirement &&
+      prototypeStatus.pending;
+    if (hasUnconfirmedDraft || hasUnconfirmedPrototype) {
+      const kind = hasUnconfirmedDraft && hasUnconfirmedPrototype
+        ? "combined"
+        : hasUnconfirmedPrototype
+          ? "prototype"
+          : "prd";
+      setPendingNavigation({
+        destination,
+        kind,
+        discard: () => {
+          if (hasUnconfirmedDraft && draftId) {
+            dispatch({
+              type: "set-document-draft",
+              documentId: draftId,
+              draft: "",
+            });
+          }
+          if (hasUnconfirmedPrototype && selectedRequirement) {
+            discardPrototypeDraft(selectedRequirement.id);
+          }
+        },
+        run,
+      });
       return;
     }
     run();
+  };
+
+  const openPreview = (preview: PreviewKind) => {
+    const run = () => dispatch({ type: "open-preview", preview });
+    if (state.preview === "prototype" && preview !== "prototype") {
+      requestNavigation("其他辅助内容", run, { includePrd: false });
+    } else run();
   };
 
   const navigateFromSidebar = (view: ViewId) => {
@@ -289,13 +346,30 @@ export default function Page() {
   };
 
   const openProject = (projectId: string) => {
-    dispatch({ type: "select-project", projectId });
-    dispatch({ type: "navigate", view: "project-detail" });
+    const run = () => {
+      dispatch({ type: "select-project", projectId });
+      dispatch({ type: "navigate", view: "project-detail" });
+    };
+    if (projectId === state.selectedProjectId) run();
+    else requestNavigation("项目工作台", run);
+  };
+
+  const selectProject = (projectId: string | null) => {
+    const run = () => dispatch({ type: "select-project", projectId });
+    if (projectId === state.selectedProjectId) run();
+    else {
+      const destination =
+        projects.find((project) => project.id === projectId)?.name ??
+        "未关联项目";
+      requestNavigation(destination, run);
+    }
   };
 
   return (
     <main
       className={`client-shell ${state.preview ? "drawer-open" : ""}`}
+      data-prototype-dirty={prototypeStatus.dirty}
+      data-prototype-pending={prototypeStatus.pending}
       style={
         {
           "--sidebar-width": `${
@@ -338,15 +412,16 @@ export default function Page() {
             selectedAgentId={state.selectedAgentId}
             selectedProjectId={state.selectedProjectId}
             onModeChange={(mode) => dispatch({ type: "set-mode", mode })}
-            onProductWorkModeChange={(mode) =>
-              dispatch({ type: "set-product-work-mode", mode })
-            }
+            onProductWorkModeChange={(mode) => {
+              if (mode === state.productWorkMode) return;
+              requestNavigation("产品工作模式", () =>
+                dispatch({ type: "set-product-work-mode", mode }),
+              );
+            }}
             onSelectAgent={(agentId) =>
               dispatch({ type: "select-agent", agentId })
             }
-            onSelectProject={(projectId) =>
-              dispatch({ type: "select-project", projectId })
-            }
+            onSelectProject={selectProject}
             onSend={(text) => dispatch({ type: "send-message", text })}
             onOpenProject={openProject}
           />
@@ -357,14 +432,28 @@ export default function Page() {
             agents={agents}
             contextSources={contextSources}
             lastAgentByRequirement={state.lastAgentByRequirement}
-            onOpenContext={() => dispatch({ type: "open-preview", preview: "sources" })}
-            onOpenRequirement={(requirementId) =>
-              dispatch({ type: "select-requirement", requirementId })
-            }
-            onOpenSettings={() => dispatch({ type: "open-preview", preview: "project-settings" })}
-            onResumeSession={(sessionId) =>
-              dispatch({ type: "resume-agent-work", sessionId })
-            }
+            onOpenContext={() => openPreview("sources")}
+            onOpenRequirement={(requirementId) => {
+              const run = () =>
+                dispatch({ type: "select-requirement", requirementId });
+              if (requirementId === state.selectedRequirementId) run();
+              else {
+                const destination =
+                  requirements.find((item) => item.id === requirementId)
+                    ?.title ?? "需求工作区";
+                requestNavigation(destination, run);
+              }
+            }}
+            onOpenSettings={() => openPreview("project-settings")}
+            onResumeSession={(sessionId) => {
+              const session = agentWorkSessions.find(
+                (item) => item.id === sessionId,
+              );
+              const run = () =>
+                dispatch({ type: "resume-agent-work", sessionId });
+              if (session?.requirementId === state.selectedRequirementId) run();
+              else requestNavigation(session?.title ?? "需求工作区", run);
+            }}
             projects={projects}
             requirementStages={state.requirementStages}
             requirements={requirements}
@@ -374,7 +463,9 @@ export default function Page() {
             }
             sessions={agentWorkSessions}
             onCreateRequirement={() =>
-              dispatch({ type: "navigate", view: "home" })
+              requestNavigation("新建需求", () =>
+                dispatch({ type: "navigate", view: "home" }),
+              )
             }
             onOpenProject={openProject}
             onBack={() => dispatch({ type: "navigate", view: "projects" })}
@@ -421,15 +512,9 @@ export default function Page() {
                 dispatch({ type: "navigate", view: "project-detail" }),
               )
             }
-            onOpenContext={() =>
-              dispatch({ type: "open-preview", preview: "sources" })
-            }
-            onOpenPreview={(preview) =>
-              dispatch({ type: "open-preview", preview })
-            }
-            onOpenSettings={() =>
-              dispatch({ type: "open-preview", preview: "project-settings" })
-            }
+            onOpenContext={() => openPreview("sources")}
+            onOpenPreview={openPreview}
+            onOpenSettings={() => openPreview("project-settings")}
             onSelectAgent={(agentId) => {
               if (agentId === state.selectedAgentId) return;
               const nextAgent = agents.find((agent) => agent.id === agentId);
@@ -437,9 +522,12 @@ export default function Page() {
                 dispatch({ type: "select-agent", agentId }),
               );
             }}
-            onProductWorkModeChange={(mode) =>
-              dispatch({ type: "set-product-work-mode", mode })
-            }
+            onProductWorkModeChange={(mode) => {
+              if (mode === state.productWorkMode) return;
+              requestNavigation("产品工作模式", () =>
+                dispatch({ type: "set-product-work-mode", mode }),
+              );
+            }}
             onSend={(text) => dispatch({ type: "send-message", text })}
             onSaveDocumentDraft={(draft) =>
               selectedPrdDocument &&
@@ -482,13 +570,9 @@ export default function Page() {
             onSelectAgent={(agentId) =>
               dispatch({ type: "select-agent", agentId })
             }
-            onSelectProject={(projectId) =>
-              dispatch({ type: "select-project", projectId })
-            }
+            onSelectProject={selectProject}
             onSend={(text) => dispatch({ type: "send-message", text })}
-            onOpenPreview={(preview) =>
-              dispatch({ type: "open-preview", preview })
-            }
+            onOpenPreview={openPreview}
           />
         )}
       </section>
@@ -557,8 +641,13 @@ export default function Page() {
         )}
         selectedRequirement={selectedRequirement}
         selectedAssetId={state.selectedAssetId}
-        onSelect={(preview) => dispatch({ type: "open-preview", preview })}
-        onClose={() => dispatch({ type: "close-preview" })}
+        onSelect={openPreview}
+        onClose={() => {
+          const run = () => dispatch({ type: "close-preview" });
+          if (state.preview === "prototype") {
+            requestNavigation("关闭页面预览", run, { includePrd: false });
+          } else run();
+        }}
         onWidthChange={(width) =>
           dispatchLayoutPreferences({ type: "set-right-panel-width", width })
         }
@@ -567,17 +656,20 @@ export default function Page() {
       {pendingNavigation && (
         <NavigationGuardDialog
           destination={pendingNavigation.destination}
+          kind={pendingNavigation.kind}
           onDiscard={() => {
-            dispatch({
-              type: "set-document-draft",
-              documentId: pendingNavigation.draftId,
-              draft: "",
-            });
+            pendingNavigation.discard();
+            if (pendingNavigation.kind !== "prd") {
+              dispatch({ type: "close-preview" });
+            }
             const run = pendingNavigation.run;
             setPendingNavigation(null);
             run();
           }}
           onRetain={() => {
+            if (pendingNavigation.kind !== "prd") {
+              dispatch({ type: "close-preview" });
+            }
             const run = pendingNavigation.run;
             setPendingNavigation(null);
             run();

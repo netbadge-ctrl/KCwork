@@ -2,6 +2,7 @@ export const EXPANDED_SIDEBAR_WIDTH = 248;
 export const COLLAPSED_SIDEBAR_WIDTH = 64;
 export const DEFAULT_RIGHT_PANEL_WIDTH = 560;
 export const MIN_RIGHT_PANEL_WIDTH = 420;
+export const MIN_MAIN_STAGE_WIDTH = 420;
 export const OVERLAY_BREAKPOINT = 1120;
 export const MOBILE_BREAKPOINT = 760;
 export const MOBILE_SIDEBAR_WIDTH = 68;
@@ -20,7 +21,10 @@ export function getRightPanelMaxWidth(
   const seventyViewportWidth = Math.floor((viewportWidth * 7) / 10);
   return viewportWidth <= OVERLAY_BREAKPOINT
     ? Math.min(seventyViewportWidth, viewportWidth - sidebarWidth)
-    : seventyViewportWidth;
+    : Math.min(
+        seventyViewportWidth,
+        viewportWidth - sidebarWidth - MIN_MAIN_STAGE_WIDTH,
+      );
 }
 
 export function clampRightPanelWidthForShell(

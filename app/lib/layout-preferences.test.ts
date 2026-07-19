@@ -3,6 +3,9 @@ import {
   clampRightPanelWidth,
   clampRightPanelWidthForShell,
   DEFAULT_RIGHT_PANEL_WIDTH,
+  COLLAPSED_SIDEBAR_WIDTH,
+  EXPANDED_SIDEBAR_WIDTH,
+  MIN_MAIN_STAGE_WIDTH,
   MIN_RIGHT_PANEL_WIDTH,
   readStoredBoolean,
   readStoredNumber,
@@ -35,6 +38,14 @@ describe("layout preferences", () => {
     expect(getRightPanelMaxWidth(800, 248)).toBe(552);
     expect(clampRightPanelWidthForShell(560, 800, 248)).toBe(552);
     expect(getRightPanelMaxWidth(800, 64)).toBe(560);
-    expect(getRightPanelMaxWidth(1400, 248)).toBe(980);
+    expect(getRightPanelMaxWidth(1400, 248)).toBe(732);
+  });
+
+  test("preserves a 420px main stage in inline desktop layout", () => {
+    expect(MIN_MAIN_STAGE_WIDTH).toBe(420);
+    expect(getRightPanelMaxWidth(1121, EXPANDED_SIDEBAR_WIDTH)).toBe(453);
+    expect(getRightPanelMaxWidth(1121, COLLAPSED_SIDEBAR_WIDTH)).toBe(637);
+    expect(getRightPanelMaxWidth(1440, EXPANDED_SIDEBAR_WIDTH)).toBe(772);
+    expect(getRightPanelMaxWidth(1440, COLLAPSED_SIDEBAR_WIDTH)).toBe(956);
   });
 });

@@ -67,24 +67,6 @@ const officeTools: Record<string, ContextualTool[]> = {
 };
 
 const developmentTools: Record<string, ContextualTool[]> = {
-  "requirement-analysis": [
-    tool("context", "需求上下文", ListTree),
-    tool("analysis", "分析结论", ClipboardList),
-    tool("questions", "待确认问题", HelpCircle),
-    tool("log", "执行记录", ScrollText),
-  ],
-  prototype: [
-    tool("prototype", "页面预览", LayoutTemplate),
-    tool("components", "组件结构", Blocks),
-    tool("interaction", "交互说明", MousePointerClick),
-    tool("context", "引用上下文", ListTree),
-  ],
-  "prd-writer": [
-    tool("prd", "文档预览", FileText),
-    tool("pdf", "PDF 预览", FileStack),
-    tool("analysis", "版本修改", GitCompareArrows),
-    tool("context", "引用上下文", ListTree),
-  ],
   "frontend-dev": [
     tool("files", "文件变更", FileCode2),
     tool("diff", "代码差异", GitCompareArrows),

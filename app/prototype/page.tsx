@@ -2,14 +2,17 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { PrototypeEditor } from "../components/prototype-editor";
+import { PrototypePreviewShell } from "../components/prototype-preview-shell";
+import { useProjectProductCapability } from "../lib/project-capability-store";
 
 function PrototypeRouteContent() {
   const searchParams = useSearchParams();
   const requirement = searchParams.get("requirement") ?? "role-permissions";
   const version = searchParams.get("version") ?? "V3";
   const project = searchParams.get("project") ?? "customer-portal";
-  const canEdit = searchParams.get("readonly") !== "1";
+  const trustedCanEdit = useProjectProductCapability(project);
+  const canEdit = trustedCanEdit && searchParams.get("readonly") !== "1";
+  const initialInspection = searchParams.get("inspect") === "1";
 
   return (
     <main className="prototype-page">
@@ -21,7 +24,11 @@ function PrototypeRouteContent() {
         </div>
         <span className="prototype-page-version">{version}</span>
       </header>
-      <PrototypeEditor canEdit={canEdit} />
+      <PrototypePreviewShell
+        canEdit={canEdit}
+        initialInspection={initialInspection}
+        requirementId={requirement}
+      />
     </main>
   );
 }

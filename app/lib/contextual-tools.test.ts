@@ -38,7 +38,9 @@ describe("resolveContextualTools", () => {
   });
 
   test("hides execution-only entries until evidence exists and caps the rail at four", () => {
-    expect(kinds("requirement-analysis", "research", false)).toEqual(["context", "analysis", "questions"]);
+    for (const legacyId of ["requirement-analysis", "prototype", "prd-writer"]) {
+      expect(kinds(legacyId, "research", false)).toEqual(["context", "analysis"]);
+    }
     expect(kinds("testing", "research", false, false)).toEqual(["test", "failures", "context"]);
     expect(kinds("frontend-dev").length).toBeLessThanOrEqual(4);
   });

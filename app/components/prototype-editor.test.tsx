@@ -1,7 +1,27 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { expect, test } from "vitest";
+import { beforeEach, expect, test } from "vitest";
 import { PrototypeEditor } from "./prototype-editor";
+
+const storedPrototypeValues = new Map<string, string>();
+Object.defineProperty(window, "localStorage", {
+  configurable: true,
+  value: {
+    clear: () => storedPrototypeValues.clear(),
+    getItem: (key: string) => storedPrototypeValues.get(key) ?? null,
+    key: (index: number) => [...storedPrototypeValues.keys()][index] ?? null,
+    get length() {
+      return storedPrototypeValues.size;
+    },
+    removeItem: (key: string) => storedPrototypeValues.delete(key),
+    setItem: (key: string, value: string) =>
+      storedPrototypeValues.set(key, value),
+  } satisfies Storage,
+});
+
+beforeEach(() => {
+  window.localStorage.clear();
+});
 
 test("selects an element, previews a text change, applies it, and undoes it", async () => {
   render(<PrototypeEditor canEdit />);
@@ -75,7 +95,7 @@ test("interprets natural-language tone, read-only, and quoted text changes", asy
   expect(screen.getByText(/林川 · 研发 → 林川 · 研发 · 只读/)).toBeInTheDocument();
 });
 
-test("shows an uninterpreted natural-language instruction before confirmation", async () => {
+test("rejects an unsupported instruction and enables apply after a corrected change", async () => {
   render(<PrototypeEditor canEdit />);
   await userEvent.click(
     screen.getByRole("button", { name: "选择成员搜索输入框" }),
@@ -85,7 +105,96 @@ test("shows an uninterpreted natural-language instruction before confirmation", 
     "让搜索提示更简洁",
   );
   await userEvent.click(screen.getByRole("button", { name: "预览修改" }));
-  expect(screen.getByText(/待执行指令：让搜索提示更简洁/)).toBeInTheDocument();
+  expect(
+    screen.getByText("无法理解这条修改要求，请调整文案、视觉层级或使用支持的描述。"),
+  ).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "应用修改" })).toBeDisabled();
+
+  await userEvent.clear(screen.getByLabelText("描述对选中元素的修改"));
+  await userEvent.type(
+    screen.getByLabelText("描述对选中元素的修改"),
+    "文案改成“搜索姓名或邮箱”",
+  );
+  await userEvent.click(screen.getByRole("button", { name: "预览修改" }));
+  expect(screen.getByText(/搜索成员、邮箱或角色 → 搜索姓名或邮箱/)).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "应用修改" })).toBeEnabled();
+});
+
+test("persists applied edits and an unconfirmed preview by requirement", async () => {
+  const first = render(
+    <PrototypeEditor canEdit requirementId="role-permissions" />,
+  );
+  await userEvent.click(
+    screen.getByRole("button", { name: "选择添加成员按钮" }),
+  );
+  await userEvent.clear(screen.getByLabelText("元素文案"));
+  await userEvent.type(screen.getByLabelText("元素文案"), "邀请成员");
+  await userEvent.click(screen.getByRole("button", { name: "预览修改" }));
+  await userEvent.click(screen.getByRole("button", { name: "应用修改" }));
+  await userEvent.clear(screen.getByLabelText("元素文案"));
+  await userEvent.type(screen.getByLabelText("元素文案"), "邀请同事");
+  await userEvent.click(screen.getByRole("button", { name: "预览修改" }));
+  first.unmount();
+
+  const reopened = render(
+    <PrototypeEditor canEdit requirementId="role-permissions" />,
+  );
+  expect(
+    screen.getByRole("button", { name: "选择邀请成员按钮" }),
+  ).toBeInTheDocument();
+  expect(screen.getByText(/邀请成员 → 邀请同事/)).toBeInTheDocument();
+  reopened.unmount();
+
+  render(<PrototypeEditor canEdit requirementId="sso-login" />);
+  expect(
+    screen.getByRole("button", { name: "选择添加成员按钮" }),
+  ).toBeInTheDocument();
+  expect(screen.queryByText(/邀请成员 → 邀请同事/)).not.toBeInTheDocument();
+});
+
+test("subscribes to prototype document updates from another same-origin tab", async () => {
+  render(<PrototypeEditor canEdit requirementId="role-permissions" />);
+  await userEvent.click(
+    screen.getByRole("button", { name: "选择添加成员按钮" }),
+  );
+  const key = "kflow.prototype.requirement.role-permissions";
+  const stored = JSON.parse(window.localStorage.getItem(key) ?? "{}") as {
+    elements: Array<{ id: string; text: string }>;
+  };
+  stored.elements = stored.elements.map((element) =>
+    element.id === "add-member"
+      ? { ...element, text: "跨页邀请成员" }
+      : element,
+  );
+  const nextValue = JSON.stringify(stored);
+  window.localStorage.setItem(key, nextValue);
+
+  fireEvent(
+    window,
+    new StorageEvent("storage", { key, newValue: nextValue }),
+  );
+  expect(
+    await screen.findByRole("button", { name: "选择跨页邀请成员按钮" }),
+  ).toBeInTheDocument();
+});
+
+test("makes heading and navigation selectable with size and interaction metadata", async () => {
+  render(<PrototypeEditor canEdit />);
+  const heading = screen.getByRole("button", {
+    name: "选择成员与角色管理标题",
+  });
+  expect(heading).toHaveAttribute("data-size", "large");
+  expect(heading).toHaveAttribute("data-interaction-state", "default");
+  await userEvent.click(heading);
+  expect(screen.getByText("元素类型：标题")).toBeInTheDocument();
+
+  const navigation = screen.getByRole("button", {
+    name: "选择成员管理导航",
+  });
+  expect(navigation).toHaveAttribute("data-size", "medium");
+  expect(navigation).toHaveAttribute("data-interaction-state", "active");
+  await userEvent.click(navigation);
+  expect(screen.getByText("元素类型：导航")).toBeInTheDocument();
 });
 
 test("invalidates a preview whenever any draft field changes", async () => {
