@@ -857,6 +857,20 @@ select:focus-visible {
   border-color: #e1daf8;
 }
 
+.product-stage-select {
+  color: #5d5572;
+  background: #faf9ff;
+  border-color: #e5e0f3;
+}
+
+.product-stage-select svg {
+  color: var(--accent);
+}
+
+.drawer-prd-ai-panel {
+  margin-top: 12px;
+}
+
 .mini-agent {
   display: grid;
   width: 19px;

@@ -1,8 +1,10 @@
 import {
   Braces,
   Check,
+  FileDown,
   FileText,
   PanelRightClose,
+  Sparkles,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -59,7 +61,9 @@ export interface PreviewDrawerProps {
   selectedAssetId: string | null;
   previewError?: PreviewErrorKind | null;
   explicitPreviewKind?: PreviewKind | null;
+  documentDraft?: string;
   onSelect(kind: PreviewKind): void;
+  onSaveDocumentDraft?(draft: string): void;
   onToggleContextSource(sourceId: string): void;
   onToggleContextLock(sourceId: string): void;
   onChangeMemberRole(memberId: string, role: ProjectRole): void;
@@ -100,7 +104,9 @@ export function PreviewDrawer({
   selectedAssetId,
   previewError,
   explicitPreviewKind = null,
+  documentDraft = "",
   onSelect,
+  onSaveDocumentDraft = () => undefined,
   onToggleContextSource,
   onToggleContextLock,
   onChangeMemberRole,
@@ -239,7 +245,15 @@ export function PreviewDrawer({
               <PreviewErrorState kind={previewError} onRetry={onRetryPreview ?? (() => undefined)} />
             ) : (
               <>
-            {preview === "prd" && <PrdPreview canEdit={capabilities.canEditProductArtifacts} requirement={selectedRequirement} />}
+            {preview === "prd" && (
+              <PrdPreview
+                canEdit={capabilities.canEditProductArtifacts}
+                documentDraft={documentDraft}
+                onOpenPdf={() => onSelect("pdf")}
+                onSaveDocumentDraft={onSaveDocumentDraft}
+                requirement={selectedRequirement}
+              />
+            )}
             {preview === "diff" && <DiffPreview canEdit={capabilities.canEditDevelopmentArtifacts} requirement={selectedRequirement} />}
             {preview === "context" && <ContextPreview selectedIds={selectedContextIds} sources={sources} />}
             {preview === "sources" && (
@@ -410,10 +424,17 @@ function PdfPreview({ requirement }: { requirement: Requirement | null }) {
 function PrdPreview({
   requirement,
   canEdit,
+  documentDraft,
+  onOpenPdf,
+  onSaveDocumentDraft,
 }: {
   requirement: Requirement | null;
   canEdit: boolean;
+  documentDraft: string;
+  onOpenPdf(): void;
+  onSaveDocumentDraft(draft: string): void;
 }) {
+  const [request, setRequest] = useState("");
   const document = productDocuments.find(
     (item) => item.requirementId === requirement?.id && item.kind === "prd",
   );
@@ -422,7 +443,10 @@ function PrdPreview({
   }
   return (
     <article className="document-preview">
-      <div className="document-toolbar"><span>{document.title} {document.version}</span><button disabled={!canEdit} type="button">编辑</button></div>
+      <div className="document-toolbar">
+        <span>{document.title} {document.version}</span>
+        <button onClick={onOpenPdf} type="button"><FileDown size={14} /> 预览 PDF</button>
+      </div>
       <div className="document-sheet">
         <span className="document-tag">产品需求文档</span>
         <h1>{requirement.title}</h1>
@@ -440,6 +464,42 @@ function PrdPreview({
           <p className="check-line" key={item}><Check size={14} /> {item}</p>
         ))}
       </div>
+      <aside className="prd-ai-panel drawer-prd-ai-panel">
+        <div><Sparkles size={17} /><strong>通过对话修改</strong></div>
+        <p>描述需要修改的章节或规则，Agent 会先生成修订建议。</p>
+        <textarea
+          aria-label="PRD 修改要求"
+          disabled={!canEdit}
+          onChange={(event) => setRequest(event.target.value)}
+          placeholder="例如：补充批量修改角色时的确认规则"
+          value={request}
+        />
+        <button
+          className="primary-small"
+          disabled={!canEdit || !request.trim()}
+          onClick={() => {
+            onSaveDocumentDraft(request.trim());
+            setRequest("");
+          }}
+          type="button"
+        >
+          生成修订建议
+        </button>
+        {documentDraft && (
+          <div className="revision-proposal">
+            <span>修订建议 · 待确认</span>
+            <p>{documentDraft}</p>
+            <small>影响：权限规则、交互原型、AC-11 测试用例</small>
+            <button
+              disabled={!canEdit}
+              onClick={() => onSaveDocumentDraft("")}
+              type="button"
+            >
+              确认并保存新版本
+            </button>
+          </div>
+        )}
+      </aside>
     </article>
   );
 }

@@ -8,7 +8,6 @@ import { PreviewDrawer } from "./components/preview-drawer";
 import { ProfileView } from "./components/profile-view";
 import { ProjectAssetsView } from "./components/project-assets-view";
 import { ProjectsView } from "./components/projects-view";
-import { RequirementWorkspace } from "./components/requirement-workspace";
 import { Sidebar } from "./components/sidebar";
 import { TaskView } from "./components/task-view";
 import {
@@ -498,29 +497,39 @@ export default function Page() {
         )}
 
         {state.view === "requirement-detail" && selectedRequirement && selectedProject && (
-          <RequirementWorkspace
+          <TaskView
             agent={selectedAgent}
             agents={agents}
-            currentStage={
-              state.requirementStages[selectedRequirement.id] ?? selectedRequirement.stage
-            }
             canEdit={canEditSelectedWorkspace}
+            contextCount={activeSelectedContextIds.length}
             currentRole={currentRole}
-            documentDraft={selectedPrdDocument
-              ? state.documentDrafts[selectedPrdDocument.id] ?? ""
-              : ""}
-            developmentTaskStatuses={state.developmentTaskStatuses}
             execution={state.requirementExecutions[selectedRequirement.id] ?? "idle"}
+            executionAgent={selectedAgent}
             messages={state.requirementMessages[selectedRequirement.id] ?? []}
             productWorkMode={state.productWorkMode}
-            onBack={() =>
+            project={selectedProject}
+            projectSelectionLocked
+            projects={projects}
+            requirement={selectedRequirement}
+            selectedProjectId={state.selectedProjectId}
+            task={{
+              id: `requirement-${selectedRequirement.id}`,
+              title: selectedRequirement.title,
+              mode: "research",
+              projectId: selectedProject.id,
+              requirementId: selectedRequirement.id,
+              agentId: selectedAgent.id,
+              productWorkMode: state.productWorkMode,
+              time: `${selectedRequirement.code} · Spec ${selectedRequirement.specVersion}`,
+            }}
+            onOpenPreview={openPreview}
+            onOpenSettings={() => openPreview("project-settings")}
+            onBackToProject={() =>
               requestNavigation(selectedProject.name, () =>
                 dispatch({ type: "navigate", view: "project-detail" }),
               )
             }
-            onOpenContext={() => openPreview("sources")}
-            onOpenPreview={openPreview}
-            onOpenSettings={() => openPreview("project-settings")}
+            onSelectProject={selectProject}
             onSelectAgent={(agentId) => {
               if (agentId === state.selectedAgentId) return;
               const nextAgent = agents.find((agent) => agent.id === agentId);
@@ -535,22 +544,6 @@ export default function Page() {
               );
             }}
             onSend={(text) => dispatch({ type: "send-message", text })}
-            onSaveDocumentDraft={(draft) =>
-              selectedPrdDocument &&
-              dispatch({
-                type: "set-document-draft",
-                documentId: selectedPrdDocument.id,
-                draft,
-              })
-            }
-            onSetDevelopmentTaskStatus={(taskId, status) =>
-              dispatch({ type: "set-development-task-status", taskId, status })
-            }
-            project={selectedProject}
-            projects={projects}
-            requirement={selectedRequirement}
-            selectedContextCount={activeSelectedContextIds.length}
-            selectedProjectId={state.selectedProjectId}
           />
         )}
 
@@ -573,6 +566,11 @@ export default function Page() {
             selectedProjectId={state.selectedProjectId}
             canEdit={canEditSelectedWorkspace}
             currentRole={currentRole}
+            productWorkMode={state.productWorkMode}
+            onProductWorkModeChange={(mode) => {
+              if (mode === state.productWorkMode) return;
+              dispatch({ type: "set-product-work-mode", mode });
+            }}
             onSelectAgent={(agentId) =>
               dispatch({ type: "select-agent", agentId })
             }
@@ -584,6 +582,11 @@ export default function Page() {
       </section>
 
       <PreviewDrawer
+        documentDraft={
+          selectedPrdDocument
+            ? state.documentDrafts[selectedPrdDocument.id] ?? ""
+            : ""
+        }
         explicitPreviewKind={
           state.view === "project-asset"
             ? state.selectedAssetPreviewKind
@@ -619,6 +622,14 @@ export default function Page() {
             dispatch({ type: "select-project-section", section });
           });
         }}
+        onSaveDocumentDraft={(draft) =>
+          selectedPrdDocument &&
+          dispatch({
+            type: "set-document-draft",
+            documentId: selectedPrdDocument.id,
+            draft,
+          })
+        }
         onToggleContextLock={(sourceId) =>
           state.selectedRequirementId &&
           dispatch({

@@ -7,14 +7,17 @@ import {
   MoreHorizontal,
   RotateCcw,
 } from "lucide-react";
+import { useState } from "react";
 import type {
   Agent,
   ExecutionState,
   Message,
   PreviewKind,
+  ProductWorkMode,
   Project,
   ProjectRole,
   RecentTask,
+  Requirement,
 } from "../lib/types";
 import { projectRoleLabels } from "../lib/project-capabilities";
 import { Composer } from "./composer";
@@ -31,10 +34,17 @@ export interface TaskViewProps {
   selectedProjectId: string | null;
   canEdit: boolean;
   currentRole: ProjectRole;
+  contextCount?: number;
+  productWorkMode?: ProductWorkMode;
+  projectSelectionLocked?: boolean;
+  requirement?: Requirement | null;
   onSelectAgent(id: string): void;
   onSelectProject(id: string | null): void;
+  onProductWorkModeChange?(mode: ProductWorkMode): void;
   onSend(text: string): void;
   onOpenPreview(kind: PreviewKind): void;
+  onOpenSettings?(): void;
+  onBackToProject?(): void;
 }
 
 const executionSteps = [
@@ -55,11 +65,19 @@ export function TaskView({
   selectedProjectId,
   canEdit,
   currentRole,
+  contextCount,
+  productWorkMode,
+  projectSelectionLocked = false,
+  requirement = null,
   onSelectAgent,
   onSelectProject,
+  onProductWorkModeChange,
   onSend,
   onOpenPreview,
+  onOpenSettings,
+  onBackToProject,
 }: TaskViewProps) {
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   return (
     <div className="task-view">
       <header className="task-header">
@@ -72,21 +90,48 @@ export function TaskView({
         </div>
         <div className="task-header-actions">
           {!canEdit && project && <span className="read-only-notice">当前角色仅可查看</span>}
-          {project && (
+          {project && onBackToProject ? (
+            <button className="project-chip" onClick={onBackToProject} type="button">
+              <span style={{ background: project.color }} /> {project.name}
+            </button>
+          ) : project ? (
             <span className="project-chip">
               <span style={{ background: project.color }} /> {project.name}
             </span>
-          )}
+          ) : null}
           <button
             className="context-count"
             onClick={() => onOpenPreview("sources")}
             type="button"
           >
-            {project?.contextCount ?? 0} 项上下文
+            {contextCount ?? project?.contextCount ?? 0} 项上下文
           </button>
-          <button aria-label="更多任务操作" className="icon-button" type="button">
-            <MoreHorizontal size={18} />
-          </button>
+          <div className="requirement-more-actions">
+            <button
+              aria-expanded={requirement ? isMoreMenuOpen : undefined}
+              aria-label={requirement ? "更多需求操作" : "更多任务操作"}
+              className="icon-button"
+              onClick={() => requirement && setIsMoreMenuOpen((isOpen) => !isOpen)}
+              type="button"
+            >
+              <MoreHorizontal size={18} />
+            </button>
+            {requirement && isMoreMenuOpen && (
+              <div className="requirement-more-menu">
+                <button
+                  onClick={() => {
+                    setIsMoreMenuOpen(false);
+                    onOpenSettings?.();
+                  }}
+                  type="button"
+                >
+                  调整状态与门禁
+                </button>
+                <button disabled={!canEdit} type="button">编辑负责人</button>
+                <button disabled={!canEdit} type="button">归档需求</button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -187,9 +232,12 @@ export function TaskView({
           agents={agents}
           disabled={!canEdit}
           mode={agent.mode === "office" ? "office" : "research"}
+          onProductWorkModeChange={onProductWorkModeChange}
           onSelectAgent={onSelectAgent}
           onSelectProject={onSelectProject}
           onSend={onSend}
+          productWorkMode={productWorkMode}
+          projectSelectionLocked={projectSelectionLocked}
           projects={projects}
           selectedAgentId={agent.id}
           selectedProjectId={selectedProjectId}
