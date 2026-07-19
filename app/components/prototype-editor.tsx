@@ -182,7 +182,7 @@ export function PrototypeEditor({
   };
 
   const undoLastChange = () => {
-    if (!undoSnapshot) return;
+    if (!canEdit || !undoSnapshot) return;
     const restored = undoSnapshot;
     setElements(restored);
     setUndoSnapshot(null);
@@ -368,6 +368,7 @@ export function PrototypeEditor({
             {undoSnapshot && (
               <button
                 className="text-button prototype-undo"
+                disabled={!canEdit}
                 onClick={undoLastChange}
                 type="button"
               >

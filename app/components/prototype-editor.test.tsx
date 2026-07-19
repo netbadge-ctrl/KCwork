@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { PrototypeEditor } from "./prototype-editor";
@@ -138,4 +138,29 @@ test("clears selection from nested blank canvas regions but not element clicks",
   await selectAddMember();
   await userEvent.click(screen.getByRole("button", { name: "选择林川成员行" }));
   expect(screen.getByText("关联 Spec：AC-09")).toBeInTheDocument();
+});
+
+test("cannot undo after an in-place permission downgrade", async () => {
+  const { rerender } = render(<PrototypeEditor canEdit />);
+  await userEvent.click(
+    screen.getByRole("button", { name: "选择添加成员按钮" }),
+  );
+  await userEvent.clear(screen.getByLabelText("元素文案"));
+  await userEvent.type(screen.getByLabelText("元素文案"), "邀请成员");
+  await userEvent.click(screen.getByRole("button", { name: "预览修改" }));
+  await userEvent.click(screen.getByRole("button", { name: "应用修改" }));
+  expect(
+    screen.getByRole("button", { name: "选择邀请成员按钮" }),
+  ).toBeInTheDocument();
+
+  rerender(<PrototypeEditor canEdit={false} />);
+  const undo = screen.getByRole("button", { name: "撤销本次修改" });
+  expect(undo).toBeDisabled();
+  fireEvent.click(undo);
+  expect(
+    screen.getByRole("button", { name: "选择邀请成员按钮" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "选择添加成员按钮" }),
+  ).not.toBeInTheDocument();
 });
