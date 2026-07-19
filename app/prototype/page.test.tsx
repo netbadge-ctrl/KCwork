@@ -151,7 +151,12 @@ test("provides page, device, and inspection controls", async () => {
   );
   expect(screen.getByLabelText("元素文案")).toBeInTheDocument();
   await userEvent.click(inspect);
+  expect(screen.queryByLabelText("元素文案")).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "应用修改" }),
+  ).not.toBeInTheDocument();
   await userEvent.click(screen.getByRole("button", { name: "选择林川成员行" }));
+  await userEvent.click(inspect);
   expect(screen.getByText("关联 Spec：AC-07")).toBeInTheDocument();
   expect(screen.queryByText("关联 Spec：AC-09")).not.toBeInTheDocument();
 });

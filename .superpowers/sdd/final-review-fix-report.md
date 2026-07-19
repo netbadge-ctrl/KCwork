@@ -58,3 +58,31 @@ No dependency, backend, fixed-workflow, or workflow/status UI was added. The exi
 
 - No functional concerns remain within the approved front-end demo scope.
 - Test and build output retain the pre-existing Node `module.register()` deprecation warning. The production build also retains vinext's informational dynamic-route classification notice.
+
+## Follow-up re-review wave
+
+Base commit: `9cdb87bca7c55f9be94cd0d196111587a7840cc9`
+
+### Scope completed
+
+1. Read-only prototype surfaces now keep selection and clear-selection state local to that mounted surface. Viewer inspection no longer writes any shared prototype document state, and a surface that loses edit permission live immediately switches to the same local-only behavior without clearing another surface's pending diff.
+2. Turning inspection mode off hides the selected-element details and every draft, preview, Apply, and Undo control. The stored selection, draft, and pending diff remain untouched and return when inspection is re-enabled.
+3. The bounded element draft now edits color, size, and interaction state alongside text and visual tone. Those attributes participate in change detection, pending summaries, Apply, persisted reopen state, discard/reset, and Undo. Stored states created before these fields existed are normalized from element defaults when read.
+4. Product-document View actions for PRD and prototype assets now pass through the shared PRD/prototype navigation guard. Project Assets marks its requested drawer content as an explicit preview, so contextual-tool compatibility does not immediately close either preview.
+
+No dependency, backend, hosting, or non-demo workflow change was introduced.
+
+### TDD and verification evidence
+
+- RED: the focused editor/standalone run reported 5 expected failures across the new viewer isolation, live downgrade, inspection-off, attribute-diff, and toggle contracts before implementation.
+- Focused editor and standalone GREEN: `npm test -- --run app/components/prototype-editor.test.tsx app/prototype/page.test.tsx` — 2 files passed, 20 tests passed.
+- Focused client integration GREEN: `npm test -- --run app/components/client-demo.test.tsx` — 1 file passed, 69 tests passed, including both explicit Project Assets document previews and the pending-prototype guard.
+- Full suite: `npm test` — 9 files passed, 126 tests passed.
+- Lint: `npm run lint` — exit 0, no findings.
+- Production build: `npm run build` — exit 0; `/` and `/prototype` are present.
+- Diff integrity: `git diff --check` — exit 0, no output before staging.
+
+### Follow-up concerns
+
+- No functional concerns remain in the requested Demo-only scope.
+- Verification retains the pre-existing Node `module.register()` deprecation warning and vinext dynamic-route classification notice.

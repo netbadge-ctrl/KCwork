@@ -289,7 +289,6 @@ export default function Page() {
     const draftId = selectedPrdDocument?.id;
     const hasUnconfirmedDraft =
       includePrd &&
-      state.view === "requirement-detail" &&
       draftId &&
       Boolean(state.documentDrafts[draftId]);
     const hasUnconfirmedPrototype =
@@ -481,8 +480,15 @@ export default function Page() {
               dispatch({ type: "select-project-section", section: "overview" })
             }
             onOpenPreview={(assetId, preview) => {
-              dispatch({ type: "select-project-asset", assetId });
-              dispatch({ type: "open-preview", preview });
+              const run = () => {
+                dispatch({ type: "select-project-asset", assetId });
+                dispatch({ type: "open-preview", preview });
+              };
+              if (preview === "prd" || preview === "prototype") {
+                requestNavigation("查看产品文档", run);
+              } else {
+                run();
+              }
             }}
             requirements={requirements.filter(
               (requirement) => requirement.projectId === state.selectedProjectId,
@@ -578,6 +584,7 @@ export default function Page() {
       </section>
 
       <PreviewDrawer
+        allowExplicitPreview={state.view === "project-asset"}
         capabilities={capabilities}
         currentRole={currentRole}
         lockedContextIds={activeLockedContextIds.filter((id) =>

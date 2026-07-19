@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type MouseEvent } from "react";
+import { useMemo, useState, type MouseEvent } from "react";
 import {
   type PrototypeElement,
   type PrototypeElementDraft,
@@ -21,6 +21,24 @@ const toneLabels: Record<PrototypeElement["tone"], string> = {
   primary: "主要",
   secondary: "次要",
   neutral: "中性",
+};
+
+const colorLabels: Record<PrototypeElement["color"], string> = {
+  purple: "紫色",
+  blue: "蓝色",
+  green: "绿色",
+  gray: "灰色",
+};
+
+const sizeLabels: Record<PrototypeElement["size"], string> = {
+  small: "小号",
+  medium: "中号",
+  large: "大号",
+};
+
+const interactionStateLabels: Record<PrototypeElement["interactionState"], string> = {
+  default: "默认",
+  active: "激活",
 };
 
 const typeLabels: Record<PrototypeElement["type"], string> = {
@@ -76,7 +94,14 @@ function interpretDraft(
   }
 
   return {
-    element: { ...element, text, tone },
+    element: {
+      ...element,
+      text,
+      tone,
+      color: draft.color,
+      size: draft.size,
+      interactionState: draft.interactionState,
+    },
     understoodInstruction,
   };
 }
@@ -96,10 +121,33 @@ export function PrototypeEditor({
 }) {
   const { state, updateState } = usePrototypeDocumentState(requirementId);
   const { elements, selectedId, draft, pendingDiff, undoSnapshot } = state;
+  const [localSelectedId, setLocalSelectedId] = useState<
+    string | null | undefined
+  >(undefined);
+  const effectiveSelectedId = canEdit
+    ? selectedId
+    : localSelectedId === undefined
+      ? selectedId
+      : localSelectedId;
   const selectedElement = useMemo(
-    () => elements.find((element) => element.id === selectedId) ?? null,
-    [elements, selectedId],
+    () =>
+      elements.find((element) => element.id === effectiveSelectedId) ?? null,
+    [effectiveSelectedId, elements],
   );
+  const inspectorDraft = canEdit
+    ? draft
+    : selectedElement
+      ? {
+          text: selectedElement.text,
+          tone: selectedElement.tone,
+          color: selectedElement.color,
+          size: selectedElement.size,
+          interactionState: selectedElement.interactionState,
+          instruction: "",
+        }
+      : null;
+  const visiblePendingDiff =
+    pendingDiff?.after.id === selectedElement?.id ? pendingDiff : null;
   const elementById = useMemo(
     () => Object.fromEntries(elements.map((element) => [element.id, element])),
     [elements],
@@ -107,10 +155,21 @@ export function PrototypeEditor({
 
   const selectElement = (element: PrototypeElement) => {
     if (!inspectionEnabled) return;
+    if (!canEdit) {
+      setLocalSelectedId(element.id);
+      return;
+    }
     updateState((current) => ({
       ...current,
       selectedId: element.id,
-      draft: { text: element.text, tone: element.tone, instruction: "" },
+      draft: {
+        text: element.text,
+        tone: element.tone,
+        color: element.color,
+        size: element.size,
+        interactionState: element.interactionState,
+        instruction: "",
+      },
       pendingDiff: null,
       validationError: null,
     }));
@@ -118,6 +177,10 @@ export function PrototypeEditor({
 
   const clearSelection = () => {
     if (!inspectionEnabled) return;
+    if (!canEdit) {
+      setLocalSelectedId(null);
+      return;
+    }
     updateState((current) => ({
       ...current,
       selectedId: null,
@@ -133,6 +196,7 @@ export function PrototypeEditor({
   };
 
   const updateDraft = (changes: Partial<PrototypeElementDraft>) => {
+    if (!canEdit) return;
     updateState((current) => ({
       ...current,
       draft: current.draft ? { ...current.draft, ...changes } : null,
@@ -148,7 +212,11 @@ export function PrototypeEditor({
       draft,
     );
     const changed =
-      after.text !== selectedElement.text || after.tone !== selectedElement.tone;
+      after.text !== selectedElement.text ||
+      after.tone !== selectedElement.tone ||
+      after.color !== selectedElement.color ||
+      after.size !== selectedElement.size ||
+      after.interactionState !== selectedElement.interactionState;
     const unsupported = Boolean(draft.instruction.trim()) && !understoodInstruction;
     updateState((current) => ({
       ...current,
@@ -175,6 +243,9 @@ export function PrototypeEditor({
       draft: {
         text: pendingDiff.after.text,
         tone: pendingDiff.after.tone,
+        color: pendingDiff.after.color,
+        size: pendingDiff.after.size,
+        interactionState: pendingDiff.after.interactionState,
         instruction: "",
       },
       pendingDiff: null,
@@ -198,6 +269,9 @@ export function PrototypeEditor({
           ? {
               text: restoredSelection.text,
               tone: restoredSelection.tone,
+              color: restoredSelection.color,
+              size: restoredSelection.size,
+              interactionState: restoredSelection.interactionState,
               instruction: "",
             }
           : current.draft,
@@ -214,8 +288,9 @@ export function PrototypeEditor({
             ? `选择${element.text}按钮`
             : `选择${element.name}`
         }
-        aria-pressed={selectedId === element.id}
-        className={`${className} prototype-selectable ${selectedId === element.id ? "selected" : ""}`}
+        aria-pressed={effectiveSelectedId === element.id}
+        className={`${className} prototype-selectable ${effectiveSelectedId === element.id ? "selected" : ""}`}
+        data-color={element.color}
         data-interaction-state={element.interactionState}
         data-prototype-element={element.id}
         data-size={element.size}
@@ -288,7 +363,7 @@ export function PrototypeEditor({
     <section
       className={`prototype-editor ${compact ? "compact" : ""}`}
       onKeyDown={(event) => {
-        if (event.key !== "Escape" || !selectedId || !inspectionEnabled) return;
+        if (event.key !== "Escape" || !effectiveSelectedId || !inspectionEnabled) return;
         event.preventDefault();
         event.stopPropagation();
         clearSelection();
@@ -308,7 +383,11 @@ export function PrototypeEditor({
         <div className="prototype-inspector-heading">
           <div>
             <p className="eyebrow">Inspect</p>
-            <h3>{selectedElement?.name ?? "选择页面元素"}</h3>
+            <h3>
+              {inspectionEnabled
+                ? selectedElement?.name ?? "选择页面元素"
+                : "检查模式已关闭"}
+            </h3>
           </div>
           {selectedElement && inspectionEnabled && (
             <button className="text-button" onClick={clearSelection} type="button">
@@ -316,7 +395,7 @@ export function PrototypeEditor({
             </button>
           )}
         </div>
-        {selectedElement && draft ? (
+        {inspectionEnabled && selectedElement && inspectorDraft ? (
           <>
             <p className="prototype-spec-link">关联 Spec：{selectedElement.spec}</p>
             <div className="prototype-element-meta">
@@ -331,7 +410,7 @@ export function PrototypeEditor({
                 aria-label="元素文案"
                 disabled={!canEdit}
                 onChange={(event) => updateDraft({ text: event.target.value })}
-                value={draft.text}
+                value={inspectorDraft.text}
               />
             </label>
             <label>
@@ -344,11 +423,63 @@ export function PrototypeEditor({
                     tone: event.target.value as PrototypeElement["tone"],
                   })
                 }
-                value={draft.tone}
+                value={inspectorDraft.tone}
               >
                 <option value="primary">主要</option>
                 <option value="secondary">次要</option>
                 <option value="neutral">中性</option>
+              </select>
+            </label>
+            <label>
+              <span>颜色</span>
+              <select
+                aria-label="颜色"
+                disabled={!canEdit}
+                onChange={(event) =>
+                  updateDraft({
+                    color: event.target.value as PrototypeElement["color"],
+                  })
+                }
+                value={inspectorDraft.color}
+              >
+                <option value="purple">紫色</option>
+                <option value="blue">蓝色</option>
+                <option value="green">绿色</option>
+                <option value="gray">灰色</option>
+              </select>
+            </label>
+            <label>
+              <span>尺寸</span>
+              <select
+                aria-label="尺寸"
+                disabled={!canEdit}
+                onChange={(event) =>
+                  updateDraft({
+                    size: event.target.value as PrototypeElement["size"],
+                  })
+                }
+                value={inspectorDraft.size}
+              >
+                <option value="small">小号</option>
+                <option value="medium">中号</option>
+                <option value="large">大号</option>
+              </select>
+            </label>
+            <label>
+              <span>交互状态</span>
+              <select
+                aria-label="交互状态"
+                disabled={!canEdit}
+                onChange={(event) =>
+                  updateDraft({
+                    interactionState:
+                      event.target.value as PrototypeElement["interactionState"],
+                  })
+                }
+                value={inspectorDraft.interactionState}
+              >
+                <option value="default">默认</option>
+                <option value="active">激活</option>
               </select>
             </label>
             <label>
@@ -360,7 +491,7 @@ export function PrototypeEditor({
                   updateDraft({ instruction: event.target.value })
                 }
                 placeholder="例如：改为次要按钮，或文案改成“邀请成员”"
-                value={draft.instruction}
+                value={inspectorDraft.instruction}
               />
             </label>
             <button
@@ -376,20 +507,29 @@ export function PrototypeEditor({
                 {state.validationError}
               </p>
             )}
-            {pendingDiff && (
+            {visiblePendingDiff && (
               <div className="prototype-change-summary" role="status">
                 <strong>确认本次修改</strong>
-                {pendingDiff.before.text !== pendingDiff.after.text && (
-                  <p>{pendingDiff.before.text} → {pendingDiff.after.text}</p>
+                {visiblePendingDiff.before.text !== visiblePendingDiff.after.text && (
+                  <p>{visiblePendingDiff.before.text} → {visiblePendingDiff.after.text}</p>
                 )}
-                {pendingDiff.before.tone !== pendingDiff.after.tone && (
-                  <p>{toneLabels[pendingDiff.before.tone]} → {toneLabels[pendingDiff.after.tone]}</p>
+                {visiblePendingDiff.before.tone !== visiblePendingDiff.after.tone && (
+                  <p>{toneLabels[visiblePendingDiff.before.tone]} → {toneLabels[visiblePendingDiff.after.tone]}</p>
+                )}
+                {visiblePendingDiff.before.color !== visiblePendingDiff.after.color && (
+                  <p>{colorLabels[visiblePendingDiff.before.color]} → {colorLabels[visiblePendingDiff.after.color]}</p>
+                )}
+                {visiblePendingDiff.before.size !== visiblePendingDiff.after.size && (
+                  <p>{sizeLabels[visiblePendingDiff.before.size]} → {sizeLabels[visiblePendingDiff.after.size]}</p>
+                )}
+                {visiblePendingDiff.before.interactionState !== visiblePendingDiff.after.interactionState && (
+                  <p>{interactionStateLabels[visiblePendingDiff.before.interactionState]} → {interactionStateLabels[visiblePendingDiff.after.interactionState]}</p>
                 )}
               </div>
             )}
             <button
               className="primary-small"
-              disabled={!canEdit || !pendingDiff}
+              disabled={!canEdit || !visiblePendingDiff}
               onClick={applyDraft}
               type="button"
             >

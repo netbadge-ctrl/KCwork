@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, test } from "vitest";
 import { PrototypeEditor } from "./prototype-editor";
@@ -272,4 +272,177 @@ test("cannot undo after an in-place permission downgrade", async () => {
   expect(
     screen.queryByRole("button", { name: "选择添加成员按钮" }),
   ).not.toBeInTheDocument();
+});
+
+test("keeps viewer inspection local without clearing another surface's pending diff", async () => {
+  const author = render(
+    <PrototypeEditor canEdit requirementId="role-permissions" />,
+  );
+  await userEvent.click(
+    within(author.container).getByRole("button", { name: "选择添加成员按钮" }),
+  );
+  await userEvent.clear(within(author.container).getByLabelText("元素文案"));
+  await userEvent.type(
+    within(author.container).getByLabelText("元素文案"),
+    "邀请同事",
+  );
+  await userEvent.click(
+    within(author.container).getByRole("button", { name: "预览修改" }),
+  );
+  const key = "kflow.prototype.requirement.role-permissions";
+  const storedBefore = window.localStorage.getItem(key);
+
+  const viewer = render(
+    <PrototypeEditor canEdit={false} requirementId="role-permissions" />,
+  );
+  await userEvent.click(
+    within(viewer.container).getByRole("button", { name: "选择林川成员行" }),
+  );
+  await userEvent.click(
+    within(viewer.container).getByRole("application", { name: "原型画布" }),
+  );
+
+  expect(window.localStorage.getItem(key)).toBe(storedBefore);
+  expect(
+    within(author.container).getByText(/添加成员 → 邀请同事/),
+  ).toBeInTheDocument();
+});
+
+test("keeps shared pending work after a live permission downgrade", async () => {
+  const author = render(
+    <PrototypeEditor canEdit requirementId="role-permissions" />,
+  );
+  await userEvent.click(
+    within(author.container).getByRole("button", { name: "选择添加成员按钮" }),
+  );
+  await userEvent.clear(within(author.container).getByLabelText("元素文案"));
+  await userEvent.type(
+    within(author.container).getByLabelText("元素文案"),
+    "邀请同事",
+  );
+  await userEvent.click(
+    within(author.container).getByRole("button", { name: "预览修改" }),
+  );
+  const key = "kflow.prototype.requirement.role-permissions";
+  const storedBefore = window.localStorage.getItem(key);
+
+  const inspectedSurface = render(
+    <PrototypeEditor canEdit requirementId="role-permissions" />,
+  );
+  inspectedSurface.rerender(
+    <PrototypeEditor canEdit={false} requirementId="role-permissions" />,
+  );
+  await userEvent.click(
+    within(inspectedSurface.container).getByRole("button", {
+      name: "选择林川成员行",
+    }),
+  );
+  await userEvent.keyboard("{Escape}");
+
+  expect(window.localStorage.getItem(key)).toBe(storedBefore);
+  expect(
+    within(author.container).getByText(/添加成员 → 邀请同事/),
+  ).toBeInTheDocument();
+});
+
+test("hides inspection actions without clearing pending work when inspection is off", async () => {
+  const { container, rerender } = render(
+    <PrototypeEditor canEdit requirementId="role-permissions" />,
+  );
+  await userEvent.click(
+    within(container).getByRole("button", { name: "选择添加成员按钮" }),
+  );
+  await userEvent.clear(within(container).getByLabelText("元素文案"));
+  await userEvent.type(within(container).getByLabelText("元素文案"), "邀请同事");
+  await userEvent.click(
+    within(container).getByRole("button", { name: "预览修改" }),
+  );
+  const key = "kflow.prototype.requirement.role-permissions";
+  const pendingBefore = JSON.parse(
+    window.localStorage.getItem(key) ?? "{}",
+  ).pendingDiff;
+
+  rerender(
+    <PrototypeEditor
+      canEdit
+      inspectionEnabled={false}
+      requirementId="role-permissions"
+    />,
+  );
+  expect(within(container).queryByLabelText("元素文案")).not.toBeInTheDocument();
+  expect(
+    within(container).queryByRole("heading", { name: "添加成员按钮" }),
+  ).not.toBeInTheDocument();
+  expect(
+    within(container).queryByRole("button", { name: "预览修改" }),
+  ).not.toBeInTheDocument();
+  expect(
+    within(container).queryByRole("button", { name: "应用修改" }),
+  ).not.toBeInTheDocument();
+  expect(
+    within(container).queryByRole("button", { name: "撤销本次修改" }),
+  ).not.toBeInTheDocument();
+  expect(
+    JSON.parse(window.localStorage.getItem(key) ?? "{}").pendingDiff,
+  ).toEqual(pendingBefore);
+
+  rerender(
+    <PrototypeEditor canEdit requirementId="role-permissions" />,
+  );
+  expect(
+    within(container).getByText(/添加成员 → 邀请同事/),
+  ).toBeInTheDocument();
+});
+
+test("previews, applies, persists, and undoes color, size, and interaction changes", async () => {
+  const first = render(
+    <PrototypeEditor canEdit requirementId="role-permissions" />,
+  );
+  await userEvent.click(
+    within(first.container).getByRole("button", { name: "选择添加成员按钮" }),
+  );
+  await userEvent.selectOptions(within(first.container).getByLabelText("颜色"), "blue");
+  await userEvent.selectOptions(within(first.container).getByLabelText("尺寸"), "large");
+  await userEvent.selectOptions(
+    within(first.container).getByLabelText("交互状态"),
+    "active",
+  );
+  await userEvent.click(
+    within(first.container).getByRole("button", { name: "预览修改" }),
+  );
+  expect(within(first.container).getByText(/紫色 → 蓝色/)).toBeInTheDocument();
+  expect(within(first.container).getByText(/中号 → 大号/)).toBeInTheDocument();
+  expect(within(first.container).getByText(/默认 → 激活/)).toBeInTheDocument();
+  await userEvent.click(
+    within(first.container).getByRole("button", { name: "应用修改" }),
+  );
+  expect(
+    within(first.container).getByRole("button", { name: "选择添加成员按钮" }),
+  ).toHaveAttribute("data-color", "blue");
+  expect(
+    within(first.container).getByRole("button", { name: "选择添加成员按钮" }),
+  ).toHaveAttribute("data-size", "large");
+  expect(
+    within(first.container).getByRole("button", { name: "选择添加成员按钮" }),
+  ).toHaveAttribute("data-interaction-state", "active");
+  first.unmount();
+
+  const reopened = render(
+    <PrototypeEditor canEdit requirementId="role-permissions" />,
+  );
+  const persisted = within(reopened.container).getByRole("button", {
+    name: "选择添加成员按钮",
+  });
+  expect(persisted).toHaveAttribute("data-color", "blue");
+  expect(persisted).toHaveAttribute("data-size", "large");
+  expect(persisted).toHaveAttribute("data-interaction-state", "active");
+  await userEvent.click(
+    within(reopened.container).getByRole("button", { name: "撤销本次修改" }),
+  );
+  const restored = within(reopened.container).getByRole("button", {
+    name: "选择添加成员按钮",
+  });
+  expect(restored).toHaveAttribute("data-color", "purple");
+  expect(restored).toHaveAttribute("data-size", "medium");
+  expect(restored).toHaveAttribute("data-interaction-state", "default");
 });

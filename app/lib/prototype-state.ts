@@ -8,6 +8,7 @@ export interface PrototypeElement {
   type: "button" | "input" | "heading" | "navigation" | "row";
   text: string;
   tone: "primary" | "secondary" | "neutral";
+  color: "purple" | "blue" | "green" | "gray";
   spec: string;
   page: string;
   size: "small" | "medium" | "large";
@@ -19,6 +20,9 @@ export type PrototypePageName = "总览" | "成员与角色" | "角色详情" | 
 export interface PrototypeElementDraft {
   text: string;
   tone: PrototypeElement["tone"];
+  color: PrototypeElement["color"];
+  size: PrototypeElement["size"];
+  interactionState: PrototypeElement["interactionState"];
   instruction: string;
 }
 
@@ -46,6 +50,7 @@ const initialElements: PrototypeElement[] = [
     type: "navigation",
     text: "成员管理",
     tone: "primary",
+    color: "purple",
     spec: "US-04",
     page: "成员与角色",
     size: "medium",
@@ -57,6 +62,7 @@ const initialElements: PrototypeElement[] = [
     type: "heading",
     text: "成员与角色管理",
     tone: "neutral",
+    color: "gray",
     spec: "US-04",
     page: "成员与角色",
     size: "large",
@@ -68,6 +74,7 @@ const initialElements: PrototypeElement[] = [
     type: "button",
     text: "添加成员",
     tone: "primary",
+    color: "purple",
     spec: "AC-07",
     page: "成员与角色",
     size: "medium",
@@ -79,6 +86,7 @@ const initialElements: PrototypeElement[] = [
     type: "input",
     text: "搜索成员、邮箱或角色",
     tone: "neutral",
+    color: "gray",
     spec: "US-04",
     page: "成员与角色",
     size: "large",
@@ -90,6 +98,7 @@ const initialElements: PrototypeElement[] = [
     type: "row",
     text: "林川 · 研发",
     tone: "neutral",
+    color: "gray",
     spec: "AC-09",
     page: "成员与角色",
     size: "large",
@@ -124,15 +133,40 @@ function parseState(value: string | null): PrototypeDocumentState {
       ...element,
       ...storedElements.get(element.id),
     }));
+    const selectedId =
+      typeof parsed.selectedId === "string" ? parsed.selectedId : null;
+    const selected = elements.find((element) => element.id === selectedId);
+    const parsedDraft = parsed.draft as Partial<PrototypeElementDraft> | null;
+    const draft = parsedDraft && selected
+      ? {
+          text: parsedDraft.text ?? selected.text,
+          tone: parsedDraft.tone ?? selected.tone,
+          color: parsedDraft.color ?? selected.color,
+          size: parsedDraft.size ?? selected.size,
+          interactionState:
+            parsedDraft.interactionState ?? selected.interactionState,
+          instruction: parsedDraft.instruction ?? "",
+        }
+      : null;
+    const mergeElement = (candidate: PrototypeElement) => {
+      const fallback = elements.find((element) => element.id === candidate.id);
+      return fallback ? { ...fallback, ...candidate } : candidate;
+    };
+    const pendingDiff = parsed.pendingDiff
+      ? {
+          before: mergeElement(parsed.pendingDiff.before),
+          after: mergeElement(parsed.pendingDiff.after),
+        }
+      : null;
+    const undoSnapshot = Array.isArray(parsed.undoSnapshot)
+      ? parsed.undoSnapshot.map((candidate) => mergeElement(candidate))
+      : null;
     return {
       elements,
-      selectedId:
-        typeof parsed.selectedId === "string" ? parsed.selectedId : null,
-      draft: parsed.draft ?? null,
-      pendingDiff: parsed.pendingDiff ?? null,
-      undoSnapshot: Array.isArray(parsed.undoSnapshot)
-        ? parsed.undoSnapshot
-        : null,
+      selectedId,
+      draft,
+      pendingDiff,
+      undoSnapshot,
       validationError:
         typeof parsed.validationError === "string"
           ? parsed.validationError
@@ -169,6 +203,9 @@ export function getPrototypeDocumentStatus(state: PrototypeDocumentState) {
       state.draft &&
       (state.draft.text !== selected.text ||
         state.draft.tone !== selected.tone ||
+        state.draft.color !== selected.color ||
+        state.draft.size !== selected.size ||
+        state.draft.interactionState !== selected.interactionState ||
         state.draft.instruction.trim()),
   );
   return { dirty, pending: Boolean(state.pendingDiff) };
@@ -182,7 +219,14 @@ export function discardPrototypeDraft(requirementId: string) {
   publishState(requirementId, {
     ...current,
     draft: selected
-      ? { text: selected.text, tone: selected.tone, instruction: "" }
+      ? {
+          text: selected.text,
+          tone: selected.tone,
+          color: selected.color,
+          size: selected.size,
+          interactionState: selected.interactionState,
+          instruction: "",
+        }
       : null,
     pendingDiff: null,
     validationError: null,

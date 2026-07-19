@@ -977,6 +977,66 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByRole("heading", { name: "产品文档" })).toBeInTheDocument();
   });
 
+  test("keeps PRD and prototype document previews open from Project Assets", async () => {
+    render(<Page />);
+    await openCustomerPortal();
+    await userEvent.click(screen.getByRole("button", { name: "项目设置" }));
+    await userEvent.click(screen.getByRole("button", { name: "上下文维护" }));
+    await userEvent.click(screen.getByRole("button", { name: "管理全部产品文档" }));
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "查看角色与成员权限 PRD" }),
+    );
+    expect(
+      screen.getByRole("complementary", { name: "产物预览" }),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "查看角色配置交互原型" }),
+    );
+    expect(
+      screen.getByRole("complementary", { name: "页面预览" }),
+    ).toBeInTheDocument();
+  });
+
+  test("guards a Project Assets prototype View while prototype work is pending", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "预览角色配置页面" }),
+    );
+    const drawer = screen.getByRole("complementary", { name: "页面预览" });
+    await userEvent.click(
+      within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
+    );
+    await userEvent.clear(within(drawer).getByLabelText("元素文案"));
+    await userEvent.type(within(drawer).getByLabelText("元素文案"), "邀请同事");
+    await userEvent.click(
+      within(drawer).getByRole("button", { name: "预览修改" }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
+    await userEvent.click(screen.getByRole("button", { name: "保留修改并离开" }));
+    await userEvent.click(screen.getByRole("button", { name: "更多需求操作" }));
+    await userEvent.click(screen.getByRole("button", { name: "调整状态与门禁" }));
+    await userEvent.click(screen.getByRole("button", { name: "上下文维护" }));
+    await userEvent.click(screen.getByRole("button", { name: "管理全部产品文档" }));
+    await userEvent.click(screen.getByRole("button", { name: "保留修改并离开" }));
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "查看角色配置交互原型" }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: "未确认的原型修改" }),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "保留修改并离开" }));
+    expect(
+      screen.getByRole("complementary", { name: "页面预览" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/添加成员 → 邀请同事/)).toBeInTheDocument();
+  });
+
   test("marks a development task and opens the code diff", async () => {
     render(<Page />);
     await openRoleRequirement();

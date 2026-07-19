@@ -58,6 +58,7 @@ export interface PreviewDrawerProps {
   lockedContextIds: string[];
   selectedAssetId: string | null;
   previewError?: PreviewErrorKind | null;
+  allowExplicitPreview?: boolean;
   onSelect(kind: PreviewKind): void;
   onToggleContextSource(sourceId: string): void;
   onToggleContextLock(sourceId: string): void;
@@ -98,6 +99,7 @@ export function PreviewDrawer({
   lockedContextIds,
   selectedAssetId,
   previewError,
+  allowExplicitPreview = false,
   onSelect,
   onToggleContextSource,
   onToggleContextLock,
@@ -145,8 +147,9 @@ export function PreviewDrawer({
 
   useEffect(() => {
     if (!preview || !contextualPreviewKinds.has(preview)) return;
+    if (allowExplicitPreview) return;
     if (!tools.some((tool) => tool.kind === preview)) onClose();
-  }, [preview, tools, onClose]);
+  }, [allowExplicitPreview, preview, tools, onClose]);
 
   return (
     <div className="auxiliary" aria-label="辅助工具">
