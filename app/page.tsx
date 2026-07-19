@@ -31,7 +31,7 @@ import {
 } from "./lib/project-capabilities";
 import type { ProjectSection, ViewId } from "./lib/types";
 import {
-  clampRightPanelWidthForShell,
+  clampPreferredRightPanelWidth,
   COLLAPSED_SIDEBAR_WIDTH,
   DEFAULT_RIGHT_PANEL_WIDTH,
   EXPANDED_SIDEBAR_WIDTH,
@@ -79,7 +79,7 @@ function layoutPreferencesReducer(
       return {
         ...state,
         isSidebarCollapsed,
-        rightPanelWidth: clampRightPanelWidthForShell(
+        rightPanelWidth: clampPreferredRightPanelWidth(
           state.rightPanelWidth,
           action.viewportWidth,
           isSidebarCollapsed
@@ -118,7 +118,7 @@ export default function Page() {
     dispatchLayoutPreferences({
       type: "hydrate",
       isSidebarCollapsed,
-      rightPanelWidth: clampRightPanelWidthForShell(
+      rightPanelWidth: clampPreferredRightPanelWidth(
         readStoredNumber(
           window.localStorage.getItem(RIGHT_PANEL_WIDTH_STORAGE_KEY),
           DEFAULT_RIGHT_PANEL_WIDTH,
@@ -151,7 +151,7 @@ export default function Page() {
     const clampToViewport = () =>
       dispatchLayoutPreferences({
         type: "set-right-panel-width",
-        width: clampRightPanelWidthForShell(
+        width: clampPreferredRightPanelWidth(
           layoutPreferences.rightPanelWidth,
           window.innerWidth,
           layoutPreferences.isSidebarCollapsed

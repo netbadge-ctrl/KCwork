@@ -201,6 +201,29 @@ describe("enterprise AI client demo", () => {
     expect(separator).toHaveAttribute("aria-valuenow", "552");
   });
 
+  test("preserves the desktop panel preference across the mobile overlay", async () => {
+    window.localStorage.setItem("kflow.rightPanel.width", "640");
+    render(<Page />);
+    await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
+    const separator = screen.getByRole("separator", {
+      name: "调整辅助面板宽度",
+    });
+
+    window.innerWidth = 700;
+    fireEvent(window, new Event("resize"));
+
+    expect(separator).toHaveAttribute("aria-valuenow", "632");
+    expect(window.localStorage.getItem("kflow.rightPanel.width")).toBe("640");
+    expect(screen.getByRole("main")).toHaveStyle({
+      "--right-panel-width": "640px",
+    });
+
+    window.innerWidth = 1400;
+    fireEvent(window, new Event("resize"));
+    expect(separator).toHaveAttribute("aria-valuenow", "640");
+    expect(window.localStorage.getItem("kflow.rightPanel.width")).toBe("640");
+  });
+
   test("navigates to projects from the fixed sidebar", async () => {
     render(<Page />);
     await userEvent.click(screen.getByRole("button", { name: "项目" }));

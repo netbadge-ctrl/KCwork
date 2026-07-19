@@ -31,7 +31,9 @@ import { ProjectSettingsPanel } from "./project-settings-panel";
 import {
   clampRightPanelWidthForShell,
   DEFAULT_RIGHT_PANEL_WIDTH,
+  getEffectiveRightPanelWidth,
   getRightPanelMaxWidth,
+  MOBILE_BREAKPOINT,
   MIN_RIGHT_PANEL_WIDTH,
 } from "../lib/layout-preferences";
 
@@ -111,6 +113,15 @@ export function PreviewDrawer({
     width: number;
     x: number;
   } | null>(null);
+  const effectiveWidth = getEffectiveRightPanelWidth(
+    width,
+    viewportWidth,
+    sidebarWidth,
+  );
+  const maximumWidth =
+    viewportWidth <= MOBILE_BREAKPOINT
+      ? effectiveWidth
+      : getRightPanelMaxWidth(viewportWidth, sidebarWidth);
 
   useEffect(() => {
     const updateViewportWidth = () => setViewportWidth(window.innerWidth);
@@ -140,9 +151,9 @@ export function PreviewDrawer({
           <div
             aria-label="调整辅助面板宽度"
             aria-orientation="vertical"
-            aria-valuemax={getRightPanelMaxWidth(viewportWidth, sidebarWidth)}
-            aria-valuemin={MIN_RIGHT_PANEL_WIDTH}
-            aria-valuenow={width}
+            aria-valuemax={maximumWidth}
+            aria-valuemin={Math.min(MIN_RIGHT_PANEL_WIDTH, effectiveWidth)}
+            aria-valuenow={effectiveWidth}
             className="drawer-resize-handle"
             onDoubleClick={() =>
               onWidthChange(
