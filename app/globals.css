@@ -847,6 +847,60 @@ select:focus-visible {
   gap: 10px;
 }
 
+.agent-card-slot {
+  min-width: 0;
+}
+
+.agent-card-slot .agent-card {
+  width: 100%;
+}
+
+.product-mode-picker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.product-mode-picker button {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.product-mode-picker button.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.product-mode-picker button small {
+  color: var(--text-muted);
+}
+
+.product-mode-picker.compact {
+  margin: 0 20px 12px;
+  padding: 8px;
+}
+
+.product-mode-picker.compact button {
+  align-items: center;
+  padding: 7px 10px;
+  text-align: center;
+}
+
+.product-mode-picker.start {
+  margin-top: 8px;
+}
+
 .agent-card {
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr) auto;

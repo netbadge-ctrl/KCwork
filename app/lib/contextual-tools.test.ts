@@ -1,12 +1,14 @@
 import { describe, expect, test } from "vitest";
 import { resolveContextualTools } from "./contextual-tools";
+import type { ProductWorkMode } from "./types";
 
-const kinds = (agentId: string, mode: "office" | "research" = "research", hasExecution = true, hasTestEvidence = false) =>
+const kinds = (agentId: string, mode: "office" | "research" = "research", hasExecution = true, hasTestEvidence = false, productWorkMode?: ProductWorkMode) =>
   resolveContextualTools({
     agentId,
     hasExecution,
     hasTestEvidence,
     mode,
+    productWorkMode,
     view: "task",
   }).map((tool) => tool.kind);
 
@@ -23,9 +25,12 @@ describe("resolveContextualTools", () => {
   });
 
   test("maps product, development, review, and test Agents to their own evidence", () => {
-    expect(kinds("requirement-analysis")).toEqual(["context", "analysis", "questions", "log"]);
-    expect(kinds("prototype")).toEqual(["prototype", "components", "interaction", "context"]);
-    expect(kinds("prd-writer")).toEqual(["prd", "pdf", "analysis", "context"]);
+    expect(kinds("product-design", "research", true, false, "analysis"))
+      .toEqual(["context", "analysis", "questions", "log"]);
+    expect(kinds("product-design", "research", true, false, "prototype"))
+      .toEqual(["prototype", "components", "interaction", "context"]);
+    expect(kinds("product-design", "research", true, false, "prd"))
+      .toEqual(["prd", "pdf", "analysis", "context"]);
     expect(kinds("frontend-dev")).toEqual(["files", "diff", "log", "context"]);
     expect(kinds("backend-dev")).toEqual(["files", "diff", "log", "context"]);
     expect(kinds("code-review")).toEqual(["diff", "issues", "analysis", "context"]);

@@ -132,6 +132,7 @@ export default function Page() {
     hasExecution: activeExecution !== "idle",
     hasTestEvidence: Boolean(selectedRequirement?.counts.tests),
     mode: selectedAgent.mode === "office" ? "office" : "research",
+    productWorkMode: state.productWorkMode,
     view: state.view,
   });
 
@@ -192,9 +193,13 @@ export default function Page() {
             currentRole={currentRole}
             agents={agents}
             projects={projects}
+            productWorkMode={state.productWorkMode}
             selectedAgentId={state.selectedAgentId}
             selectedProjectId={state.selectedProjectId}
             onModeChange={(mode) => dispatch({ type: "set-mode", mode })}
+            onProductWorkModeChange={(mode) =>
+              dispatch({ type: "set-product-work-mode", mode })
+            }
             onSelectAgent={(agentId) =>
               dispatch({ type: "select-agent", agentId })
             }
@@ -269,6 +274,7 @@ export default function Page() {
             developmentTaskStatuses={state.developmentTaskStatuses}
             execution={state.requirementExecutions[selectedRequirement.id] ?? "idle"}
             messages={state.requirementMessages[selectedRequirement.id] ?? []}
+            productWorkMode={state.productWorkMode}
             onBack={() =>
               requestNavigation(selectedProject.name, () =>
                 dispatch({ type: "navigate", view: "project-detail" }),
@@ -290,6 +296,9 @@ export default function Page() {
                 dispatch({ type: "select-agent", agentId }),
               );
             }}
+            onProductWorkModeChange={(mode) =>
+              dispatch({ type: "set-product-work-mode", mode })
+            }
             onSend={(text) => dispatch({ type: "send-message", text })}
             onSaveDocumentDraft={(draft) =>
               selectedPrdDocument &&

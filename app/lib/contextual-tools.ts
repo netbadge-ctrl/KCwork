@@ -20,7 +20,7 @@ import {
   TestTube2,
   type LucideIcon,
 } from "lucide-react";
-import type { Mode, PreviewKind, ViewId } from "./types";
+import type { Mode, PreviewKind, ProductWorkMode, ViewId } from "./types";
 
 export interface ContextualTool {
   kind: PreviewKind;
@@ -34,6 +34,7 @@ export interface ContextualToolContext {
   agentId: string;
   hasExecution: boolean;
   hasTestEvidence: boolean;
+  productWorkMode?: ProductWorkMode;
 }
 
 const tool = (kind: PreviewKind, label: string, icon: LucideIcon): ContextualTool => ({ kind, label, icon });
@@ -115,6 +116,27 @@ const developmentTools: Record<string, ContextualTool[]> = {
   ],
 };
 
+const productTools: Record<ProductWorkMode, ContextualTool[]> = {
+  analysis: [
+    tool("context", "需求上下文", ListTree),
+    tool("analysis", "分析结论", ClipboardList),
+    tool("questions", "待确认问题", HelpCircle),
+    tool("log", "执行记录", ScrollText),
+  ],
+  prototype: [
+    tool("prototype", "页面预览", LayoutTemplate),
+    tool("components", "组件结构", Blocks),
+    tool("interaction", "交互说明", MousePointerClick),
+    tool("context", "引用上下文", ListTree),
+  ],
+  prd: [
+    tool("prd", "文档预览", FileText),
+    tool("pdf", "PDF 预览", FileStack),
+    tool("analysis", "版本修改", GitCompareArrows),
+    tool("context", "引用上下文", ListTree),
+  ],
+};
+
 export const contextualPreviewKinds = new Set<PreviewKind>([
   "actions", "analysis", "chart", "components", "context", "diff", "export",
   "failures", "files", "interaction", "issues", "log", "outline", "pdf",
@@ -123,9 +145,11 @@ export const contextualPreviewKinds = new Set<PreviewKind>([
 
 export function resolveContextualTools(context: ContextualToolContext): ContextualTool[] {
   if (!["home", "task", "requirement-detail"].includes(context.view)) return [];
-  const mapped = context.mode === "office"
-    ? officeTools[context.agentId] ?? officeTools.default
-    : developmentTools[context.agentId] ?? developmentTools.default;
+  const mapped = context.agentId === "product-design"
+    ? productTools[context.productWorkMode ?? "analysis"]
+    : context.mode === "office"
+      ? officeTools[context.agentId] ?? officeTools.default
+      : developmentTools[context.agentId] ?? developmentTools.default;
 
   return mapped
     .filter((item) => item.kind !== "log" || context.hasExecution)

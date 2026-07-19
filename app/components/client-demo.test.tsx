@@ -95,7 +95,7 @@ describe("enterprise AI client demo", () => {
     await openCustomerPortal();
 
     expect(screen.getByRole("heading", { name: "继续 Agent 工作" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "继续 PRD 撰写 Agent 对话" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "继续 产品设计 Agent 对话" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "从需求开始" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "恢复角色与成员权限重构工作区" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "查看自动上下文来源" })).toBeInTheDocument();
@@ -190,7 +190,7 @@ describe("enterprise AI client demo", () => {
   test("opens every recent task with its own content and active Agent", async () => {
     render(<Page />);
     const taskCases = [
-      ["完善角色管理 PRD14:32", "完善角色管理 PRD", /租户管理员、项目管理员和普通成员/, "prd-writer"],
+      ["完善角色管理 PRD14:32", "完善角色管理 PRD", /租户管理员、项目管理员和普通成员/, "product-design"],
       ["实现权限配置页面昨天", "实现权限配置页面", /观察者的操作范围已分别覆盖/, "frontend-dev"],
       ["分析登录失败问题周一", "分析登录失败问题", /登录失败集中在过期会话/, "backend-dev"],
       ["Q3 经营分析报告7 月 12 日", "Q3 经营分析报告", /Q3 营收同比增长/, "data-analysis"],
@@ -250,7 +250,7 @@ describe("enterprise AI client demo", () => {
     );
 
     expect(screen.getByLabelText("PRD 修改要求")).toBeEnabled();
-    await userEvent.selectOptions(screen.getByLabelText("切换工作台 Agent"), "prototype");
+    await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     await userEvent.click(screen.getByRole("button", { name: "预览角色配置页面" }));
     expect(screen.getByRole("button", { name: "在画布中编辑" })).toBeEnabled();
     await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
@@ -320,7 +320,7 @@ describe("enterprise AI client demo", () => {
   test("continues the latest Agent conversation from the project", async () => {
     render(<Page />);
     await openCustomerPortal();
-    await userEvent.click(screen.getByRole("button", { name: "继续 PRD 撰写 Agent 对话" }));
+    await userEvent.click(screen.getByRole("button", { name: "继续 产品设计 Agent 对话" }));
 
     expect(screen.getByRole("heading", { name: "PRD 撰写工作台" })).toBeInTheDocument();
     expect(screen.getAllByText("角色与成员权限重构").length).toBeGreaterThan(0);
@@ -330,7 +330,7 @@ describe("enterprise AI client demo", () => {
     render(<Page />);
     await openCustomerPortal();
 
-    for (const label of ["继续 PRD 撰写 Agent 对话", "继续 测试 Agent 对话"]) {
+    for (const label of ["继续 产品设计 Agent 对话", "继续 测试 Agent 对话"]) {
       expect(
         screen.getByRole("button", { name: label }),
       ).toBeInTheDocument();
@@ -361,20 +361,27 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("heading", { name: "PRD 撰写工作台" }),
     ).toBeInTheDocument();
 
-    await userEvent.selectOptions(
-      screen.getByLabelText("选择 Agent"),
-      "prototype",
-    );
+    await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     expect(
       screen.getByRole("heading", { name: "原型设计工作台" }),
     ).toBeInTheDocument();
+  });
+
+  test("uses one product Agent with freely switchable work modes", async () => {
+    render(<Page />);
+    await openRoleRequirement();
+    expect(screen.getByLabelText("切换工作台 Agent")).toHaveValue("product-design");
+    expect(screen.getByRole("heading", { name: "PRD 撰写工作台" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
+    expect(screen.getByRole("heading", { name: "原型设计工作台" })).toBeInTheDocument();
+    expect(screen.getByLabelText("任务输入")).toBeInTheDocument();
   });
 
   test("keeps Agent and automatic context primary inside a requirement", async () => {
     render(<Page />);
     await openRoleRequirement();
 
-    expect(screen.getByLabelText("切换工作台 Agent")).toHaveValue("prd-writer");
+    expect(screen.getByLabelText("切换工作台 Agent")).toHaveValue("product-design");
     expect(
       screen.getByRole("button", { name: "查看本次 6 项自动上下文" }),
     ).toBeInTheDocument();
@@ -468,13 +475,10 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByText(/产品方案已确认/)).toBeInTheDocument();
   });
 
-  test("previews the prototype from the prototype Agent", async () => {
+  test("previews the prototype from Product Design prototype mode", async () => {
     render(<Page />);
     await openRoleRequirement();
-    await userEvent.selectOptions(
-      screen.getByLabelText("选择 Agent"),
-      "prototype",
-    );
+    await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     await userEvent.click(
       screen.getByRole("button", { name: "预览角色配置页面" }),
     );
@@ -487,10 +491,7 @@ describe("enterprise AI client demo", () => {
   test("revises a PRD with natural language and opens PDF preview", async () => {
     render(<Page />);
     await openRoleRequirement();
-    await userEvent.selectOptions(
-      screen.getByLabelText("选择 Agent"),
-      "prd-writer",
-    );
+    await userEvent.click(screen.getByRole("button", { name: "PRD 撰写" }));
     const input = screen.getByLabelText("PRD 修改要求");
     await userEvent.type(input, "增加批量修改角色的二次确认说明");
     await userEvent.click(
@@ -716,10 +717,7 @@ describe("enterprise AI client demo", () => {
     await userEvent.click(
       screen.getByRole("button", { name: "恢复角色与成员权限重构工作区" }),
     );
-    await userEvent.selectOptions(
-      screen.getByLabelText("切换工作台 Agent"),
-      "prototype",
-    );
+    await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     expect(screen.getByRole("button", { name: "页面预览" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "组件结构" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "测试报告" })).not.toBeInTheDocument();
@@ -732,7 +730,8 @@ describe("enterprise AI client demo", () => {
     await userEvent.click(screen.getByRole("button", { name: "测试报告" }));
     expect(screen.getByRole("complementary", { name: "测试报告" })).toBeInTheDocument();
 
-    await userEvent.selectOptions(screen.getByLabelText("切换工作台 Agent"), "prototype");
+    await userEvent.selectOptions(screen.getByLabelText("切换工作台 Agent"), "product-design");
+    await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     expect(screen.queryByRole("complementary", { name: "测试报告" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "页面预览" })).toBeInTheDocument();
   });

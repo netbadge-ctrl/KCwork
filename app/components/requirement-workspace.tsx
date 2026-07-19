@@ -8,6 +8,7 @@ import type {
   PreviewKind,
   Project,
   ProjectRole,
+  ProductWorkMode,
   Requirement,
   RequirementStage,
 } from "../lib/types";
@@ -32,8 +33,10 @@ export interface RequirementWorkspaceProps {
   execution: ExecutionState;
   canEdit: boolean;
   currentRole: ProjectRole;
+  productWorkMode: ProductWorkMode;
   onBack(): void;
   onSelectAgent(agentId: string): void;
+  onProductWorkModeChange(mode: ProductWorkMode): void;
   onSend(text: string): void;
   onOpenPreview(kind: PreviewKind): void;
   onOpenContext(): void;
@@ -57,8 +60,10 @@ export function RequirementWorkspace({
   execution,
   canEdit,
   currentRole,
+  productWorkMode,
   onBack,
   onSelectAgent,
+  onProductWorkModeChange,
   onSend,
   onOpenPreview,
   onOpenContext,
@@ -136,9 +141,12 @@ export function RequirementWorkspace({
           documentDraft={documentDraft}
           developmentTaskStatuses={developmentTaskStatuses}
           onOpenPreview={onOpenPreview}
+          onProductWorkModeChange={onProductWorkModeChange}
           onSaveDocumentDraft={onSaveDocumentDraft}
           onSetDevelopmentTaskStatus={onSetDevelopmentTaskStatus}
           requirement={requirement}
+          productModePickerVariant="compact"
+          productWorkMode={productWorkMode}
         />
         <RequirementAgentActivity
           agents={agents}

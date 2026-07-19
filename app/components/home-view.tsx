@@ -1,6 +1,7 @@
 import { ArrowRight, Code2, MessageSquareText } from "lucide-react";
-import type { Agent, Mode, Project, ProjectRole } from "../lib/types";
+import type { Agent, Mode, ProductWorkMode, Project, ProjectRole } from "../lib/types";
 import { Composer } from "./composer";
+import { ProductModePicker } from "./product-mode-picker";
 
 export interface HomeViewProps {
   mode: Mode;
@@ -10,8 +11,10 @@ export interface HomeViewProps {
   selectedProjectId: string | null;
   canEdit: boolean;
   currentRole: ProjectRole;
+  productWorkMode: ProductWorkMode;
   onModeChange(mode: Mode): void;
   onSelectAgent(id: string): void;
+  onProductWorkModeChange(mode: ProductWorkMode): void;
   onSelectProject(id: string | null): void;
   onSend(text: string): void;
   onOpenProject(id: string): void;
@@ -62,19 +65,27 @@ export function HomeView(props: HomeViewProps) {
         </div>
         <div className="agent-card-grid">
           {visibleAgents.map((agent) => (
-            <button
-              className={`agent-card ${props.selectedAgentId === agent.id ? "selected" : ""}`}
-              key={agent.id}
-              onClick={() => props.onSelectAgent(agent.id)}
-              type="button"
-            >
-              <span className="agent-avatar">{agent.shortName}</span>
-              <span className="agent-card-copy">
-                <strong>{agent.name}</strong>
-                <small>{agent.description}</small>
-              </span>
-              <ArrowRight size={16} />
-            </button>
+            <div className="agent-card-slot" key={agent.id}>
+              <button
+                className={`agent-card ${props.selectedAgentId === agent.id ? "selected" : ""}`}
+                onClick={() => props.onSelectAgent(agent.id)}
+                type="button"
+              >
+                <span className="agent-avatar">{agent.shortName}</span>
+                <span className="agent-card-copy">
+                  <strong>{agent.name}</strong>
+                  <small>{agent.description}</small>
+                </span>
+                <ArrowRight size={16} />
+              </button>
+              {agent.id === "product-design" && props.selectedAgentId === agent.id && (
+                <ProductModePicker
+                  onChange={props.onProductWorkModeChange}
+                  value={props.productWorkMode}
+                  variant="start"
+                />
+              )}
+            </div>
           ))}
         </div>
       </section>
