@@ -16,8 +16,10 @@ import {
 } from "../lib/demo-data";
 import { contextualPreviewKinds, type ContextualTool } from "../lib/contextual-tools";
 import type {
+  AssetItem,
   ContextSource,
   PreviewKind,
+  Project,
   ProjectCapabilities,
   ProjectMember,
   ProjectRole,
@@ -27,6 +29,7 @@ import type {
 } from "../lib/types";
 import { ContextSourcesPanel } from "./context-sources-panel";
 import { ContextualScenePreview } from "./contextual-scene-preview";
+import { CreateSystemPanel } from "./create-system-panel";
 import { MemberManager } from "./member-manager";
 import { PreviewErrorState, type PreviewErrorKind } from "./preview-error-state";
 import { ProjectSettingsPanel } from "./project-settings-panel";
@@ -48,6 +51,7 @@ export interface PreviewDrawerProps {
   sidebarWidth: number;
   width: number;
   tools: ContextualTool[];
+  assets: AssetItem[];
   members: ProjectMember[];
   memberRoles: Record<string, ProjectRole>;
   requirements: Requirement[];
@@ -69,6 +73,8 @@ export interface PreviewDrawerProps {
   onChangeMemberRole(memberId: string, role: ProjectRole): void;
   onSetRequirementStage(requirementId: string, stage: RequirementStage): void;
   onOpenAsset(section: Exclude<ProjectSection, "overview">): void;
+  onCreateProject(project: Project): void;
+  onOpenSmartAssets(): void;
   onClose(): void;
   onRetryPreview?(): void;
   onWidthChange(width: number): void;
@@ -83,6 +89,7 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   "project-settings": "项目设置",
   "requirement-governance": "需求状态与门禁",
   "context-maintenance": "上下文维护",
+  "create-system": "新建系统项目",
   asset: "资产详情",
   diff: "代码差异",
   test: "测试报告",
@@ -93,6 +100,7 @@ export function PreviewDrawer({
   sidebarWidth,
   width,
   tools,
+  assets,
   members,
   memberRoles,
   requirements,
@@ -114,6 +122,8 @@ export function PreviewDrawer({
   onChangeMemberRole,
   onSetRequirementStage,
   onOpenAsset,
+  onCreateProject,
+  onOpenSmartAssets,
   onClose,
   onRetryPreview,
   onWidthChange,
@@ -328,6 +338,13 @@ export function PreviewDrawer({
                 requirementStages={requirementStages}
                 requirements={requirements}
                 section="context"
+              />
+            )}
+            {preview === "create-system" && (
+              <CreateSystemPanel
+                assets={assets}
+                onCreate={onCreateProject}
+                onOpenAssets={onOpenSmartAssets}
               />
             )}
             {preview === "asset" && <AssetDetail assetId={selectedAssetId} canEdit={capabilities.canManageAssets} requirement={selectedRequirement} />}

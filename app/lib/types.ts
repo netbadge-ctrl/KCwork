@@ -31,6 +31,7 @@ export type PreviewKind =
   | "project-settings"
   | "requirement-governance"
   | "context-maintenance"
+  | "create-system"
   | "actions"
   | "chart"
   | "slides"

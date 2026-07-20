@@ -471,7 +471,7 @@ export default function Page() {
                 dispatch({ type: "navigate", view: "home" }),
               )
             }
-            onCreateProject={(project) => setCreatedProjects((current) => [...current, project])}
+            onStartCreateProject={() => openPreview("create-system")}
             onOpenProject={openProject}
             onBack={() => dispatch({ type: "navigate", view: "projects" })}
           />
@@ -589,6 +589,7 @@ export default function Page() {
       </section>
 
       <PreviewDrawer
+        assets={assetGroups}
         documentDraft={
           selectedPrdDocument
             ? state.documentDrafts[selectedPrdDocument.id] ?? ""
@@ -628,6 +629,16 @@ export default function Page() {
             dispatch({ type: "close-preview" });
             dispatch({ type: "select-project-section", section });
           });
+        }}
+        onCreateProject={(project) => {
+          setCreatedProjects((current) => [...current, project]);
+          dispatch({ type: "select-project", projectId: project.id });
+          dispatch({ type: "close-preview" });
+          dispatch({ type: "navigate", view: "project-detail" });
+        }}
+        onOpenSmartAssets={() => {
+          dispatch({ type: "close-preview" });
+          dispatch({ type: "navigate", view: "assets" });
         }}
         onSaveDocumentDraft={(draft) =>
           selectedPrdDocument &&
