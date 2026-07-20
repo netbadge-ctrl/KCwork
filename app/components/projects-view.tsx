@@ -25,7 +25,6 @@ export interface ProjectsViewProps {
   onResumeSession(sessionId: string): void;
   onOpenRequirement(id: string): void;
   onOpenContext(): void;
-  onOpenSettings(): void;
   onCreateRequirement(): void;
 }
 
@@ -44,7 +43,6 @@ export function ProjectsView({
   onResumeSession,
   onOpenRequirement,
   onOpenContext,
-  onOpenSettings,
   onCreateRequirement,
 }: ProjectsViewProps) {
   const [query, setQuery] = useState("");
@@ -59,7 +57,6 @@ export function ProjectsView({
         onBack={onBack}
         onOpenContext={onOpenContext}
         onOpenRequirement={onOpenRequirement}
-        onOpenSettings={onOpenSettings}
         onCreateRequirement={onCreateRequirement}
         onResumeSession={onResumeSession}
         project={project}

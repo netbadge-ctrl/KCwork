@@ -17,6 +17,7 @@ import {
   MousePointerClick,
   Presentation,
   ScrollText,
+  Settings,
   TestTube2,
   type LucideIcon,
 } from "lucide-react";
@@ -126,6 +127,9 @@ export const contextualPreviewKinds = new Set<PreviewKind>([
 ]);
 
 export function resolveContextualTools(context: ContextualToolContext): ContextualTool[] {
+  if (context.view === "project-detail") {
+    return [tool("project-settings", "项目设置", Settings)];
+  }
   if (!["home", "task", "requirement-detail"].includes(context.view)) return [];
   const mapped = context.agentId === "product-design"
     ? productTools[context.productWorkMode ?? "analysis"]

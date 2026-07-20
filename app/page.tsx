@@ -442,7 +442,6 @@ export default function Page() {
                 requestNavigation(destination, run);
               }
             }}
-            onOpenSettings={() => openPreview("project-settings")}
             onResumeSession={(sessionId) => {
               const session = agentWorkSessions.find(
                 (item) => item.id === sessionId,

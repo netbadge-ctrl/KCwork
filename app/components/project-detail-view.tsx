@@ -1,4 +1,4 @@
-import { ArrowLeft, FilePlus2, Settings } from "lucide-react";
+import { ArrowLeft, FilePlus2 } from "lucide-react";
 import type {
   Agent,
   AgentWorkSession,
@@ -24,7 +24,6 @@ export interface ProjectDetailViewProps {
   onResumeSession(sessionId: string): void;
   onOpenRequirement(requirementId: string): void;
   onOpenContext(): void;
-  onOpenSettings(): void;
   onCreateRequirement(): void;
 }
 
@@ -41,7 +40,6 @@ export function ProjectDetailView({
   onResumeSession,
   onOpenRequirement,
   onOpenContext,
-  onOpenSettings,
   onCreateRequirement,
 }: ProjectDetailViewProps) {
   return (
@@ -58,9 +56,6 @@ export function ProjectDetailView({
             <h1>{project.name}</h1>
             <p>{project.description}</p>
           </div>
-          <button className="secondary-button" onClick={onOpenSettings} type="button">
-            <Settings size={16} /> 项目设置
-          </button>
         </div>
         <div className="project-meta-row">
           <span>更新于 {project.updatedAt}</span>
