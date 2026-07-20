@@ -1220,6 +1220,7 @@ select:focus-visible {
 
 .project-stats {
   display: flex;
+  flex-wrap: wrap;
   gap: 14px;
   margin: 15px 0 13px;
   color: var(--text-muted);
@@ -1717,6 +1718,123 @@ select:focus-visible {
 .project-create-form {
   margin-top: -12px;
 }
+
+.system-create-form {
+  max-width: 1120px;
+  padding: 18px;
+  margin: -12px auto 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+}
+
+.system-create-heading,
+.system-create-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.system-create-heading > div {
+  display: grid;
+  gap: 4px;
+}
+
+.system-create-heading strong { font-size: 16px; }
+.system-create-heading span,
+.system-create-footer > span { color: var(--text-muted); font-size: 10px; }
+
+.system-create-heading > button {
+  padding: 7px 10px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.system-create-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 17px 0;
+  margin: 15px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.system-create-grid label {
+  display: grid;
+  gap: 6px;
+}
+
+.system-create-grid label.wide { grid-column: 1 / -1; }
+.system-create-grid label > span { color: var(--text-muted); font-size: 10px; font-weight: 650; }
+
+.system-create-grid input,
+.system-create-grid textarea {
+  width: 100%;
+  padding: 10px 11px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  outline: 0;
+  font: inherit;
+}
+
+.system-create-grid textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.system-foundation {
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.system-foundation-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 13px;
+}
+
+.system-foundation-heading h2 { margin: 0; font-size: 17px; }
+.system-foundation-heading > span { color: var(--text-muted); font: 10px ui-monospace, monospace; }
+
+.system-foundation-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.system-foundation-grid article {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 8px;
+  padding: 12px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+}
+
+.system-foundation-grid article > span {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 9px;
+}
+
+.system-foundation-grid article > div { display: grid; gap: 2px; }
+.system-foundation-grid strong { font-size: 11px; }
+.system-foundation-grid small { color: var(--text-muted); font-size: 9px; }
+.system-foundation-grid p { grid-column: 1 / -1; margin: 3px 0 0; color: var(--text-muted); font-size: 10px; line-height: 1.5; }
 
 .asset-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2541,6 +2659,10 @@ select:focus-visible {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .system-foundation-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .drawer-open .auxiliary {
     position: absolute;
     top: 0;
@@ -2651,6 +2773,17 @@ select:focus-visible {
   .inline-create-form {
     align-items: stretch;
     grid-template-columns: 1fr;
+  }
+
+  .system-create-grid,
+  .system-foundation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .system-create-heading,
+  .system-create-footer {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .asset-tab-toolbar {

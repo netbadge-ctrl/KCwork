@@ -96,11 +96,18 @@ export interface ContextSource {
 export interface Project {
   id: string;
   name: string;
+  systemCode?: string;
   description: string;
   members: number;
   updatedAt: string;
   contextCount: number;
   color: string;
+  repositories?: string[];
+  requirementSource?: string;
+  historicalRequirementCount?: number;
+  testSuite?: string;
+  testCaseCount?: number;
+  contextAssets?: string[];
 }
 
 export interface RecentTask {
