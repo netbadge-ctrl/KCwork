@@ -4,6 +4,7 @@ import {
   Bug,
   CheckSquare2,
   ClipboardList,
+  Database,
   Download,
   FileCode2,
   FileStack,
@@ -17,8 +18,9 @@ import {
   MousePointerClick,
   Presentation,
   ScrollText,
-  Settings,
+  ShieldCheck,
   TestTube2,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import type { Mode, PreviewKind, ProductWorkMode, ViewId } from "./types";
@@ -124,11 +126,16 @@ export const contextualPreviewKinds = new Set<PreviewKind>([
   "actions", "analysis", "chart", "components", "context", "diff", "export",
   "failures", "files", "interaction", "issues", "log", "outline", "pdf",
   "prd", "prototype", "slides", "test", "questions",
+  "requirement-governance", "context-maintenance",
 ]);
 
 export function resolveContextualTools(context: ContextualToolContext): ContextualTool[] {
   if (context.view === "project-detail") {
-    return [tool("project-settings", "项目设置", Settings)];
+    return [
+      tool("members", "成员与角色", Users),
+      tool("requirement-governance", "需求状态与门禁", ShieldCheck),
+      tool("context-maintenance", "上下文维护", Database),
+    ];
   }
   if (!["home", "task", "requirement-detail"].includes(context.view)) return [];
   const mapped = context.agentId === "product-design"

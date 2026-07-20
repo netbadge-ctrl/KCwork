@@ -29,6 +29,8 @@ export type PreviewKind =
   | "asset"
   | "sources"
   | "project-settings"
+  | "requirement-governance"
+  | "context-maintenance"
   | "actions"
   | "chart"
   | "slides"

@@ -522,7 +522,7 @@ export default function Page() {
               time: `${selectedRequirement.code} · Spec ${selectedRequirement.specVersion}`,
             }}
             onOpenPreview={openPreview}
-            onOpenSettings={() => openPreview("project-settings")}
+            onOpenSettings={() => openPreview("requirement-governance")}
             onBackToProject={() =>
               requestNavigation(selectedProject.name, () =>
                 dispatch({ type: "navigate", view: "project-detail" }),

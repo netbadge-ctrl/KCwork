@@ -81,6 +81,8 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   members: "成员管理",
   sources: "自动上下文",
   "project-settings": "项目设置",
+  "requirement-governance": "需求状态与门禁",
+  "context-maintenance": "上下文维护",
   asset: "资产详情",
   diff: "代码差异",
   test: "测试报告",
@@ -298,6 +300,34 @@ export function PreviewDrawer({
                 onSetRequirementStage={onSetRequirementStage}
                 requirementStages={requirementStages}
                 requirements={requirements}
+              />
+            )}
+            {preview === "requirement-governance" && (
+              <ProjectSettingsPanel
+                capabilities={capabilities}
+                currentRole={currentRole}
+                memberRoles={memberRoles}
+                members={members}
+                onChangeMemberRole={onChangeMemberRole}
+                onOpenAsset={onOpenAsset}
+                onSetRequirementStage={onSetRequirementStage}
+                requirementStages={requirementStages}
+                requirements={requirements}
+                section="governance"
+              />
+            )}
+            {preview === "context-maintenance" && (
+              <ProjectSettingsPanel
+                capabilities={capabilities}
+                currentRole={currentRole}
+                memberRoles={memberRoles}
+                members={members}
+                onChangeMemberRole={onChangeMemberRole}
+                onOpenAsset={onOpenAsset}
+                onSetRequirementStage={onSetRequirementStage}
+                requirementStages={requirementStages}
+                requirements={requirements}
+                section="context"
               />
             )}
             {preview === "asset" && <AssetDetail assetId={selectedAssetId} canEdit={capabilities.canManageAssets} requirement={selectedRequirement} />}

@@ -25,6 +25,7 @@ const assetSections: {
 ];
 
 export interface ProjectSettingsPanelProps {
+  section?: "all" | "governance" | "context";
   members: ProjectMember[];
   memberRoles: Record<string, ProjectRole>;
   requirements: Requirement[];
@@ -37,6 +38,7 @@ export interface ProjectSettingsPanelProps {
 }
 
 export function ProjectSettingsPanel({
+  section = "all",
   members,
   memberRoles,
   requirements,
@@ -64,7 +66,7 @@ export function ProjectSettingsPanel({
         <p>项目治理和共享上下文维护集中在此处，日常工作仍围绕 Agent 与需求展开。</p>
       </div>
 
-      <section className="project-settings-section">
+      {section === "all" && <section className="project-settings-section">
         <button
           aria-expanded={openSection === "members"}
           className="project-settings-section-toggle"
@@ -84,10 +86,10 @@ export function ProjectSettingsPanel({
             />
           </div>
         )}
-      </section>
+      </section>}
 
-      <section className="project-settings-section">
-        <button
+      {(section === "all" || section === "governance") && <section className="project-settings-section">
+        {section === "all" && <button
           aria-expanded={openSection === "governance"}
           className="project-settings-section-toggle"
           onClick={() => toggleSection("governance")}
@@ -95,8 +97,8 @@ export function ProjectSettingsPanel({
         >
           <span>需求状态与门禁</span>
           <ChevronDown size={17} />
-        </button>
-        {openSection === "governance" && (
+        </button>}
+        {(section === "governance" || openSection === "governance") && (
           <div className="project-settings-section-content requirement-governance-settings">
             <p className="project-settings-help">调整状态会记录为项目治理变更；门禁状态由对应评审结果维护。</p>
             <div className="project-requirement-settings-list">
@@ -135,10 +137,10 @@ export function ProjectSettingsPanel({
             </div>
           </div>
         )}
-      </section>
+      </section>}
 
-      <section className="project-settings-section">
-        <button
+      {(section === "all" || section === "context") && <section className="project-settings-section">
+        {section === "all" && <button
           aria-expanded={openSection === "assets"}
           className="project-settings-section-toggle"
           onClick={() => toggleSection("assets")}
@@ -146,8 +148,8 @@ export function ProjectSettingsPanel({
         >
           <span>上下文维护</span>
           <ChevronDown size={17} />
-        </button>
-        {openSection === "assets" && (
+        </button>}
+        {(section === "context" || openSection === "assets") && (
           <div className="project-settings-section-content project-settings-assets">
             {assetSections.map(({ section, label, description, icon: Icon }) => (
               <div className="project-settings-asset" key={section}>
@@ -163,7 +165,7 @@ export function ProjectSettingsPanel({
             ))}
           </div>
         )}
-      </section>
+      </section>}
     </section>
   );
 }
