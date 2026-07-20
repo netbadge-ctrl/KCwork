@@ -1981,6 +1981,98 @@ select:focus-visible {
 .system-foundation-grid small { color: var(--text-muted); font-size: 9px; }
 .system-foundation-grid p { grid-column: 1 / -1; margin: 3px 0 0; color: var(--text-muted); font-size: 10px; line-height: 1.5; }
 
+.project-context-panel {
+  display: grid;
+  gap: 13px;
+}
+
+.project-context-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px;
+  background: var(--accent-soft);
+  border: 1px solid #e2dbfa;
+  border-radius: 11px;
+}
+
+.project-context-summary > span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  color: var(--accent);
+  background: #fff;
+  border-radius: 9px;
+}
+
+.project-context-summary > div { display: grid; gap: 2px; }
+.project-context-summary small { color: var(--text-muted); font-size: 9px; }
+.project-context-summary strong { font-size: 17px; }
+
+.project-context-source {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.project-context-items {
+  display: grid;
+  gap: 7px;
+}
+
+.project-context-items article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+
+.project-context-items article > div { display: grid; min-width: 0; gap: 2px; }
+.project-context-items strong { font-size: 10px; }
+.project-context-items small,
+.project-context-items article > span { color: var(--text-muted); font-size: 8px; }
+
+.project-context-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.project-context-tags span {
+  padding: 5px 8px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  font-size: 9px;
+}
+
+.project-context-empty {
+  padding: 18px;
+  margin: 0;
+  color: var(--text-muted);
+  background: var(--surface-alt);
+  border: 1px dashed var(--border);
+  border-radius: 9px;
+  font-size: 10px;
+  text-align: center;
+}
+
+.drawer-wide-action {
+  width: 100%;
+  padding: 9px 10px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 0;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 650;
+}
+
 .asset-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }

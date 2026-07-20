@@ -126,15 +126,19 @@ export const contextualPreviewKinds = new Set<PreviewKind>([
   "actions", "analysis", "chart", "components", "context", "diff", "export",
   "failures", "files", "interaction", "issues", "log", "outline", "pdf",
   "prd", "prototype", "slides", "test", "questions",
-  "requirement-governance", "context-maintenance",
+  "requirement-governance", "context-maintenance", "project-repositories",
+  "project-requirements", "project-tests",
 ]);
 
 export function resolveContextualTools(context: ContextualToolContext): ContextualTool[] {
   if (context.view === "project-detail") {
     return [
+      tool("project-repositories", "代码仓库", GitBranch),
+      tool("project-requirements", "产品需求", FileText),
+      tool("project-tests", "测试资产", TestTube2),
+      tool("context-maintenance", "共享上下文", Database),
       tool("members", "成员与角色", Users),
       tool("requirement-governance", "需求状态与门禁", ShieldCheck),
-      tool("context-maintenance", "上下文维护", Database),
     ];
   }
   if (!["home", "task", "requirement-detail"].includes(context.view)) return [];

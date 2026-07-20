@@ -437,7 +437,6 @@ export default function Page() {
             agents={agents}
             contextSources={contextSources}
             lastAgentByRequirement={state.lastAgentByRequirement}
-            onOpenContext={() => openPreview("sources")}
             onOpenRequirement={(requirementId) => {
               const run = () =>
                 dispatch({ type: "select-requirement", requirementId });
@@ -461,7 +460,6 @@ export default function Page() {
             projects={availableProjects}
             requirementStages={state.requirementStages}
             requirements={requirements}
-            selectedContextIds={activeSelectedContextIds}
             selectedProjectId={
               state.view === "project-detail" ? state.selectedProjectId : null
             }
@@ -679,6 +677,7 @@ export default function Page() {
         selectedContextIds={activeSelectedContextIds.filter((id) =>
           activeContextSourceIds.includes(id),
         )}
+        selectedProject={selectedProject}
         selectedRequirement={selectedRequirement}
         selectedAssetId={state.selectedAssetId}
         onSelect={openPreview}

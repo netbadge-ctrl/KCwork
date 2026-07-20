@@ -16,7 +16,6 @@ export interface ProjectsViewProps {
   sessions: AgentWorkSession[];
   agents: Agent[];
   contextSources: ContextSource[];
-  selectedContextIds: string[];
   requirements: Requirement[];
   requirementStages: Record<string, RequirementStage>;
   lastAgentByRequirement: Record<string, string>;
@@ -24,7 +23,6 @@ export interface ProjectsViewProps {
   onBack(): void;
   onResumeSession(sessionId: string): void;
   onOpenRequirement(id: string): void;
-  onOpenContext(): void;
   onCreateRequirement(): void;
   onStartCreateProject(): void;
 }
@@ -35,7 +33,6 @@ export function ProjectsView({
   sessions,
   agents,
   contextSources,
-  selectedContextIds,
   requirements,
   requirementStages,
   lastAgentByRequirement,
@@ -43,7 +40,6 @@ export function ProjectsView({
   onBack,
   onResumeSession,
   onOpenRequirement,
-  onOpenContext,
   onCreateRequirement,
   onStartCreateProject,
 }: ProjectsViewProps) {
@@ -57,16 +53,12 @@ export function ProjectsView({
         contextSources={contextSources.filter((source) => source.projectId === project.id)}
         lastAgentByRequirement={lastAgentByRequirement}
         onBack={onBack}
-        onOpenContext={onOpenContext}
         onOpenRequirement={onOpenRequirement}
         onCreateRequirement={onCreateRequirement}
         onResumeSession={onResumeSession}
         project={project}
         requirementStages={requirementStages}
         requirements={requirements.filter((requirement) => requirement.projectId === project.id)}
-        selectedContextIds={selectedContextIds.filter((id) =>
-          contextSources.some((source) => source.projectId === project.id && source.id === id),
-        )}
         sessions={sessions.filter((session) => session.projectId === project.id)}
       />
     );

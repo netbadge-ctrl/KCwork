@@ -32,6 +32,7 @@ import { ContextualScenePreview } from "./contextual-scene-preview";
 import { CreateSystemPanel } from "./create-system-panel";
 import { MemberManager } from "./member-manager";
 import { PreviewErrorState, type PreviewErrorKind } from "./preview-error-state";
+import { ProjectContextPanel } from "./project-context-panel";
 import { ProjectSettingsPanel } from "./project-settings-panel";
 import {
   getPrototypeBrowserUrl,
@@ -57,6 +58,7 @@ export interface PreviewDrawerProps {
   requirements: Requirement[];
   requirementStages: Record<string, RequirementStage>;
   sources: ContextSource[];
+  selectedProject: Project | null;
   selectedRequirement: Requirement | null;
   capabilities: ProjectCapabilities;
   currentRole: ProjectRole;
@@ -88,8 +90,11 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   sources: "自动上下文",
   "project-settings": "项目设置",
   "requirement-governance": "需求状态与门禁",
-  "context-maintenance": "上下文维护",
+  "context-maintenance": "共享上下文",
   "create-system": "新建系统项目",
+  "project-repositories": "代码仓库",
+  "project-requirements": "产品需求",
+  "project-tests": "测试资产",
   asset: "资产详情",
   diff: "代码差异",
   test: "测试报告",
@@ -106,6 +111,7 @@ export function PreviewDrawer({
   requirements,
   requirementStages,
   sources,
+  selectedProject,
   selectedRequirement,
   capabilities,
   currentRole,
@@ -326,19 +332,17 @@ export function PreviewDrawer({
                 section="governance"
               />
             )}
-            {preview === "context-maintenance" && (
-              <ProjectSettingsPanel
-                capabilities={capabilities}
-                currentRole={currentRole}
-                memberRoles={memberRoles}
-                members={members}
-                onChangeMemberRole={onChangeMemberRole}
-                onOpenAsset={onOpenAsset}
-                onSetRequirementStage={onSetRequirementStage}
-                requirementStages={requirementStages}
-                requirements={requirements}
-                section="context"
-              />
+            {preview === "project-repositories" && selectedProject && (
+              <ProjectContextPanel kind="repositories" onOpenAsset={onOpenAsset} project={selectedProject} requirements={requirements} sources={sources} />
+            )}
+            {preview === "project-requirements" && selectedProject && (
+              <ProjectContextPanel kind="requirements" onOpenAsset={onOpenAsset} project={selectedProject} requirements={requirements} sources={sources} />
+            )}
+            {preview === "project-tests" && selectedProject && (
+              <ProjectContextPanel kind="tests" onOpenAsset={onOpenAsset} project={selectedProject} requirements={requirements} sources={sources} />
+            )}
+            {preview === "context-maintenance" && selectedProject && (
+              <ProjectContextPanel kind="context" onOpenAsset={onOpenAsset} project={selectedProject} requirements={requirements} sources={sources} />
             )}
             {preview === "create-system" && (
               <CreateSystemPanel
