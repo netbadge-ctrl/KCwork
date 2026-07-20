@@ -26,6 +26,7 @@ export interface ProjectsViewProps {
   onOpenRequirement(id: string): void;
   onOpenContext(): void;
   onCreateRequirement(): void;
+  onCreateProject(project: Project): void;
 }
 
 export function ProjectsView({
@@ -44,8 +45,12 @@ export function ProjectsView({
   onOpenRequirement,
   onOpenContext,
   onCreateRequirement,
+  onCreateProject,
 }: ProjectsViewProps) {
   const [query, setQuery] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [projectName, setProjectName] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
   const project = projects.find((item) => item.id === selectedProjectId);
 
   if (project) {
@@ -74,6 +79,23 @@ export function ProjectsView({
     `${item.name}${item.description}`.toLowerCase().includes(query.toLowerCase()),
   );
 
+  const createProject = () => {
+    const name = projectName.trim();
+    if (!name) return;
+    onCreateProject({
+      id: `project-${Date.now()}`,
+      name,
+      description: projectDescription.trim() || "新的企业系统开发项目",
+      members: 1,
+      updatedAt: "刚刚",
+      contextCount: 0,
+      color: "#7c5cff",
+    });
+    setProjectName("");
+    setProjectDescription("");
+    setIsCreating(false);
+  };
+
   return (
     <div className="projects-view page-scroll">
       <header className="page-header">
@@ -82,8 +104,39 @@ export function ProjectsView({
           <h1>项目</h1>
           <p>集中管理产品资料、代码、测试资产和团队记忆。</p>
         </div>
-        <button className="primary-button" type="button"><Plus size={16} /> 新建项目</button>
+        <button className="primary-button" onClick={() => setIsCreating(true)} type="button"><Plus size={16} /> 新建项目</button>
       </header>
+      {isCreating && (
+        <form
+          className="inline-create-form project-create-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            createProject();
+          }}
+        >
+          <div>
+            <strong>新建项目</strong>
+            <span>创建后即可添加需求并连接 Agent 上下文。</span>
+          </div>
+          <input
+            aria-label="项目名称"
+            autoFocus
+            onChange={(event) => setProjectName(event.target.value)}
+            placeholder="项目名称"
+            value={projectName}
+          />
+          <input
+            aria-label="项目说明"
+            onChange={(event) => setProjectDescription(event.target.value)}
+            placeholder="项目说明"
+            value={projectDescription}
+          />
+          <div className="inline-create-actions">
+            <button onClick={() => setIsCreating(false)} type="button">取消</button>
+            <button className="primary-button" disabled={!projectName.trim()} type="submit">创建</button>
+          </div>
+        </form>
+      )}
       <label className="search-box">
         <Search size={17} />
         <input

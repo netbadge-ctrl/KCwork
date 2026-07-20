@@ -33,7 +33,7 @@ import {
   discardPrototypeDraft,
   usePrototypeDocumentStatus,
 } from "./lib/prototype-state";
-import type { PreviewKind, ProjectSection, ViewId } from "./lib/types";
+import type { PreviewKind, Project, ProjectSection, ViewId } from "./lib/types";
 import {
   clampPreferredRightPanelWidth,
   COLLAPSED_SIDEBAR_WIDTH,
@@ -108,12 +108,17 @@ export default function Page() {
   const [state, dispatch] = useReducer(clientReducer, initialClientState);
   const [pendingNavigation, setPendingNavigation] =
     useState<PendingNavigation | null>(null);
+  const [createdProjects, setCreatedProjects] = useState<Project[]>([]);
   const [layoutPreferences, dispatchLayoutPreferences] = useReducer(
     layoutPreferencesReducer,
     initialLayoutPreferences,
   );
   const selectedTaskExecution =
     state.taskExecutionsById[state.selectedTaskId] ?? "idle";
+  const availableProjects = useMemo(
+    () => [...projects, ...createdProjects],
+    [createdProjects],
+  );
 
   useEffect(() => {
     const isSidebarCollapsed = readStoredBoolean(
@@ -194,9 +199,9 @@ export default function Page() {
     agents.find((agent) => agent.id === taskExecutionAgentId) ?? selectedAgent;
   const selectedProject = useMemo(
     () =>
-      projects.find((project) => project.id === state.selectedProjectId) ??
+      availableProjects.find((project) => project.id === state.selectedProjectId) ??
       null,
-    [state.selectedProjectId],
+    [availableProjects, state.selectedProjectId],
   );
   const selectedRequirement = useMemo(
     () =>
@@ -226,7 +231,9 @@ export default function Page() {
   );
   const currentRole = currentMember
     ? state.memberRoles[currentMember.id] ?? currentMember.role
-    : "viewer";
+    : createdProjects.some((project) => project.id === state.selectedProjectId)
+      ? "admin"
+      : "viewer";
   const capabilities = selectedProject
     ? getProjectCapabilities(currentRole)
     : unscopedCapabilities;
@@ -357,7 +364,7 @@ export default function Page() {
     if (projectId === state.selectedProjectId) run();
     else {
       const destination =
-        projects.find((project) => project.id === projectId)?.name ??
+        availableProjects.find((project) => project.id === projectId)?.name ??
         "未关联项目";
       requestNavigation(destination, run);
     }
@@ -405,7 +412,7 @@ export default function Page() {
             canEdit={canEditSelectedWorkspace}
             currentRole={currentRole}
             agents={agents}
-            projects={projects}
+            projects={availableProjects}
             productWorkMode={state.productWorkMode}
             selectedAgentId={state.selectedAgentId}
             selectedProjectId={state.selectedProjectId}
@@ -451,7 +458,7 @@ export default function Page() {
               if (session?.requirementId === state.selectedRequirementId) run();
               else requestNavigation(session?.title ?? "需求工作区", run);
             }}
-            projects={projects}
+            projects={availableProjects}
             requirementStages={state.requirementStages}
             requirements={requirements}
             selectedContextIds={activeSelectedContextIds}
@@ -464,6 +471,7 @@ export default function Page() {
                 dispatch({ type: "navigate", view: "home" }),
               )
             }
+            onCreateProject={(project) => setCreatedProjects((current) => [...current, project])}
             onOpenProject={openProject}
             onBack={() => dispatch({ type: "navigate", view: "projects" })}
           />
@@ -508,7 +516,7 @@ export default function Page() {
             productWorkMode={state.productWorkMode}
             project={selectedProject}
             projectSelectionLocked
-            projects={projects}
+            projects={availableProjects}
             requirement={selectedRequirement}
             selectedProjectId={state.selectedProjectId}
             task={{
@@ -561,7 +569,7 @@ export default function Page() {
             executionAgent={taskExecutionAgent}
             project={selectedProject}
             agents={agents}
-            projects={projects}
+            projects={availableProjects}
             selectedProjectId={state.selectedProjectId}
             canEdit={canEditSelectedWorkspace}
             currentRole={currentRole}
