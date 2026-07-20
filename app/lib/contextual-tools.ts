@@ -9,6 +9,7 @@ import {
   FileCode2,
   FileStack,
   FileText,
+  GitBranch,
   GitCompareArrows,
   HelpCircle,
   LayoutTemplate,
@@ -141,7 +142,7 @@ export function resolveContextualTools(context: ContextualToolContext): Contextu
       tool("requirement-governance", "需求状态与门禁", ShieldCheck),
     ];
   }
-  if (!["home", "task", "requirement-detail"].includes(context.view)) return [];
+  if (!["task", "requirement-detail"].includes(context.view)) return [];
   const mapped = context.agentId === "product-design"
     ? productTools[context.productWorkMode ?? "analysis"]
     : context.mode === "office"

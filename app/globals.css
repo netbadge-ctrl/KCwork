@@ -76,6 +76,10 @@ select:focus-visible {
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--right-panel-width);
 }
 
+.client-shell.no-auxiliary {
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+}
+
 .main-stage {
   min-width: 0;
   min-height: 0;

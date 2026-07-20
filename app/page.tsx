@@ -372,7 +372,7 @@ export default function Page() {
 
   return (
     <main
-      className={`client-shell ${state.preview ? "drawer-open" : ""}`}
+      className={`client-shell ${state.view === "home" ? "no-auxiliary" : ""} ${state.view !== "home" && state.preview ? "drawer-open" : ""}`}
       data-prototype-dirty={prototypeStatus.dirty}
       data-prototype-pending={prototypeStatus.pending}
       style={
@@ -586,7 +586,7 @@ export default function Page() {
         )}
       </section>
 
-      <PreviewDrawer
+      {state.view !== "home" && <PreviewDrawer
         assets={assetGroups}
         documentDraft={
           selectedPrdDocument
@@ -691,7 +691,7 @@ export default function Page() {
           dispatchLayoutPreferences({ type: "set-right-panel-width", width })
         }
         sources={activeContextSources}
-      />
+      />}
       {pendingNavigation && (
         <NavigationGuardDialog
           destination={pendingNavigation.destination}
