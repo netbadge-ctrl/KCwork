@@ -1,7 +1,6 @@
 import { ArrowRight, Code2, MessageSquareText } from "lucide-react";
 import type { Agent, Mode, ProductWorkMode, Project, ProjectRole } from "../lib/types";
 import { Composer } from "./composer";
-import { ProductModePicker } from "./product-mode-picker";
 
 export interface HomeViewProps {
   mode: Mode;
@@ -78,13 +77,6 @@ export function HomeView(props: HomeViewProps) {
                 </span>
                 <ArrowRight size={16} />
               </button>
-              {agent.id === "product-design" && props.selectedAgentId === agent.id && (
-                <ProductModePicker
-                  onChange={props.onProductWorkModeChange}
-                  value={props.productWorkMode}
-                  variant="start"
-                />
-              )}
             </div>
           ))}
         </div>
