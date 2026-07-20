@@ -1,7 +1,7 @@
 import {
   ArrowUp,
   FolderOpen,
-  Paperclip,
+  Plus,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
@@ -73,7 +73,7 @@ export function Composer({
       <div className="composer-toolbar">
         <div className="composer-controls">
           <button aria-label="添加附件" className="plain-tool" disabled={disabled} type="button">
-            <Paperclip size={16} />
+            <Plus size={16} />
           </button>
           {projectSelectionLocked ? (
             <span className="locked-project-control" aria-label="需求关联项目">
