@@ -1,4 +1,4 @@
-import { Check, FileDown, Sparkles } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { productDocuments } from "../../lib/demo-data";
 import type { WorkspaceRouterProps } from "./workspace-router";
@@ -10,7 +10,6 @@ export function PrdWorkspace({
   requirement,
   documentDraft,
   onSaveDocumentDraft,
-  onOpenPreview,
   canEdit,
 }: WorkspaceRouterProps) {
   const [request, setRequest] = useState("");
@@ -33,7 +32,6 @@ export function PrdWorkspace({
           <h2>PRD 撰写工作台</h2>
           <p>基于已确认原型、Spec 和项目记忆生成可追溯文档。</p>
         </div>
-        <button className="secondary-button" onClick={() => onOpenPreview("pdf")} type="button"><FileDown size={15} /> 预览 PDF</button>
       </div>
 
       <div className="prd-layout">

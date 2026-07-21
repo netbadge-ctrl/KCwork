@@ -117,7 +117,6 @@ const productTools: Record<ProductWorkMode, ContextualTool[]> = {
   ],
   prd: [
     tool("prd", "文档预览", FileText),
-    tool("pdf", "PDF 预览", FileStack),
     tool("analysis", "版本修改", GitCompareArrows),
     tool("context", "引用上下文", ListTree),
   ],

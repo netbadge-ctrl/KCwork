@@ -1,6 +1,5 @@
 import {
   Check,
-  ChevronDown,
   Circle,
   Clock3,
   FileText,
@@ -87,21 +86,52 @@ export function TaskView({
         <div>
           <div className="task-heading-row">
             <h1>{task.title}</h1>
-            <ChevronDown size={15} />
           </div>
           <small>任务 · {task.time}</small>
         </div>
         <div className="task-header-actions">
           {!canEdit && project && <span className="read-only-notice">当前角色仅可查看</span>}
-          {project && onBackToProject ? (
-            <button className="project-chip" onClick={onBackToProject} type="button">
-              <span style={{ background: project.color }} /> {project.name}
-            </button>
-          ) : project ? (
-            <span className="project-chip">
-              <span style={{ background: project.color }} /> {project.name}
-            </span>
-          ) : null}
+          {project && (
+            <div className="project-header-cluster">
+              {onBackToProject ? (
+                <button className="project-chip" onClick={onBackToProject} type="button">
+                  <span style={{ background: project.color }} /> {project.name}
+                </button>
+              ) : (
+                <span className="project-chip">
+                  <span style={{ background: project.color }} /> {project.name}
+                </span>
+              )}
+              {requirement && (
+                <div className="requirement-more-actions">
+                  <button
+                    aria-expanded={isMoreMenuOpen}
+                    aria-label="更多需求操作"
+                    className="icon-button"
+                    onClick={() => setIsMoreMenuOpen((isOpen) => !isOpen)}
+                    type="button"
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+                  {isMoreMenuOpen && (
+                    <div className="requirement-more-menu">
+                      <button
+                        onClick={() => {
+                          setIsMoreMenuOpen(false);
+                          onOpenSettings?.();
+                        }}
+                        type="button"
+                      >
+                        调整状态与门禁
+                      </button>
+                      <button disabled={!canEdit} type="button">编辑负责人</button>
+                      <button disabled={!canEdit} type="button">归档需求</button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
           <button
             className="context-count"
             onClick={() => onOpenPreview("sources")}
@@ -109,32 +139,6 @@ export function TaskView({
           >
             {contextCount ?? project?.contextCount ?? 0} 项上下文
           </button>
-          <div className="requirement-more-actions">
-            <button
-              aria-expanded={requirement ? isMoreMenuOpen : undefined}
-              aria-label={requirement ? "更多需求操作" : "更多任务操作"}
-              className="icon-button"
-              onClick={() => requirement && setIsMoreMenuOpen((isOpen) => !isOpen)}
-              type="button"
-            >
-              <MoreHorizontal size={18} />
-            </button>
-            {requirement && isMoreMenuOpen && (
-              <div className="requirement-more-menu">
-                <button
-                  onClick={() => {
-                    setIsMoreMenuOpen(false);
-                    onOpenSettings?.();
-                  }}
-                  type="button"
-                >
-                  调整状态与门禁
-                </button>
-                <button disabled={!canEdit} type="button">编辑负责人</button>
-                <button disabled={!canEdit} type="button">归档需求</button>
-              </div>
-            )}
-          </div>
         </div>
       </header>
 

@@ -255,9 +255,8 @@ select:focus-visible {
   padding-inline: 0;
 }
 
-.sidebar.collapsed .task-dot {
+.sidebar.collapsed .task-type-icon {
   flex: 0 0 auto;
-  margin-top: 0;
 }
 
 .sidebar.collapsed .profile {
@@ -290,7 +289,7 @@ select:focus-visible {
 
 .recent-task {
   display: grid;
-  grid-template-columns: 8px minmax(0, 1fr);
+  grid-template-columns: 24px minmax(0, 1fr);
   gap: 9px;
   align-items: start;
   padding: 8px 9px;
@@ -302,16 +301,19 @@ select:focus-visible {
   background: rgba(255, 255, 255, 0.65);
 }
 
-.task-dot {
-  width: 7px;
-  height: 7px;
-  margin-top: 6px;
-  background: var(--accent);
-  border-radius: 3px;
+.task-type-icon {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 7px;
 }
 
-.recent-task.office .task-dot {
-  background: var(--success);
+.recent-task.office .task-type-icon {
+  color: var(--success);
+  background: var(--success-soft);
 }
 
 .task-copy {
@@ -2202,6 +2204,12 @@ select:focus-visible {
 
 .task-header-actions {
   gap: 7px;
+}
+
+.project-header-cluster {
+  display: flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .project-chip,

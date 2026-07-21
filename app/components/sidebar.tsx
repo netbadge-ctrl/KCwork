@@ -1,6 +1,8 @@
 import {
   Bot,
+  BriefcaseBusiness,
   ChevronDown,
+  Code2,
   FolderKanban,
   PanelLeftClose,
   PanelLeftOpen,
@@ -81,14 +83,16 @@ export function Sidebar({
       <div className="recent-list">
         {recentTasks.map((task) => (
           <button
-            aria-label={`${task.title}${task.time}`}
+            aria-label={`${task.mode === "office" ? "办公任务" : "开发任务"}：${task.title}${task.time}`}
             className={`recent-task ${task.mode}`}
             key={task.id}
             onClick={() => onOpenTask(task)}
             title={`${task.title} · ${task.time}`}
             type="button"
           >
-            <span className="task-dot" />
+            <span className="task-type-icon" aria-hidden="true">
+              {task.mode === "office" ? <BriefcaseBusiness size={13} /> : <Code2 size={13} />}
+            </span>
             <span className="task-copy">
               <strong>{task.title}</strong>
               <small>{task.time}</small>

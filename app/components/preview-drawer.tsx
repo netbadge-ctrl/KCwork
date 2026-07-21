@@ -1,6 +1,5 @@
 import {
   Check,
-  FileDown,
   FileText,
   PanelRightClose,
   Sparkles,
@@ -267,7 +266,6 @@ export function PreviewDrawer({
               <PrdPreview
                 canEdit={capabilities.canEditProductArtifacts}
                 documentDraft={documentDraft}
-                onOpenPdf={() => onSelect("pdf")}
                 onSaveDocumentDraft={onSaveDocumentDraft}
                 requirement={selectedRequirement}
               />
@@ -482,13 +480,11 @@ function PrdPreview({
   requirement,
   canEdit,
   documentDraft,
-  onOpenPdf,
   onSaveDocumentDraft,
 }: {
   requirement: Requirement | null;
   canEdit: boolean;
   documentDraft: string;
-  onOpenPdf(): void;
   onSaveDocumentDraft(draft: string): void;
 }) {
   const [request, setRequest] = useState("");
@@ -502,7 +498,6 @@ function PrdPreview({
     <article className="document-preview">
       <div className="document-toolbar">
         <span>{document.title} {document.version}</span>
-        <button onClick={onOpenPdf} type="button"><FileDown size={14} /> 预览 PDF</button>
       </div>
       <div className="document-sheet">
         <span className="document-tag">产品需求文档</span>
