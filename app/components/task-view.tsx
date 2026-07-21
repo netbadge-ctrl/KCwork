@@ -78,6 +78,9 @@ export function TaskView({
   onBackToProject,
 }: TaskViewProps) {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [savedArtifactIds, setSavedArtifactIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   return (
     <div className="task-view">
       <header className="task-header">
@@ -154,25 +157,33 @@ export function TaskView({
                 <p>{message.text}</p>
                 {message.artifact && (
                   <div className="artifact-card">
-                    <span className="artifact-icon"><FileText size={19} /></span>
-                    <span className="artifact-copy">
-                      <strong>{message.artifactTitle ?? `${task.title} 产物`}</strong>
-                      <small>{message.artifactMeta ?? "任务产物"}</small>
-                    </span>
                     <button
+                      className="artifact-open"
                       aria-label={`查看${message.artifactTitle ?? `${task.title} 产物`}`}
                       onClick={() => onOpenPreview(message.artifact!)}
                       type="button"
                     >
-                      查看产物
+                      <span className="artifact-icon"><FileText size={19} /></span>
+                      <span className="artifact-copy">
+                        <strong>{message.artifactTitle ?? `${task.title} 产物`}</strong>
+                        <small>{message.artifactMeta ?? "任务产物"}</small>
+                      </span>
                     </button>
-                  </div>
-                )}
-                {message.role === "agent" && message.artifact && (
-                  <div className="result-actions">
-                    <button className="primary-small" onClick={() => onOpenPreview(message.artifact!)} type="button">打开预览</button>
-                    <button type="button">继续调整</button>
-                    <button type="button">保存到项目</button>
+                    <button
+                      className={`artifact-save ${savedArtifactIds.has(message.id) ? "saved" : ""}`}
+                      disabled={savedArtifactIds.has(message.id)}
+                      onClick={() =>
+                        setSavedArtifactIds((current) => {
+                          const next = new Set(current);
+                          next.add(message.id);
+                          return next;
+                        })
+                      }
+                      type="button"
+                    >
+                      {savedArtifactIds.has(message.id) && <Check size={13} />}
+                      {savedArtifactIds.has(message.id) ? "已保存到项目" : "保存到项目"}
+                    </button>
                   </div>
                 )}
               </div>

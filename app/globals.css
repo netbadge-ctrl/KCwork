@@ -2286,11 +2286,11 @@ select:focus-visible {
 
 .artifact-card {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto;
-  gap: 9px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
   align-items: center;
   max-width: 600px;
-  padding: 10px;
+  padding: 5px;
   margin-top: 10px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -2318,8 +2318,7 @@ select:focus-visible {
   font-size: 9px;
 }
 
-.artifact-card > button,
-.result-actions button,
+.artifact-save,
 .error-card button {
   padding: 6px 8px;
   color: var(--text-secondary);
@@ -2329,22 +2328,42 @@ select:focus-visible {
   font-size: 10px;
 }
 
-.artifact-card > button {
+.artifact-open {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 5px;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+}
+
+.artifact-open:hover {
+  background: var(--surface-soft);
+}
+
+.artifact-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--accent);
   background: var(--accent-soft);
   border-color: #e0d8f8;
 }
 
-.result-actions {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
+.artifact-save.saved {
+  color: var(--success);
+  background: var(--success-soft);
+  border-color: transparent;
 }
 
-.result-actions .primary-small {
-  color: #fff;
-  background: #30313a;
-  border-color: #30313a;
+.artifact-save:disabled {
+  cursor: default;
+  opacity: 1;
 }
 
 .execution-card {
@@ -3079,12 +3098,12 @@ select:focus-visible {
   }
 
   .artifact-card {
-    grid-template-columns: 34px minmax(0, 1fr);
+    grid-template-columns: 1fr;
   }
 
-  .artifact-card > button {
-    grid-column: 2;
+  .artifact-save {
     justify-self: start;
+    margin: 0 5px 5px 52px;
   }
 
   .section-title {
