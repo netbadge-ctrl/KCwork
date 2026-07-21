@@ -1,5 +1,4 @@
 import {
-  Braces,
   Check,
   FileDown,
   FileText,
@@ -9,7 +8,6 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import {
-  codeChanges,
   productDocuments,
   testCases,
   testReports,
@@ -29,6 +27,7 @@ import type {
 } from "../lib/types";
 import { ContextSourcesPanel } from "./context-sources-panel";
 import { ContextualScenePreview } from "./contextual-scene-preview";
+import { CodeWorkbenchPreview } from "./code-workbench-preview";
 import { CreateSystemPanel } from "./create-system-panel";
 import { MemberManager } from "./member-manager";
 import { PreviewErrorState, type PreviewErrorKind } from "./preview-error-state";
@@ -96,6 +95,7 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   "project-requirements": "产品需求",
   "project-tests": "测试资产",
   asset: "资产详情",
+  files: "代码查看",
   diff: "代码差异",
   test: "测试报告",
 };
@@ -272,7 +272,13 @@ export function PreviewDrawer({
                 requirement={selectedRequirement}
               />
             )}
-            {preview === "diff" && <DiffPreview canEdit={capabilities.canEditDevelopmentArtifacts} requirement={selectedRequirement} />}
+            {(preview === "files" || preview === "diff") && (
+              <CodeWorkbenchPreview
+                canEdit={capabilities.canEditDevelopmentArtifacts}
+                initialMode={preview === "diff" ? "diff" : "code"}
+                requirement={selectedRequirement}
+              />
+            )}
             {preview === "context" && <ContextPreview selectedIds={selectedContextIds} sources={sources} />}
             {preview === "sources" && (
               <ContextSourcesPanel
@@ -352,7 +358,7 @@ export function PreviewDrawer({
               />
             )}
             {preview === "asset" && <AssetDetail assetId={selectedAssetId} canEdit={capabilities.canManageAssets} requirement={selectedRequirement} />}
-            <ContextualScenePreview kind={preview} />
+            {preview !== "files" && <ContextualScenePreview kind={preview} />}
               </>
             )}
           </div>
@@ -553,27 +559,6 @@ function PrdPreview({
       </aside>
     </article>
   );
-}
-
-function DiffPreview({
-  requirement,
-  canEdit,
-}: {
-  requirement: Requirement | null;
-  canEdit: boolean;
-}) {
-  const changes = codeChanges.filter(
-    (change) => change.requirementId === requirement?.id,
-  );
-  if (!requirement || changes.length === 0) {
-    return <EmptyPreview message="当前需求暂无可审查的代码变更。" />;
-  }
-  return <div className="diff-layout">
-    <div className="diff-rationale"><p className="eyebrow">AI 修改说明</p><h3>把角色编辑权限绑定到项目级权限集合</h3><p>原实现只判断管理员身份，无法区分项目范围。此次修改按 AC-07 引入权限集合，并补充观察者测试。</p><div><span>3 个文件</span><b className="plus-text">+95</b><b className="minus-text">−8</b></div></div>
-    <div className="diff-file-list"><b>变更文件</b><button className="active" type="button">RolePanel.tsx <span>+18 −6</span></button><button type="button">useRolePermissions.ts <span>+42</span></button><button type="button">RolePanel.test.tsx <span>+35 −2</span></button></div>
-    <div className="code-preview"><div className="code-file"><Braces size={16} /> src/features/roles/RolePanel.tsx</div><pre><code><span className="minus">- const canEdit = isAdmin;</span>{"\n"}<span className="plus">+ const canEdit = permissions.includes(&quot;role:write&quot;);</span>{"\n"}<span className="plus">+ const scope = activeProject.id;</span>{"\n"}{"\n"}<span className="neutral">  return &lt;RoleActions disabled=&#123;!canEdit&#125; /&gt;;</span></code></pre></div>
-    <div className="diff-actions"><button disabled={!canEdit} type="button">放弃本次变更</button><button disabled={!canEdit} type="button">继续修改</button><button className="primary-small" disabled={!canEdit} type="button">接受变更</button></div>
-  </div>;
 }
 
 function ContextPreview({ sources, selectedIds }: { sources: ContextSource[]; selectedIds: string[] }) {
