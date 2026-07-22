@@ -1,8 +1,10 @@
 import {
   Check,
+  ChevronDown,
   Circle,
   Clock3,
   FileText,
+  Layers3,
   MoreHorizontal,
   RotateCcw,
 } from "lucide-react";
@@ -87,6 +89,7 @@ export function TaskView({
   requirementBaseline,
 }: TaskViewProps) {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [isRequirementContextOpen, setIsRequirementContextOpen] = useState(false);
   const [savedArtifactIds, setSavedArtifactIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -111,6 +114,19 @@ export function TaskView({
                 <span className="project-chip">
                   <span style={{ background: project.color }} /> {project.name}
                 </span>
+              )}
+              {requirement && requirementBaseline && agent.mode !== "office" && (
+                <button
+                  aria-expanded={isRequirementContextOpen}
+                  className={`requirement-context-toggle ${isRequirementContextOpen ? "active" : ""}`}
+                  onClick={() => setIsRequirementContextOpen((isOpen) => !isOpen)}
+                  type="button"
+                >
+                  <Layers3 size={14} />
+                  需求上下文
+                  <span className="context-status-dot" />
+                  <ChevronDown size={13} />
+                </button>
               )}
               {requirement && (
                 <div className="requirement-more-actions">
@@ -152,7 +168,7 @@ export function TaskView({
         </div>
       </header>
 
-      {requirementBaseline && requirement && agent.mode !== "office" && (
+      {isRequirementContextOpen && requirementBaseline && requirement && agent.mode !== "office" && (
         <div className={`requirement-context-toolbar ${agent.id === "product-design" ? "with-product" : ""}`}>
           <RequirementBaselineStrip onOpen={onOpenPreview} requirement={requirement} state={requirementBaseline} />
           {productPackage && onProductPackageAction && agent.id === "product-design" && (

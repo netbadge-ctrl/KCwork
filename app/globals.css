@@ -2233,6 +2233,13 @@ select:focus-visible {
   border-radius: 3px;
 }
 
+.requirement-context-toggle { display: inline-flex; align-items: center; gap: 5px; height: 31px; padding: 0 8px; color: var(--text-muted); font-size: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; white-space: nowrap; }
+.requirement-context-toggle:hover,
+.requirement-context-toggle.active { color: var(--accent); background: var(--accent-soft); border-color: #d9d0fb; }
+.requirement-context-toggle > svg:last-child { transition: transform 160ms ease; }
+.requirement-context-toggle.active > svg:last-child { transform: rotate(180deg); }
+.context-status-dot { width: 5px; height: 5px; margin-left: 1px; background: #d49322; border-radius: 50%; }
+
 .conversation-scroll {
   flex: 1;
   min-height: 0;
