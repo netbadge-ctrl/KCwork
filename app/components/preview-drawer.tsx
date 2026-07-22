@@ -38,7 +38,7 @@ import {
   getPrototypeBrowserUrl,
 } from "./prototype-editor";
 import { PrototypePreviewShell } from "./prototype-preview-shell";
-import { ProductPanel } from "./product-panels";
+import { ProductPanel, PrototypeHeaderControls } from "./product-panels";
 import type { ProductPackageAction, ProductPackageState } from "../lib/product-package";
 import { RequirementBaselinePanel } from "./requirement-baseline";
 import type { RequirementBaselineAction, RequirementBaselineState } from "../lib/requirement-baseline";
@@ -186,6 +186,7 @@ export function PreviewDrawer({
   const isTestingReport = preview === "test" && selectedAgentId === "testing" && explicitPreviewKind !== "test";
   const isProductPanel = selectedAgentId === "product-design" && ["prototype", "prd", "delivery-check", "version-history"].includes(preview ?? "");
   const isRequirementBaselinePanel = ["requirement-spec", "requirement-acceptance"].includes(preview ?? "");
+  const [prototypeInspect, setPrototypeInspect] = useState(true);
   const mainTools = tools.filter((tool) => tool.kind !== "context");
   const contextTools = tools.filter((tool) => tool.kind === "context");
   const [viewportWidth, setViewportWidth] = useState(
@@ -306,10 +307,11 @@ export function PreviewDrawer({
             className="preview-drawer"
             aria-label={contextualLabels[preview] ?? selectedTool?.label ?? "产物预览"}
           >
-          <header className="drawer-header">
-            <div>
+          <header className={`drawer-header ${isProductPanel && preview === "prototype" ? "prototype-drawer-header" : ""}`}>
+            <div className="drawer-title-group">
               <p className="eyebrow">辅助面板</p>
               <h2>{selectedTool?.label ?? contextualLabels[preview] ?? "辅助内容"}</h2>
+              {isProductPanel && preview === "prototype" && <PrototypeHeaderControls canEdit={capabilities.canEditProductArtifacts} dispatch={onProductPackageAction} inspect={prototypeInspect} onInspectChange={setPrototypeInspect} state={productPackage} />}
             </div>
             <button aria-label="关闭预览" className="icon-button" onClick={onClose} type="button">
               <X size={18} />
@@ -422,6 +424,8 @@ export function PreviewDrawer({
                 requirement={selectedRequirement}
                 state={productPackage}
                 onScopedSend={onScopedProductSend}
+                onPrototypeInspectChange={setPrototypeInspect}
+                prototypeInspect={prototypeInspect}
               />
             )}
             {isRequirementBaselinePanel && preview && (

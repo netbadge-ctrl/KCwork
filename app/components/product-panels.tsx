@@ -10,6 +10,8 @@ export function ProductPanel({
   canEdit,
   requirement,
   onScopedSend,
+  prototypeInspect = true,
+  onPrototypeInspectChange = () => undefined,
 }: {
   kind: PreviewKind;
   state: ProductPackageState;
@@ -17,25 +19,40 @@ export function ProductPanel({
   canEdit: boolean;
   requirement: Requirement | null;
   onScopedSend(reference: ProductContextReference, text: string): void;
+  prototypeInspect?: boolean;
+  onPrototypeInspectChange?(value: boolean): void;
 }) {
-  if (kind === "prototype") return <ProductPrototypePanel {...{ state, dispatch, canEdit, requirement, onScopedSend }} />;
+  if (kind === "prototype") return <ProductPrototypePanel {...{ state, dispatch, canEdit, requirement, onScopedSend, prototypeInspect, onPrototypeInspectChange }} />;
   if (kind === "prd") return <ProductPrdPanel {...{ state, dispatch, canEdit, requirement, onScopedSend }} />;
   if (kind === "delivery-check") return <DeliveryCheckPanel {...{ state, dispatch, canEdit, requirement }} />;
   if (kind === "version-history") return <ProductVersionPanel {...{ state, dispatch, canEdit, requirement }} />;
   return null;
 }
 
-type Props = { state: ProductPackageState; dispatch: Dispatch<ProductPackageAction>; canEdit: boolean; requirement: Requirement | null; onScopedSend?: (reference: ProductContextReference, text: string) => void };
+type Props = { state: ProductPackageState; dispatch: Dispatch<ProductPackageAction>; canEdit: boolean; requirement: Requirement | null; onScopedSend?: (reference: ProductContextReference, text: string) => void; prototypeInspect?: boolean; onPrototypeInspectChange?: (value: boolean) => void };
+
+export function PrototypeHeaderControls({ state, dispatch, canEdit, inspect, onInspectChange }: { state: ProductPackageState; dispatch: Dispatch<ProductPackageAction>; canEdit: boolean; inspect: boolean; onInspectChange(value: boolean): void }) {
+  const [isPageMenuOpen, setIsPageMenuOpen] = useState(false);
+  const page = state.pages.find((item) => item.id === state.selectedPageId) ?? state.pages[0];
+  return <div className="prototype-header-controls">
+    <div className="prototype-page-menu">
+      <div className="prototype-page-title-control">
+        <button aria-expanded={isPageMenuOpen} className="prototype-page-trigger" onClick={() => setIsPageMenuOpen((open) => !open)} type="button"><LayoutTemplate size={14} /><span>{page.start && <i>首页</i>}<b>{page.name}</b><small>{state.pages.length} 个页面 · {state.prototypeVersions.at(-1)?.version}</small></span><ChevronDown size={14} /></button>
+        <div className="prototype-page-title-actions"><button aria-label="新增页面" disabled={!canEdit} onClick={() => { dispatch({ type: "add-page" }); setIsPageMenuOpen(false); }} title="新增页面" type="button"><Plus size={13} /></button><button aria-label={`复制${page.name}`} disabled={!canEdit} onClick={() => { dispatch({ type: "copy-page", pageId: page.id }); setIsPageMenuOpen(false); }} title="复制当前页面" type="button"><Copy size={13} /></button><button aria-label={`删除${page.name}`} disabled={!canEdit || state.pages.length <= 1} onClick={() => { dispatch({ type: "delete-page", pageId: page.id }); setIsPageMenuOpen(false); }} title="删除当前页面" type="button"><Trash2 size={13} /></button></div>
+      </div>
+      {isPageMenuOpen && <div className="prototype-page-popover"><header><b>切换页面</b></header>{state.pages.map((item) => <article className={item.id === page.id ? "active" : ""} key={item.id}><button className="page-select-row" onClick={() => { dispatch({ type: "select-page", pageId: item.id }); setIsPageMenuOpen(false); }} type="button"><span>{item.start ? <Monitor size={13} /> : <LayoutTemplate size={13} />}<b>{item.name}</b>{item.changed && <i>本轮</i>}</span><small>{item.route}</small></button></article>)}</div>}
+    </div>
+    <div className="prototype-toolbar-actions"><a href="/prototype?mode=inspect" rel="noreferrer" target="_blank"><Laptop size={14} />浏览器打开</a><button className={inspect ? "active" : ""} onClick={() => { onInspectChange(!inspect); if (inspect) dispatch({ type: "select-component", componentId: null }); }} type="button"><Sparkles size={14} />{inspect ? "组件可选" : "选择组件"}</button></div>
+  </div>;
+}
 
 function ProductContext({ requirement, state }: { requirement: Requirement | null; state: ProductPackageState }) {
   return <div className="product-panel-context"><span>产品设计 Agent</span><b>{requirement?.code ?? "未关联需求"}</b><small>原型 {state.prototypeVersions.at(-1)?.version} · PRD {state.prdVersions.at(-1)?.version}</small></div>;
 }
 
-function ProductPrototypePanel({ state, dispatch, canEdit, requirement, onScopedSend }: Props) {
+function ProductPrototypePanel({ state, dispatch, canEdit, onScopedSend, prototypeInspect = true }: Props) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
-  const [inspect, setInspect] = useState(true);
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
-  const [isPageMenuOpen, setIsPageMenuOpen] = useState(false);
   const [pendingInstruction, setPendingInstruction] = useState("");
   const page = state.pages.find((item) => item.id === state.selectedPageId) ?? state.pages[0];
   const component = page.components.find((item) => item.id === state.selectedComponentId) ?? null;
@@ -45,16 +62,6 @@ function ProductPrototypePanel({ state, dispatch, canEdit, requirement, onScoped
     dispatch({ type: "select-component", componentId: null });
   };
   return <section className="product-panel prototype-workbench">
-    <div className="prototype-compact-toolbar">
-      <div className="prototype-page-menu">
-        <div className="prototype-page-title-control">
-          <button aria-expanded={isPageMenuOpen} className="prototype-page-trigger" onClick={() => setIsPageMenuOpen((open) => !open)} type="button"><LayoutTemplate size={14} /><span>{page.start && <i>首页</i>}<b>{page.name}</b><small>{state.pages.length} 个页面 · {state.prototypeVersions.at(-1)?.version}</small></span><ChevronDown size={14} /></button>
-          <div className="prototype-page-title-actions"><button aria-label="新增页面" disabled={!canEdit} onClick={() => { dispatch({ type: "add-page" }); setIsInspectorOpen(false); setIsPageMenuOpen(false); }} title="新增页面" type="button"><Plus size={13} /></button><button aria-label={`复制${page.name}`} disabled={!canEdit} onClick={() => { dispatch({ type: "copy-page", pageId: page.id }); setIsInspectorOpen(false); setIsPageMenuOpen(false); }} title="复制当前页面" type="button"><Copy size={13} /></button><button aria-label={`删除${page.name}`} disabled={!canEdit || state.pages.length <= 1} onClick={() => { dispatch({ type: "delete-page", pageId: page.id }); setIsInspectorOpen(false); setIsPageMenuOpen(false); }} title="删除当前页面" type="button"><Trash2 size={13} /></button></div>
-        </div>
-        {isPageMenuOpen && <div className="prototype-page-popover"><header><b>切换页面</b></header>{state.pages.map((item) => <article className={item.id === page.id ? "active" : ""} key={item.id}><button className="page-select-row" onClick={() => { dispatch({ type: "select-page", pageId: item.id }); setIsInspectorOpen(false); setIsPageMenuOpen(false); }} type="button"><span>{item.start ? <Monitor size={13} /> : <LayoutTemplate size={13} />}<b>{item.name}</b>{item.changed && <i>本轮</i>}</span><small>{item.route}</small></button></article>)}</div>}
-      </div>
-      <div className="prototype-toolbar-actions"><a href="/prototype?mode=inspect" rel="noreferrer" target="_blank"><Laptop size={14} />浏览器打开</a><button className={inspect ? "active" : ""} onClick={() => { setInspect(!inspect); if (inspect) closeInspector(); }} type="button"><Sparkles size={14} />{inspect ? "组件可选" : "选择组件"}</button></div>
-    </div>
     <div className="prototype-workbench-stage">
       <div className="prototype-canvas-column">
         <div className="prototype-canvas-toolbar"><span>{page.route}</span><div><button className="page-start-action" disabled={!canEdit || page.start} onClick={() => dispatch({ type: "set-start-page", pageId: page.id })} type="button">{page.start ? "起始页" : "设为起始页"}</button>{(["desktop", "tablet", "mobile"] as const).map((item) => <button aria-label={item === "desktop" ? "桌面端" : item === "tablet" ? "平板" : "移动端"} className={device === item ? "active" : ""} key={item} onClick={() => setDevice(item)} type="button">{item === "desktop" ? <Monitor size={13} /> : item === "tablet" ? <Tablet size={13} /> : <Smartphone size={13} />}</button>)}</div></div>
@@ -62,7 +69,7 @@ function ProductPrototypePanel({ state, dispatch, canEdit, requirement, onScoped
           <div className="prototype-demo-page">
             <aside><b>KFlow</b><span>概览</span><span className="active">成员与角色</span><span>审计记录</span></aside>
             <main><small>企业客户门户 / 权限设置</small><h3>{page.name}</h3><p>管理项目成员角色及其可访问范围。</p><div className="prototype-demo-card">
-              {page.components.length ? page.components.map((item) => <PrototypeElement component={item} inspect={inspect} key={item.id} selected={isInspectorOpen && component?.id === item.id} onSelect={() => { if (!inspect) return; dispatch({ type: "select-component", componentId: item.id }); setIsInspectorOpen(true); setPendingInstruction(""); }} />) : <div className="empty-prototype-page">新页面尚未添加组件<br /><button type="button">让 Agent 生成页面内容</button></div>}
+              {page.components.length ? page.components.map((item) => <PrototypeElement component={item} inspect={prototypeInspect} key={item.id} selected={isInspectorOpen && component?.id === item.id} onSelect={() => { if (!prototypeInspect) return; dispatch({ type: "select-component", componentId: item.id }); setIsInspectorOpen(true); setPendingInstruction(""); }} />) : <div className="empty-prototype-page">新页面尚未添加组件<br /><button type="button">让 Agent 生成页面内容</button></div>}
             </div></main>
           </div>
         </div>
