@@ -2,6 +2,7 @@ import {
   BarChart3,
   Blocks,
   Bug,
+  ClipboardCheck,
   CheckSquare2,
   ClipboardList,
   Database,
@@ -18,8 +19,12 @@ import {
   MessageSquareText,
   MousePointerClick,
   Presentation,
+  Send,
   ScrollText,
   ShieldCheck,
+  Table2,
+  Target,
+  Terminal,
   TestTube2,
   Users,
   type LucideIcon,
@@ -72,16 +77,19 @@ const officeTools: Record<string, ContextualTool[]> = {
 
 const developmentTools: Record<string, ContextualTool[]> = {
   "frontend-dev": [
-    tool("files", "文件变更", FileCode2),
+    tool("files", "代码与文件", FileCode2),
+    tool("frontend-preview", "页面预览", LayoutTemplate),
     tool("diff", "代码差异", GitCompareArrows),
-    tool("log", "运行日志", ScrollText),
-    tool("context", "引用代码", ListTree),
+    tool("console", "控制台", Terminal),
+    tool("context", "开发上下文", ListTree),
   ],
   "backend-dev": [
-    tool("files", "文件变更", FileCode2),
+    tool("files", "代码与文件", FileCode2),
+    tool("api-debug", "接口调试", Send),
     tool("diff", "代码差异", GitCompareArrows),
     tool("log", "运行日志", ScrollText),
-    tool("context", "引用代码", ListTree),
+    tool("data-model", "数据模型", Table2),
+    tool("context", "开发上下文", ListTree),
   ],
   "code-review": [
     tool("diff", "代码差异", GitCompareArrows),
@@ -90,9 +98,11 @@ const developmentTools: Record<string, ContextualTool[]> = {
     tool("context", "引用规范", ListTree),
   ],
   testing: [
+    tool("test-cases", "测试用例", ClipboardCheck),
+    tool("test-run", "执行测试", TestTube2),
+    tool("failures", "失败证据", Bug),
     tool("test", "测试报告", TestTube2),
-    tool("failures", "失败详情", Bug),
-    tool("log", "运行日志", ScrollText),
+    tool("defects", "缺陷记录", ShieldCheck),
     tool("context", "测试依据", ListTree),
   ],
   default: [
@@ -102,30 +112,22 @@ const developmentTools: Record<string, ContextualTool[]> = {
   ],
 };
 
-const productTools: Record<ProductWorkMode, ContextualTool[]> = {
-  analysis: [
-    tool("context", "需求上下文", ListTree),
-    tool("analysis", "分析结论", ClipboardList),
-    tool("questions", "待确认问题", HelpCircle),
-    tool("log", "执行记录", ScrollText),
-  ],
-  prototype: [
-    tool("prototype", "页面预览", LayoutTemplate),
-    tool("components", "组件结构", Blocks),
-    tool("interaction", "交互说明", MousePointerClick),
-    tool("context", "引用上下文", ListTree),
-  ],
-  prd: [
-    tool("prd", "文档预览", FileText),
-    tool("analysis", "版本修改", GitCompareArrows),
-    tool("context", "引用上下文", ListTree),
-  ],
-};
+const productTools: ContextualTool[] = [
+  tool("requirement-analysis", "需求分析", Target),
+  tool("prototype", "原型设计", LayoutTemplate),
+  tool("prd", "产品文档", FileText),
+  tool("acceptance-criteria", "验收标准", ListChecks),
+  tool("prototype-audit", "原型审计", ClipboardCheck),
+  tool("context", "产品上下文", ListTree),
+];
 
 export const contextualPreviewKinds = new Set<PreviewKind>([
   "actions", "analysis", "chart", "components", "context", "diff", "export",
   "failures", "files", "interaction", "issues", "log", "outline", "pdf",
   "prd", "prototype", "slides", "test", "questions",
+  "requirement-analysis", "acceptance-criteria", "prototype-audit",
+  "frontend-preview", "console", "api-debug", "data-model",
+  "test-cases", "test-run", "defects",
   "requirement-governance", "context-maintenance", "project-repositories",
   "project-requirements", "project-tests",
 ]);
@@ -143,13 +145,12 @@ export function resolveContextualTools(context: ContextualToolContext): Contextu
   }
   if (!["task", "requirement-detail"].includes(context.view)) return [];
   const mapped = context.agentId === "product-design"
-    ? productTools[context.productWorkMode ?? "analysis"]
+    ? productTools
     : context.mode === "office"
       ? officeTools[context.agentId] ?? officeTools.default
       : developmentTools[context.agentId] ?? developmentTools.default;
 
   return mapped
     .filter((item) => item.kind !== "log" || context.hasExecution)
-    .filter((item) => item.kind !== "test" || context.agentId === "testing" || context.hasTestEvidence)
-    .slice(0, 4);
+    .filter((item) => item.kind !== "test" || context.agentId === "testing" || context.hasTestEvidence);
 }

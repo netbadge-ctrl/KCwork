@@ -27,6 +27,7 @@ import type {
 import { ContextSourcesPanel } from "./context-sources-panel";
 import { ContextualScenePreview } from "./contextual-scene-preview";
 import { CodeWorkbenchPreview } from "./code-workbench-preview";
+import { AgentToolPanel, useAgentToolSession } from "./agent-tool-panels";
 import { CreateSystemPanel } from "./create-system-panel";
 import { MemberManager } from "./member-manager";
 import { PreviewErrorState, type PreviewErrorKind } from "./preview-error-state";
@@ -58,6 +59,7 @@ export interface PreviewDrawerProps {
   sources: ContextSource[];
   selectedProject: Project | null;
   selectedRequirement: Requirement | null;
+  selectedAgentId: string;
   capabilities: ProjectCapabilities;
   currentRole: ProjectRole;
   selectedContextIds: string[];
@@ -97,7 +99,32 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   files: "代码查看",
   diff: "代码差异",
   test: "测试报告",
+  "requirement-analysis": "需求分析",
+  "acceptance-criteria": "验收标准",
+  "prototype-audit": "原型审计",
+  "frontend-preview": "页面预览",
+  console: "控制台",
+  "api-debug": "接口调试",
+  "data-model": "数据模型",
+  "test-cases": "测试用例",
+  "test-run": "执行测试",
+  failures: "失败证据",
+  defects: "缺陷记录",
 };
+
+const fullAgentPanelKinds = new Set<PreviewKind>([
+  "requirement-analysis",
+  "acceptance-criteria",
+  "prototype-audit",
+  "frontend-preview",
+  "console",
+  "api-debug",
+  "data-model",
+  "test-cases",
+  "test-run",
+  "failures",
+  "defects",
+]);
 
 export function PreviewDrawer({
   preview,
@@ -112,6 +139,7 @@ export function PreviewDrawer({
   sources,
   selectedProject,
   selectedRequirement,
+  selectedAgentId,
   capabilities,
   currentRole,
   selectedContextIds,
@@ -134,6 +162,11 @@ export function PreviewDrawer({
   onWidthChange,
 }: PreviewDrawerProps) {
   const selectedTool = tools.find((tool) => tool.kind === preview);
+  const agentToolSession = useAgentToolSession();
+  const isBackendRuntimeLog = preview === "log" && selectedAgentId === "backend-dev";
+  const isTestingReport = preview === "test" && selectedAgentId === "testing" && explicitPreviewKind !== "test";
+  const mainTools = tools.filter((tool) => tool.kind !== "context");
+  const contextTools = tools.filter((tool) => tool.kind === "context");
   const [viewportWidth, setViewportWidth] = useState(
     Math.ceil(DEFAULT_RIGHT_PANEL_WIDTH / 0.7),
   );
@@ -272,13 +305,13 @@ export function PreviewDrawer({
             )}
             {(preview === "files" || preview === "diff") && (
               <CodeWorkbenchPreview
+                agentId={selectedAgentId}
                 canEdit={capabilities.canEditDevelopmentArtifacts}
                 initialMode={preview === "diff" ? "diff" : "code"}
                 requirement={selectedRequirement}
               />
             )}
-            {preview === "context" && <ContextPreview selectedIds={selectedContextIds} sources={sources} />}
-            {preview === "sources" && (
+            {(preview === "context" || preview === "sources") && (
               <ContextSourcesPanel
                 canEdit={capabilities.canEditAgentWork}
                 lockedIds={lockedContextIds}
@@ -288,8 +321,8 @@ export function PreviewDrawer({
                 sources={sources}
               />
             )}
-            {preview === "log" && <LogPreview requirement={selectedRequirement} />}
-            {preview === "test" && (
+            {preview === "log" && !isBackendRuntimeLog && <LogPreview requirement={selectedRequirement} />}
+            {preview === "test" && !isTestingReport && (
               <TestPreview
                 canEdit={capabilities.canEditTestArtifacts}
                 requirement={selectedRequirement}
@@ -356,7 +389,20 @@ export function PreviewDrawer({
               />
             )}
             {preview === "asset" && <AssetDetail assetId={selectedAssetId} canEdit={capabilities.canManageAssets} requirement={selectedRequirement} />}
-            {preview !== "files" && <ContextualScenePreview kind={preview} />}
+            {(fullAgentPanelKinds.has(preview) || isBackendRuntimeLog || isTestingReport) && (
+              <AgentToolPanel
+                canEdit={capabilities.canEditAgentWork}
+                kind={preview}
+                requirement={selectedRequirement}
+                session={agentToolSession}
+              />
+            )}
+            {preview !== "files" &&
+              !fullAgentPanelKinds.has(preview) &&
+              !isBackendRuntimeLog &&
+              !isTestingReport && (
+                <ContextualScenePreview kind={preview} />
+              )}
               </>
             )}
           </div>
@@ -364,7 +410,7 @@ export function PreviewDrawer({
         </>
       )}
       <aside className="right-rail" aria-label="辅助工具栏">
-        {tools.map(({ kind, label, icon: Icon }) => (
+        {mainTools.map(({ kind, label, icon: Icon }) => (
           <button
             aria-label={label}
             className={preview === kind ? "active" : ""}
@@ -376,9 +422,23 @@ export function PreviewDrawer({
             <Icon size={18} />
           </button>
         ))}
-        <button aria-label="收起辅助栏" className="rail-bottom" onClick={onClose} type="button">
-          <PanelRightClose size={18} />
-        </button>
+        <div className="rail-bottom-group">
+          {contextTools.map(({ kind, label, icon: Icon }) => (
+            <button
+              aria-label={label}
+              className={preview === kind ? "active" : ""}
+              key={kind}
+              onClick={() => onSelect(kind)}
+              title={label}
+              type="button"
+            >
+              <Icon size={18} />
+            </button>
+          ))}
+          <button aria-label="收起辅助栏" onClick={onClose} title="收起辅助栏" type="button">
+            <PanelRightClose size={18} />
+          </button>
+        </div>
       </aside>
     </div>
   );

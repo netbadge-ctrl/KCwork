@@ -46,7 +46,17 @@ export type PreviewKind =
   | "interaction"
   | "files"
   | "issues"
-  | "failures";
+  | "failures"
+  | "requirement-analysis"
+  | "acceptance-criteria"
+  | "prototype-audit"
+  | "frontend-preview"
+  | "console"
+  | "api-debug"
+  | "data-model"
+  | "test-cases"
+  | "test-run"
+  | "defects";
 export type ExecutionState =
   | "idle"
   | "reading"

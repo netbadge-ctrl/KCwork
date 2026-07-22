@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { codeChanges } from "../lib/demo-data";
-import type { Requirement } from "../lib/types";
+import type { CodeChange, Requirement } from "../lib/types";
 
 type WorkbenchMode = "code" | "diff";
 
@@ -48,6 +48,34 @@ export function RolePanel({ activeProject, member }) {
       .toBeDisabled();
   });
 });`,
+  "src/services/permissions/role-service.ts": `export async function updateProjectRole(input: UpdateRoleInput) {
+  await assertProjectPermission(input.actorId, input.projectId, "role:write");
+  const before = await members.find(input.projectId, input.memberId);
+
+  return transaction(async (tx) => {
+    const member = await members.updateRole(input, tx);
+    await auditLogs.recordRoleChange(before, member, input.actorId, tx);
+    return member;
+  });
+}`,
+  "src/routes/project-members.ts": `router.patch("/:projectId/members/:memberId/role", async (request, reply) => {
+  const member = await updateProjectRole({
+    ...request.params,
+    actorId: request.session.userId,
+    role: request.body.role,
+  });
+
+  return reply.code(200).send(member);
+});`,
+  "src/repositories/role-audit-repository.ts": `export async function recordRoleChange(before, after, actorId, tx) {
+  return tx.roleAuditLogs.create({
+    projectId: after.projectId,
+    memberId: after.memberId,
+    beforeRole: before.role,
+    afterRole: after.role,
+    actorId,
+  });
+}`,
 };
 
 const diffByFile: Record<string, Array<{ kind: "added" | "removed" | "neutral"; text: string }>> = {
@@ -69,24 +97,52 @@ const diffByFile: Record<string, Array<{ kind: "added" | "removed" | "neutral"; 
     { kind: "added", text: "  expect(editButton).toBeEnabled();" },
     { kind: "added", text: "});" },
   ],
+  "src/services/permissions/role-service.ts": [
+    { kind: "removed", text: "return members.updateRole(input);" },
+    { kind: "added", text: "await assertProjectPermission(input.actorId, input.projectId, \"role:write\");" },
+    { kind: "added", text: "return transaction(async (tx) => {" },
+    { kind: "added", text: "  const member = await members.updateRole(input, tx);" },
+    { kind: "added", text: "  await auditLogs.recordRoleChange(before, member, input.actorId, tx);" },
+    { kind: "neutral", text: "  return member;" },
+  ],
+  "src/routes/project-members.ts": [
+    { kind: "added", text: "router.patch(\"/:projectId/members/:memberId/role\", async (request, reply) => {" },
+    { kind: "added", text: "  const member = await updateProjectRole(toRoleInput(request));" },
+    { kind: "added", text: "  return reply.code(200).send(member);" },
+    { kind: "added", text: "});" },
+  ],
+  "src/repositories/role-audit-repository.ts": [
+    { kind: "added", text: "await tx.roleAuditLogs.create({" },
+    { kind: "added", text: "  projectId, memberId, beforeRole, afterRole, actorId" },
+    { kind: "added", text: "});" },
+  ],
 };
+
+const backendChanges: CodeChange[] = [
+  { id: "backend-role-service", requirementId: "role-permissions", taskId: "dev-audit-api", file: "src/services/permissions/role-service.ts", additions: 31, deletions: 4, rationale: "在事务中完成项目权限校验、角色更新和审计记录" },
+  { id: "backend-member-route", requirementId: "role-permissions", taskId: "dev-audit-api", file: "src/routes/project-members.ts", additions: 22, deletions: 1, rationale: "增加成员角色变更接口并返回更新后的资源" },
+  { id: "backend-audit-repository", requirementId: "role-permissions", taskId: "dev-audit-api", file: "src/repositories/role-audit-repository.ts", additions: 28, deletions: 0, rationale: "持久化变更前后角色与操作者，满足审计要求" },
+];
 
 function fileName(path: string) {
   return path.split("/").at(-1) ?? path;
 }
 
 export function CodeWorkbenchPreview({
+  agentId,
   canEdit,
   initialMode,
   requirement,
 }: {
+  agentId: string;
   canEdit: boolean;
   initialMode: WorkbenchMode;
   requirement: Requirement | null;
 }) {
   const changes = useMemo(
-    () => codeChanges.filter((change) => change.requirementId === requirement?.id),
-    [requirement?.id],
+    () => (agentId === "backend-dev" ? backendChanges : codeChanges)
+      .filter((change) => change.requirementId === requirement?.id),
+    [agentId, requirement?.id],
   );
   const [mode, setMode] = useState<WorkbenchMode>(initialMode);
   const [selectedFile, setSelectedFile] = useState(changes[0]?.file ?? "");
@@ -114,8 +170,8 @@ export function CodeWorkbenchPreview({
     <section className="code-workbench" aria-label="代码查看与编辑">
       <div className="code-workbench-toolbar">
         <div>
-          <span>customer-portal</span>
-          <b>feature/role-permissions</b>
+          <span>{agentId === "backend-dev" ? "permission-service" : "customer-portal"}</span>
+          <b>{agentId === "backend-dev" ? "feature/project-role-scope" : "feature/role-permissions"}</b>
         </div>
         <span className="workbench-context">{requirement.code} · 对话上下文已连接</span>
       </div>

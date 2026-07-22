@@ -679,6 +679,7 @@ export default function Page() {
         )}
         selectedProject={selectedProject}
         selectedRequirement={selectedRequirement}
+        selectedAgentId={selectedAgent.id}
         selectedAssetId={state.selectedAssetId}
         onSelect={openPreview}
         onClose={() => {
