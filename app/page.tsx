@@ -43,6 +43,7 @@ import {
   readStoredNumber,
 } from "./lib/layout-preferences";
 import { useProductPackageSession } from "./hooks/use-product-package-session";
+import { useRequirementBaselineSession } from "./hooks/use-requirement-baseline-session";
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "kflow.sidebar.collapsed";
 const RIGHT_PANEL_WIDTH_STORAGE_KEY = "kflow.rightPanel.width";
@@ -108,6 +109,9 @@ interface PendingNavigation {
 export default function Page() {
   const [state, dispatch] = useReducer(clientReducer, initialClientState);
   const productPackageSession = useProductPackageSession(
+    state.selectedRequirementId ?? "role-permissions",
+  );
+  const requirementBaselineSession = useRequirementBaselineSession(
     state.selectedRequirementId ?? "role-permissions",
   );
   const [pendingNavigation, setPendingNavigation] =
@@ -570,6 +574,7 @@ export default function Page() {
             onSend={sendMessage}
             productPackage={productPackageSession.state}
             onProductPackageAction={productPackageSession.dispatch}
+            requirementBaseline={requirementBaselineSession.state}
           />
         )}
 
@@ -605,6 +610,8 @@ export default function Page() {
             onOpenPreview={openPreview}
             productPackage={productPackageSession.state}
             onProductPackageAction={productPackageSession.dispatch}
+            requirement={selectedRequirement}
+            requirementBaseline={selectedRequirement ? requirementBaselineSession.state : undefined}
           />
         )}
       </section>
@@ -705,6 +712,8 @@ export default function Page() {
         selectedAgentId={selectedAgent.id}
         productPackage={productPackageSession.state}
         onProductPackageAction={productPackageSession.dispatch}
+        requirementBaseline={requirementBaselineSession.state}
+        onRequirementBaselineAction={requirementBaselineSession.dispatch}
         selectedAssetId={state.selectedAssetId}
         onSelect={openPreview}
         onClose={() => {

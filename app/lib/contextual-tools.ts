@@ -118,6 +118,11 @@ const productTools: ContextualTool[] = [
   tool("context", "项目知识", Database),
 ];
 
+const sharedRequirementTools: ContextualTool[] = [
+  tool("requirement-spec", "需求 Spec", FileCode2),
+  tool("requirement-acceptance", "验收标准", ListChecks),
+];
+
 export const contextualPreviewKinds = new Set<PreviewKind>([
   "actions", "analysis", "chart", "components", "context", "diff", "export",
   "failures", "files", "interaction", "issues", "log", "outline", "pdf",
@@ -126,6 +131,7 @@ export const contextualPreviewKinds = new Set<PreviewKind>([
   "frontend-preview", "console", "api-debug", "data-model",
   "test-cases", "test-run", "defects",
   "delivery-check", "version-history",
+  "requirement-spec", "requirement-acceptance",
   "requirement-governance", "context-maintenance", "project-repositories",
   "project-requirements", "project-tests",
 ]);
@@ -148,7 +154,9 @@ export function resolveContextualTools(context: ContextualToolContext): Contextu
       ? officeTools[context.agentId] ?? officeTools.default
       : developmentTools[context.agentId] ?? developmentTools.default;
 
-  return mapped
+  const tools = context.mode === "research" ? [...mapped.filter((item) => item.kind !== "context"), ...sharedRequirementTools, ...mapped.filter((item) => item.kind === "context")] : mapped;
+
+  return tools
     .filter((item) => item.kind !== "log" || context.hasExecution)
     .filter((item) => item.kind !== "test" || context.agentId === "testing" || context.hasTestEvidence);
 }

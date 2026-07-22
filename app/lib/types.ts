@@ -58,7 +58,9 @@ export type PreviewKind =
   | "test-run"
   | "defects"
   | "delivery-check"
-  | "version-history";
+  | "version-history"
+  | "requirement-spec"
+  | "requirement-acceptance";
 export type ExecutionState =
   | "idle"
   | "reading"

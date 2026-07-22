@@ -39,6 +39,8 @@ import {
 import { PrototypePreviewShell } from "./prototype-preview-shell";
 import { ProductPanel } from "./product-panels";
 import type { ProductPackageAction, ProductPackageState } from "../lib/product-package";
+import { RequirementBaselinePanel } from "./requirement-baseline";
+import type { RequirementBaselineAction, RequirementBaselineState } from "../lib/requirement-baseline";
 import {
   clampRightPanelWidthForShell,
   DEFAULT_RIGHT_PANEL_WIDTH,
@@ -64,6 +66,8 @@ export interface PreviewDrawerProps {
   selectedAgentId: string;
   productPackage: ProductPackageState;
   onProductPackageAction: Dispatch<ProductPackageAction>;
+  requirementBaseline: RequirementBaselineState;
+  onRequirementBaselineAction: Dispatch<RequirementBaselineAction>;
   capabilities: ProjectCapabilities;
   currentRole: ProjectRole;
   selectedContextIds: string[];
@@ -116,6 +120,8 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   defects: "缺陷记录",
   "delivery-check": "交付检查",
   "version-history": "版本记录",
+  "requirement-spec": "需求 Spec",
+  "requirement-acceptance": "验收标准",
 };
 
 const fullAgentPanelKinds = new Set<PreviewKind>([
@@ -148,6 +154,8 @@ export function PreviewDrawer({
   selectedAgentId,
   productPackage,
   onProductPackageAction,
+  requirementBaseline,
+  onRequirementBaselineAction,
   capabilities,
   currentRole,
   selectedContextIds,
@@ -174,6 +182,7 @@ export function PreviewDrawer({
   const isBackendRuntimeLog = preview === "log" && selectedAgentId === "backend-dev";
   const isTestingReport = preview === "test" && selectedAgentId === "testing" && explicitPreviewKind !== "test";
   const isProductPanel = selectedAgentId === "product-design" && ["prototype", "prd", "delivery-check", "version-history"].includes(preview ?? "");
+  const isRequirementBaselinePanel = ["requirement-spec", "requirement-acceptance"].includes(preview ?? "");
   const mainTools = tools.filter((tool) => tool.kind !== "context");
   const contextTools = tools.filter((tool) => tool.kind === "context");
   const [viewportWidth, setViewportWidth] = useState(
@@ -407,6 +416,15 @@ export function PreviewDrawer({
                 state={productPackage}
               />
             )}
+            {isRequirementBaselinePanel && preview && (
+              <RequirementBaselinePanel
+                canEdit={capabilities.canEditAgentWork}
+                dispatch={onRequirementBaselineAction}
+                kind={preview}
+                requirement={selectedRequirement}
+                state={requirementBaseline}
+              />
+            )}
             {(fullAgentPanelKinds.has(preview) || isBackendRuntimeLog || isTestingReport) && (
               <AgentToolPanel
                 canEdit={capabilities.canEditAgentWork}
@@ -418,6 +436,7 @@ export function PreviewDrawer({
             {preview !== "files" &&
               !fullAgentPanelKinds.has(preview) &&
               !isProductPanel &&
+              !isRequirementBaselinePanel &&
               !isBackendRuntimeLog &&
               !isTestingReport && (
                 <ContextualScenePreview kind={preview} />

@@ -22,6 +22,8 @@ import { projectRoleLabels } from "../lib/project-capabilities";
 import { Composer } from "./composer";
 import { DownstreamProductContext, ProductPackageStrip } from "./product-package-strip";
 import type { ProductPackageAction, ProductPackageState } from "../lib/product-package";
+import { RequirementBaselineStrip } from "./requirement-baseline";
+import type { RequirementBaselineState } from "../lib/requirement-baseline";
 
 export interface TaskViewProps {
   task: RecentTask;
@@ -48,6 +50,7 @@ export interface TaskViewProps {
   onBackToProject?(): void;
   productPackage?: ProductPackageState;
   onProductPackageAction?: Dispatch<ProductPackageAction>;
+  requirementBaseline?: RequirementBaselineState;
 }
 
 const executionSteps = [
@@ -81,6 +84,7 @@ export function TaskView({
   onBackToProject,
   productPackage,
   onProductPackageAction,
+  requirementBaseline,
 }: TaskViewProps) {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [savedArtifactIds, setSavedArtifactIds] = useState<Set<string>>(
@@ -147,6 +151,10 @@ export function TaskView({
           </button>
         </div>
       </header>
+
+      {requirementBaseline && requirement && agent.mode !== "office" && (
+        <RequirementBaselineStrip onOpen={onOpenPreview} requirement={requirement} state={requirementBaseline} />
+      )}
 
       {productPackage && onProductPackageAction && agent.id === "product-design" && (
         <ProductPackageStrip

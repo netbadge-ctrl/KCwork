@@ -63,8 +63,6 @@ export interface ProductPackageState {
   productStatus: ProductStatus;
   prototypeStatus: ArtifactState;
   prdStatus: ArtifactState;
-  specStatus: ArtifactState;
-  acceptanceStatus: ArtifactState;
   pages: PrototypePage[];
   selectedPageId: string;
   selectedComponentId: string | null;
@@ -94,7 +92,6 @@ export type ProductPackageAction =
   | { type: "confirm-prd-revision" }
   | { type: "rollback-prd"; versionId: string }
   | { type: "resolve-conflict"; conflictId: string; resolution: "prototype" | "prd" | "both" }
-  | { type: "generate-spec" }
   | { type: "toggle-knowledge"; knowledgeId: string }
   | { type: "mark-product-complete" }
   | { type: "reopen-product" }
@@ -113,8 +110,6 @@ export function createInitialProductPackage(requirementId: string): ProductPacka
     productStatus: "adjusting",
     prototypeStatus: "confirmed",
     prdStatus: "confirmed",
-    specStatus: "missing",
-    acceptanceStatus: "missing",
     pages: [
       { id: "overview", name: "权限概览", route: "/settings/roles", start: true, components: [{ id: "overview-nav", name: "角色导航", type: "navigation", text: "成员与角色", color: "#7053d8", state: "default", target: "成员列表" }] },
       { id: "members", name: "成员列表", route: "/settings/members", changed: true, components: baseComponents },
@@ -148,8 +143,6 @@ export function getProductReadiness(state: ProductPackageState) {
   const missing: string[] = [];
   if (state.prototypeStatus === "missing") missing.push("原型");
   if (state.prdStatus === "missing") missing.push("PRD");
-  if (state.specStatus === "missing") missing.push("Spec");
-  if (state.acceptanceStatus === "missing") missing.push("验收标准");
   const warnings = [...missing.map((item) => `缺少${item}`)];
   if (state.conflicts.some((item) => item.status === "open")) warnings.push("原型与 PRD 存在未处理冲突");
   return { complete: missing.length === 0 && warnings.length === 0, missing, warnings };
@@ -211,10 +204,6 @@ export function productPackageReducer(state: ProductPackageState, action: Produc
       return { ...state, prdStatus: "confirmed", prdVersions: [...state.prdVersions, { ...source, id: `prd-${version.toLowerCase()}`, version, title: `从 ${source.version} 恢复`, time: "刚刚" }], lastChange: `PRD ${version} 已从 ${source.version} 恢复` };
     }
     case "resolve-conflict": return { ...state, conflicts: state.conflicts.map((item) => item.id === action.conflictId ? { ...item, status: "resolved", resolution: action.resolution } : item), lastChange: "原型与 PRD 差异已处理" };
-    case "generate-spec": {
-      const blocked = state.prototypeStatus !== "confirmed" || state.prdStatus !== "confirmed" || state.conflicts.some((item) => item.status === "open");
-      return blocked ? state : { ...state, specStatus: "confirmed", acceptanceStatus: "confirmed", lastChange: "Spec V1 与 12 条验收标准已生成" };
-    }
     case "toggle-knowledge": return { ...state, knowledgeIds: state.knowledgeIds.includes(action.knowledgeId) ? state.knowledgeIds.filter((id) => id !== action.knowledgeId) : [...state.knowledgeIds, action.knowledgeId] };
     case "mark-product-complete": return { ...state, productStatus: getProductReadiness(state).complete ? "complete" : "complete-incomplete", lastChange: "产品已标记需求完成，同项目研发与测试现在可见" };
     case "reopen-product": return { ...state, productStatus: "adjusting", lastChange: "需求已重新进入产品调整中" };
@@ -222,7 +211,7 @@ export function productPackageReducer(state: ProductPackageState, action: Produc
       const currentPrototype = state.prototypeVersions.at(-1)?.version;
       const currentPrd = state.prdVersions.at(-1)?.version;
       const withoutAgent = state.downstreamSnapshots.filter((item) => item.agentId !== action.agentId);
-      return { ...state, downstreamSnapshots: [...withoutAgent, { id: `${action.agentId}-${Date.now()}`, agentId: action.agentId, prototypeVersion: currentPrototype, prdVersion: currentPrd, specVersion: state.specStatus === "confirmed" ? "V1" : undefined, acceptanceVersion: state.acceptanceStatus === "confirmed" ? "V1" : undefined, createdAt: "刚刚" }] };
+      return { ...state, downstreamSnapshots: [...withoutAgent, { id: `${action.agentId}-${Date.now()}`, agentId: action.agentId, prototypeVersion: currentPrototype, prdVersion: currentPrd, createdAt: "刚刚" }] };
     }
   }
 }

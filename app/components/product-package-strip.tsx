@@ -1,4 +1,4 @@
-import { AlertTriangle, Check, FileCheck2, FileText, LayoutTemplate, ListChecks, PackageCheck, RotateCcw, X } from "lucide-react";
+import { AlertTriangle, Check, FileText, LayoutTemplate, PackageCheck, RotateCcw, X } from "lucide-react";
 import { useState, type Dispatch } from "react";
 import { getProductReadiness, type ProductPackageAction, type ProductPackageState } from "../lib/product-package";
 import type { PreviewKind } from "../lib/types";
@@ -26,8 +26,6 @@ export function ProductPackageStrip({
   const artifacts = [
     { label: "原型", icon: LayoutTemplate, status: state.prototypeStatus, version: state.prototypeVersions.at(-1)?.version, kind: "prototype" as PreviewKind },
     { label: "PRD", icon: FileText, status: state.prdStatus, version: state.prdVersions.at(-1)?.version, kind: "prd" as PreviewKind },
-    { label: "Spec", icon: FileCheck2, status: state.specStatus, version: state.specStatus === "confirmed" ? "V1" : undefined, kind: "delivery-check" as PreviewKind },
-    { label: "验收标准", icon: ListChecks, status: state.acceptanceStatus, version: state.acceptanceStatus === "confirmed" ? "12 条" : undefined, kind: "delivery-check" as PreviewKind },
   ];
   return <>
     <section aria-label="需求包状态" className="product-package-strip">
@@ -44,7 +42,7 @@ export function ProductPackageStrip({
         <header><div><span className="confirm-icon"><PackageCheck size={19} /></span><div><b>标记产品需求完成</b><small>完成后，同项目研发与测试可看到此需求</small></div></div><button aria-label="关闭" onClick={() => setShowConfirm(false)} type="button"><X size={17} /></button></header>
         <div className="confirm-included"><b>当前需求包</b><div>{artifacts.map((item) => <span className={item.status} key={item.label}>{item.status === "missing" ? <AlertTriangle size={13} /> : <Check size={13} />}{item.label} {item.version ?? "缺失"}</span>)}</div></div>
         {readiness.warnings.length > 0 && <div className="confirm-warning"><AlertTriangle size={16} /><span><b>可以完成，但存在风险</b><small>{readiness.warnings.join("；")}。研发与测试开始时会看到这些信息。</small></span></div>}
-        <p>这不是任务分派，也不会自动切换到研发或测试。项目成员将自行决定何时开始。</p>
+        <p>完成仅代表原型与 PRD 已具备。需求级 Spec 和验收标准由项目成员继续共同维护，不触发任务分派。</p>
         <footer><button onClick={() => setShowConfirm(false)} type="button">取消</button><button className="primary" onClick={() => { dispatch({ type: "mark-product-complete" }); setShowConfirm(false); }} type="button">确认完成</button></footer>
       </div>
     </div>}
