@@ -160,6 +160,12 @@ export interface Message {
   artifact?: PreviewKind;
   artifactTitle?: string;
   artifactMeta?: string;
+  contextReference?: ProductContextReference;
+}
+
+export interface ProductContextReference {
+  kind: "prototype" | "prd";
+  label: string;
 }
 
 export type RequirementStage =

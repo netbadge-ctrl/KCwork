@@ -17,6 +17,7 @@ import type {
   ContextSource,
   PreviewKind,
   Project,
+  ProductContextReference,
   ProjectCapabilities,
   ProjectMember,
   ProjectRole,
@@ -68,6 +69,7 @@ export interface PreviewDrawerProps {
   onProductPackageAction: Dispatch<ProductPackageAction>;
   requirementBaseline: RequirementBaselineState;
   onRequirementBaselineAction: Dispatch<RequirementBaselineAction>;
+  onScopedProductSend(reference: ProductContextReference, text: string): void;
   capabilities: ProjectCapabilities;
   currentRole: ProjectRole;
   selectedContextIds: string[];
@@ -156,6 +158,7 @@ export function PreviewDrawer({
   onProductPackageAction,
   requirementBaseline,
   onRequirementBaselineAction,
+  onScopedProductSend,
   capabilities,
   currentRole,
   selectedContextIds,
@@ -414,6 +417,7 @@ export function PreviewDrawer({
                 kind={preview}
                 requirement={selectedRequirement}
                 state={productPackage}
+                onScopedSend={onScopedProductSend}
               />
             )}
             {isRequirementBaselinePanel && preview && (

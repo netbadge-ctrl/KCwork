@@ -33,7 +33,7 @@ import {
   discardPrototypeDraft,
   usePrototypeDocumentStatus,
 } from "./lib/prototype-state";
-import type { PreviewKind, Project, ProjectSection, ViewId } from "./lib/types";
+import type { PreviewKind, ProductContextReference, Project, ProjectSection, ViewId } from "./lib/types";
 import {
   clampPreferredRightPanelWidth,
   COLLAPSED_SIDEBAR_WIDTH,
@@ -344,9 +344,10 @@ export default function Page() {
     } else run();
   };
 
-  const sendMessage = (text: string) => {
-    dispatch({ type: "send-message", text });
+  const sendMessage = (text: string, contextReference?: ProductContextReference) => {
+    dispatch({ type: "send-message", text, contextReference });
     if (state.selectedAgentId !== "product-design") return;
+    if (contextReference) return;
     if (/原型|页面|组件/.test(text)) {
       productPackageSession.dispatch({
         type: "create-prototype-version",
@@ -551,6 +552,8 @@ export default function Page() {
               time: `${selectedRequirement.code} · Spec ${selectedRequirement.specVersion}`,
             }}
             onOpenPreview={openPreview}
+            activePreview={state.preview}
+            onClearProductContext={() => dispatch({ type: "close-preview" })}
             onOpenSettings={() => openPreview("requirement-governance")}
             onBackToProject={() =>
               requestNavigation(selectedProject.name, () =>
@@ -608,6 +611,8 @@ export default function Page() {
             onSelectProject={selectProject}
             onSend={sendMessage}
             onOpenPreview={openPreview}
+            activePreview={state.preview}
+            onClearProductContext={() => dispatch({ type: "close-preview" })}
             productPackage={productPackageSession.state}
             onProductPackageAction={productPackageSession.dispatch}
             requirement={selectedRequirement}
@@ -712,6 +717,7 @@ export default function Page() {
         selectedAgentId={selectedAgent.id}
         productPackage={productPackageSession.state}
         onProductPackageAction={productPackageSession.dispatch}
+        onScopedProductSend={(reference, text) => sendMessage(text, reference)}
         requirementBaseline={requirementBaselineSession.state}
         onRequirementBaselineAction={requirementBaselineSession.dispatch}
         selectedAssetId={state.selectedAssetId}

@@ -80,7 +80,7 @@ export type ClientAction =
   | { type: "set-document-draft"; documentId: string; draft: string }
   | { type: "open-preview"; preview: PreviewKind }
   | { type: "close-preview" }
-  | { type: "send-message"; text: string }
+  | { type: "send-message"; text: string; contextReference?: import("./types").ProductContextReference }
   | { type: "advance-execution"; taskId: string }
   | { type: "fail-execution"; taskId: string };
 
@@ -458,12 +458,15 @@ export function clientReducer(
                 id: `${requirement.id}-user-${messages.length}`,
                 role: "user",
                 text,
+                contextReference: action.contextReference,
               },
               {
                 id: `${requirement.id}-agent-${messages.length + 1}`,
                 role: "agent",
                 agentId: state.selectedAgentId,
-                text: `${requirement.code} 的本轮处理已完成。结果已保留在当前需求工作区，可继续调整或查看对应产物。`,
+                text: action.contextReference
+                  ? `已基于「${action.contextReference.label}」生成修改建议。结果已回到对应产物中，请在右侧确认后应用。`
+                  : `${requirement.code} 的本轮处理已完成。结果已保留在当前需求工作区，可继续调整或查看对应产物。`,
                 artifact:
                   state.selectedAgentId === "testing"
                     ? "test"
@@ -471,9 +474,9 @@ export function clientReducer(
                         state.selectedAgentId === "code-review"
                       ? "diff"
                       : state.selectedAgentId === "product-design"
-                        ? state.productWorkMode === "analysis"
+                        ? action.contextReference?.kind ?? (state.productWorkMode === "analysis"
                           ? "prd"
-                          : state.productWorkMode
+                          : state.productWorkMode)
                         : "prd",
               },
             ],
@@ -499,6 +502,7 @@ export function clientReducer(
               id: `${state.selectedTaskId}-user-${state.taskMessagesById[state.selectedTaskId]?.length ?? 0}`,
               role: "user",
               text,
+              contextReference: action.contextReference,
             },
           ],
         },

@@ -3,6 +3,7 @@ import {
   FolderOpen,
   Plus,
   ShieldCheck,
+  X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Agent, Mode, ProductWorkMode, Project } from "../lib/types";
@@ -22,6 +23,7 @@ export interface ComposerProps {
   productWorkMode?: ProductWorkMode;
   onProductWorkModeChange?(mode: ProductWorkMode): void;
   selectedProductContext?: { pageName: string; componentName: string } | null;
+  onClearProductContext?(): void;
 }
 
 export function Composer({
@@ -39,6 +41,7 @@ export function Composer({
   productWorkMode,
   onProductWorkModeChange,
   selectedProductContext = null,
+  onClearProductContext,
 }: ComposerProps) {
   const [text, setText] = useState("");
   const visibleAgents = useMemo(
@@ -57,6 +60,7 @@ export function Composer({
       {selectedProductContext && (
         <div className="composer-product-reference">
           当前引用：{selectedProductContext.pageName} / {selectedProductContext.componentName}
+          {onClearProductContext && <button aria-label="移除当前引用" onClick={onClearProductContext} type="button"><X size={12} /></button>}
         </div>
       )}
       <textarea

@@ -1,7 +1,7 @@
-import { AlertTriangle, Check, CheckCircle2, ChevronRight, Copy, FileText, GitCompareArrows, History, Laptop, LayoutTemplate, ListChecks, Monitor, MoreHorizontal, Plus, RotateCcw, Save, Smartphone, Sparkles, Tablet, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowUp, Check, CheckCircle2, ChevronRight, Copy, FileText, GitCompareArrows, History, Laptop, LayoutTemplate, ListChecks, Monitor, MoreHorizontal, Plus, RotateCcw, Save, Smartphone, Sparkles, Tablet, Trash2, X } from "lucide-react";
 import { useState, type Dispatch } from "react";
 import { getProductReadiness, type ProductPackageAction, type ProductPackageState, type PrototypeComponent } from "../lib/product-package";
-import type { PreviewKind, Requirement } from "../lib/types";
+import type { PreviewKind, ProductContextReference, Requirement } from "../lib/types";
 
 export function ProductPanel({
   kind,
@@ -9,29 +9,32 @@ export function ProductPanel({
   dispatch,
   canEdit,
   requirement,
+  onScopedSend,
 }: {
   kind: PreviewKind;
   state: ProductPackageState;
   dispatch: Dispatch<ProductPackageAction>;
   canEdit: boolean;
   requirement: Requirement | null;
+  onScopedSend(reference: ProductContextReference, text: string): void;
 }) {
-  if (kind === "prototype") return <ProductPrototypePanel {...{ state, dispatch, canEdit, requirement }} />;
-  if (kind === "prd") return <ProductPrdPanel {...{ state, dispatch, canEdit, requirement }} />;
+  if (kind === "prototype") return <ProductPrototypePanel {...{ state, dispatch, canEdit, requirement, onScopedSend }} />;
+  if (kind === "prd") return <ProductPrdPanel {...{ state, dispatch, canEdit, requirement, onScopedSend }} />;
   if (kind === "delivery-check") return <DeliveryCheckPanel {...{ state, dispatch, canEdit, requirement }} />;
   if (kind === "version-history") return <ProductVersionPanel {...{ state, dispatch, canEdit, requirement }} />;
   return null;
 }
 
-type Props = { state: ProductPackageState; dispatch: Dispatch<ProductPackageAction>; canEdit: boolean; requirement: Requirement | null };
+type Props = { state: ProductPackageState; dispatch: Dispatch<ProductPackageAction>; canEdit: boolean; requirement: Requirement | null; onScopedSend?: (reference: ProductContextReference, text: string) => void };
 
 function ProductContext({ requirement, state }: { requirement: Requirement | null; state: ProductPackageState }) {
   return <div className="product-panel-context"><span>产品设计 Agent</span><b>{requirement?.code ?? "未关联需求"}</b><small>原型 {state.prototypeVersions.at(-1)?.version} · PRD {state.prdVersions.at(-1)?.version}</small></div>;
 }
 
-function ProductPrototypePanel({ state, dispatch, canEdit, requirement }: Props) {
+function ProductPrototypePanel({ state, dispatch, canEdit, requirement, onScopedSend }: Props) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [inspect, setInspect] = useState(true);
+  const [pendingInstruction, setPendingInstruction] = useState("");
   const page = state.pages.find((item) => item.id === state.selectedPageId) ?? state.pages[0];
   const component = page.components.find((item) => item.id === state.selectedComponentId) ?? null;
   return <section className="product-panel prototype-workbench">
@@ -69,7 +72,15 @@ function ProductPrototypePanel({ state, dispatch, canEdit, requirement }: Props)
           <label>视觉主色<input disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { color: event.target.value } })} type="color" value={component.color} /></label>
           <label>组件状态<select disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { state: event.target.value as PrototypeComponent["state"] } })} value={component.state}><option value="default">默认</option><option value="disabled">禁用</option><option value="loading">加载中</option></select></label>
           <label>交互目标<input disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { target: event.target.value } })} value={component.target ?? ""} /></label>
-          <div className="component-chat-reference">对话已引用<br /><b>{page.name} / {component.name}</b></div>
+          <ScopedArtifactComposer
+            canEdit={canEdit}
+            label={`原型 ${state.prototypeVersions.at(-1)?.version} / ${page.name} / ${component.name}`}
+            onSend={(text) => {
+              setPendingInstruction(text);
+              onScopedSend?.({ kind: "prototype", label: `原型 ${state.prototypeVersions.at(-1)?.version} / ${page.name} / ${component.name}` }, text);
+            }}
+          />
+          {pendingInstruction && <div className="scoped-change-preview"><b><GitCompareArrows size={13} />Agent 修改建议</b><p>{pendingInstruction}</p><footer><button onClick={() => setPendingInstruction("")} type="button"><X size={12} />放弃</button><button onClick={() => { dispatch({ type: "update-component", patch: { text: component.text } }); dispatch({ type: "create-prototype-version", title: `调整${component.name}` }); setPendingInstruction(""); }} type="button"><Check size={12} />应用并生成新版本</button></footer></div>}
         </> : <div className="inspector-empty">在画布中选择一个组件进行针对性调整</div>}
       </aside>
     </div>
@@ -85,17 +96,29 @@ function PrototypeElement({ component, inspect, selected, onSelect }: { componen
   return <button className={className} onClick={onSelect} type="button">{component.text}</button>;
 }
 
-function ProductPrdPanel({ state, dispatch, canEdit, requirement }: Props) {
+function ProductPrdPanel({ state, dispatch, canEdit, requirement, onScopedSend }: Props) {
   const [editing, setEditing] = useState(false);
+  const sections = ["1. 背景与目标", "2. 产品范围", "3. 核心方案", "4. 权限规则", "5. 异常处理"];
+  const [selectedSection, setSelectedSection] = useState(sections[2]);
   return <section className="product-panel prd-workbench">
     <ProductContext requirement={requirement} state={state} />
     <div className="product-panel-heading"><div><span>产品需求文档</span><h3>{requirement?.title ?? "角色与成员权限重构"}</h3><p>PRD {state.prdVersions.at(-1)?.version} · 关联原型 {state.prototypeVersions.at(-1)?.version} · 引用 {state.knowledgeIds.length} 项项目知识</p></div><button disabled={!canEdit} onClick={() => setEditing(!editing)} type="button">{editing ? "完成编辑" : "直接编辑"}</button></div>
     <div className="prd-editor-layout">
-      <nav><b>文档目录</b>{["1. 背景与目标", "2. 产品范围", "3. 核心方案", "4. 权限规则", "5. 异常处理"].map((item, index) => <button className={index === 2 ? "active" : ""} key={item} type="button">{item}</button>)}<div><small>实际引用</small><span>企业产品规范库</span><span>权限域项目记忆</span><span>历史需求 REQ-019</span></div></nav>
+      <nav><b>文档目录</b>{sections.map((item) => <button className={item === selectedSection ? "active" : ""} key={item} onClick={() => setSelectedSection(item)} type="button">{item}</button>)}<div><small>实际引用</small><span>企业产品规范库</span><span>权限域项目记忆</span><span>历史需求 REQ-019</span></div></nav>
       <div className="prd-document-editor"><span className="document-tag">PRD {state.prdVersions.at(-1)?.version}</span>{editing ? <textarea aria-label="PRD 正文" onChange={(event) => dispatch({ type: "set-prd-body", body: event.target.value })} value={state.prdBody} /> : state.prdBody.split("\n").map((line, index) => line.startsWith("##") ? <h4 key={`${line}-${index}`}>{line.replace("## ", "")}</h4> : <p key={`${line}-${index}`}>{line}</p>)}</div>
     </div>
-    <div className="prd-natural-revision"><div><Sparkles size={17} /><span><b>通过对话修改 PRD</b><small>Agent 将结合项目知识和当前原型生成修订差异，不直接覆盖正文。</small></span></div><textarea disabled={!canEdit} onChange={(event) => dispatch({ type: "set-prd-revision", revision: event.target.value })} placeholder="例如：补充观察者无法编辑角色时的提示和恢复方式" value={state.prdRevision} />{state.prdRevision && <div className="prd-revision-preview"><b><GitCompareArrows size={14} />待确认修订</b><p>将在当前 PRD 末尾补充：{state.prdRevision}</p><footer><button onClick={() => dispatch({ type: "set-prd-revision", revision: "" })} type="button">放弃</button><button onClick={() => dispatch({ type: "confirm-prd-revision" })} type="button">确认并生成新版本</button></footer></div>}</div>
+    <div className="prd-natural-revision"><ScopedArtifactComposer canEdit={canEdit} label={`PRD ${state.prdVersions.at(-1)?.version} / ${selectedSection}`} onSend={(text) => { dispatch({ type: "set-prd-revision", revision: text }); onScopedSend?.({ kind: "prd", label: `PRD ${state.prdVersions.at(-1)?.version} / ${selectedSection}` }, text); }} />{state.prdRevision && <div className="prd-revision-preview"><b><GitCompareArrows size={14} />Agent 已生成待确认修订</b><p>将在“{selectedSection}”中补充：{state.prdRevision}</p><footer><button onClick={() => dispatch({ type: "set-prd-revision", revision: "" })} type="button">放弃</button><button onClick={() => dispatch({ type: "confirm-prd-revision" })} type="button">确认并生成新版本</button></footer></div>}</div>
   </section>;
+}
+
+function ScopedArtifactComposer({ canEdit, label, onSend }: { canEdit: boolean; label: string; onSend(text: string): void }) {
+  const [text, setText] = useState("");
+  const submit = () => {
+    if (!canEdit || !text.trim()) return;
+    onSend(text.trim());
+    setText("");
+  };
+  return <div className="scoped-artifact-composer"><header><div><Sparkles size={15} /><span><b>发送到主对话</b><small>右侧只提供精准引用，不创建新会话</small></span></div><em>{label}</em></header><div><textarea disabled={!canEdit} onChange={(event) => setText(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); submit(); } }} placeholder="描述针对当前选择的修改…" value={text} /><button aria-label="发送到主对话" disabled={!canEdit || !text.trim()} onClick={submit} type="button"><ArrowUp size={15} /></button></div></div>;
 }
 
 function DeliveryCheckPanel({ state, dispatch, canEdit, requirement }: Props) {

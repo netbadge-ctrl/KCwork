@@ -19,6 +19,7 @@ import type {
   ProjectRole,
   RecentTask,
   Requirement,
+  ProductContextReference,
 } from "../lib/types";
 import { projectRoleLabels } from "../lib/project-capabilities";
 import { Composer } from "./composer";
@@ -46,13 +47,15 @@ export interface TaskViewProps {
   onSelectAgent(id: string): void;
   onSelectProject(id: string | null): void;
   onProductWorkModeChange?(mode: ProductWorkMode): void;
-  onSend(text: string): void;
+  onSend(text: string, contextReference?: ProductContextReference): void;
   onOpenPreview(kind: PreviewKind): void;
   onOpenSettings?(): void;
   onBackToProject?(): void;
   productPackage?: ProductPackageState;
   onProductPackageAction?: Dispatch<ProductPackageAction>;
   requirementBaseline?: RequirementBaselineState;
+  activePreview?: PreviewKind | null;
+  onClearProductContext?(): void;
 }
 
 const executionSteps = [
@@ -87,6 +90,8 @@ export function TaskView({
   productPackage,
   onProductPackageAction,
   requirementBaseline,
+  activePreview = null,
+  onClearProductContext,
 }: TaskViewProps) {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isRequirementContextOpen, setIsRequirementContextOpen] = useState(false);
@@ -210,6 +215,7 @@ export function TaskView({
                     ✦ {agents.find((item) => item.id === message.agentId)?.name}
                   </span>
                 )}
+                {message.contextReference && <span className="message-context-reference"><Layers3 size={12} />{message.contextReference.label}</span>}
                 <p>{message.text}</p>
                 {message.artifact && (
                   <div className="artifact-card">
@@ -303,13 +309,16 @@ export function TaskView({
           onSelectAgent={onSelectAgent}
           onSelectProject={onSelectProject}
           onSend={onSend}
+          onClearProductContext={onClearProductContext}
           productWorkMode={productWorkMode}
           projectSelectionLocked={projectSelectionLocked}
           projects={projects}
           selectedAgentId={agent.id}
           selectedProjectId={selectedProjectId}
           selectedProductContext={(() => {
-            if (agent.id !== "product-design" || !productPackage?.selectedComponentId) return null;
+            if (agent.id !== "product-design") return null;
+            if (activePreview === "prd") return { pageName: `PRD ${productPackage?.prdVersions.at(-1)?.version ?? ""}`, componentName: "当前章节" };
+            if (activePreview !== "prototype" || !productPackage?.selectedComponentId) return null;
             const page = productPackage.pages.find((item) => item.id === productPackage.selectedPageId);
             const component = page?.components.find((item) => item.id === productPackage.selectedComponentId);
             return page && component ? { pageName: page.name, componentName: component.name } : null;
