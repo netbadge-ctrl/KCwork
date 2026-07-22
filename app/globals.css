@@ -76,6 +76,24 @@ select:focus-visible {
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--right-panel-width);
 }
 
+.client-shell.artifact-focus.drawer-open {
+  background: #f3f4f7;
+}
+
+.artifact-focus .task-header { gap: 8px; padding-inline: 12px; }
+.artifact-focus .task-header h1 { max-width: 250px; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.artifact-focus .task-header-actions { gap: 5px; }
+.artifact-focus .task-header-actions .context-count { display: none; }
+.artifact-focus .project-chip { max-width: 132px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.artifact-focus .requirement-context-toggle { padding-inline: 6px; }
+.artifact-focus .conversation-inner,
+.artifact-focus .task-composer-wrap { width: calc(100% - 24px); }
+.artifact-focus .conversation-inner { padding-top: 20px; }
+.artifact-focus .drawer-body { padding: 8px; }
+.artifact-focus .prototype-workbench-stage,
+.artifact-focus .prototype-workbench-stage .prototype-canvas-column { min-height: 620px; }
+.artifact-focus .product-prototype-canvas.desktop .prototype-demo-page { max-width: 1100px; }
+
 .client-shell.no-auxiliary {
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
 }

@@ -205,6 +205,10 @@ export function PreviewDrawer({
     viewportWidth <= MOBILE_BREAKPOINT
       ? effectiveWidth
       : getRightPanelMaxWidth(viewportWidth, sidebarWidth);
+  const minimumWidth = Math.min(
+    maximumWidth,
+    ["prototype", "prd"].includes(preview ?? "") ? 620 : MIN_RIGHT_PANEL_WIDTH,
+  );
 
   useEffect(() => {
     const updateViewportWidth = () => setViewportWidth(window.innerWidth);
@@ -236,13 +240,13 @@ export function PreviewDrawer({
             aria-label="调整辅助面板宽度"
             aria-orientation="vertical"
             aria-valuemax={maximumWidth}
-            aria-valuemin={Math.min(MIN_RIGHT_PANEL_WIDTH, effectiveWidth)}
+            aria-valuemin={Math.min(minimumWidth, effectiveWidth)}
             aria-valuenow={effectiveWidth}
             className="drawer-resize-handle"
             onDoubleClick={() =>
               onWidthChange(
                 clampRightPanelWidthForShell(
-                  DEFAULT_RIGHT_PANEL_WIDTH,
+                  Math.max(DEFAULT_RIGHT_PANEL_WIDTH, minimumWidth),
                   viewportWidth,
                   sidebarWidth,
                 ),
@@ -256,7 +260,7 @@ export function PreviewDrawer({
               const delta = event.key === "ArrowLeft" ? 16 : -16;
               onWidthChange(
                 clampRightPanelWidthForShell(
-                  width + delta,
+                  Math.max(minimumWidth, width + delta),
                   viewportWidth,
                   sidebarWidth,
                 ),
@@ -284,7 +288,7 @@ export function PreviewDrawer({
               }
               onWidthChange(
                 clampRightPanelWidthForShell(
-                  dragStart.current.width + dragStart.current.x - event.clientX,
+                  Math.max(minimumWidth, dragStart.current.width + dragStart.current.x - event.clientX),
                   viewportWidth,
                   sidebarWidth,
                 ),

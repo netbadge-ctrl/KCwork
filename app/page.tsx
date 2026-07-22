@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useReducer, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState, type CSSProperties } from "react";
 import { AssetsView } from "./components/assets-view";
 import { HomeView } from "./components/home-view";
 import { NavigationGuardDialog } from "./components/navigation-guard-dialog";
@@ -108,6 +108,7 @@ interface PendingNavigation {
 
 export default function Page() {
   const [state, dispatch] = useReducer(clientReducer, initialClientState);
+  const isArtifactFocus = ["prototype", "prd"].includes(state.preview ?? "") && ["task", "requirement-detail"].includes(state.view);
   const productPackageSession = useProductPackageSession(
     state.selectedRequirementId ?? "role-permissions",
   );
@@ -121,6 +122,9 @@ export default function Page() {
     layoutPreferencesReducer,
     initialLayoutPreferences,
   );
+  const wasArtifactFocusRef = useRef(false);
+  const regularRightPanelWidthRef = useRef<number | null>(null);
+  const effectiveSidebarCollapsed = layoutPreferences.isSidebarCollapsed || isArtifactFocus;
   const selectedTaskExecution =
     state.taskExecutionsById[state.selectedTaskId] ?? "idle";
   const availableProjects = useMemo(
@@ -172,7 +176,7 @@ export default function Page() {
         width: clampPreferredRightPanelWidth(
           layoutPreferences.rightPanelWidth,
           window.innerWidth,
-          layoutPreferences.isSidebarCollapsed
+          effectiveSidebarCollapsed
             ? COLLAPSED_SIDEBAR_WIDTH
             : EXPANDED_SIDEBAR_WIDTH,
         ),
@@ -180,9 +184,31 @@ export default function Page() {
     window.addEventListener("resize", clampToViewport);
     return () => window.removeEventListener("resize", clampToViewport);
   }, [
+    isArtifactFocus,
     layoutPreferences.isSidebarCollapsed,
     layoutPreferences.rightPanelWidth,
   ]);
+
+  useEffect(() => {
+    if (!layoutPreferences.hydrated) return;
+    if (isArtifactFocus && !wasArtifactFocusRef.current) {
+      regularRightPanelWidthRef.current = layoutPreferences.rightPanelWidth;
+      const desiredMainWidth = Math.min(520, Math.max(420, Math.floor(window.innerWidth * 0.32)));
+      dispatchLayoutPreferences({
+        type: "set-right-panel-width",
+        width: clampPreferredRightPanelWidth(
+          window.innerWidth - COLLAPSED_SIDEBAR_WIDTH - desiredMainWidth,
+          window.innerWidth,
+          COLLAPSED_SIDEBAR_WIDTH,
+        ),
+      });
+    }
+    if (!isArtifactFocus && wasArtifactFocusRef.current && regularRightPanelWidthRef.current) {
+      dispatchLayoutPreferences({ type: "set-right-panel-width", width: regularRightPanelWidthRef.current });
+      regularRightPanelWidthRef.current = null;
+    }
+    wasArtifactFocusRef.current = isArtifactFocus;
+  }, [isArtifactFocus, layoutPreferences.hydrated]);
 
   useEffect(() => {
     if (["idle", "done", "error"].includes(selectedTaskExecution)) return;
@@ -396,13 +422,13 @@ export default function Page() {
 
   return (
     <main
-      className={`client-shell ${state.view === "home" ? "no-auxiliary" : ""} ${state.view !== "home" && state.preview ? "drawer-open" : ""}`}
+      className={`client-shell ${state.view === "home" ? "no-auxiliary" : ""} ${state.view !== "home" && state.preview ? "drawer-open" : ""} ${isArtifactFocus ? "artifact-focus" : ""}`}
       data-prototype-dirty={prototypeStatus.dirty}
       data-prototype-pending={prototypeStatus.pending}
       style={
         {
           "--sidebar-width": `${
-            layoutPreferences.isSidebarCollapsed
+            effectiveSidebarCollapsed
               ? COLLAPSED_SIDEBAR_WIDTH
               : EXPANDED_SIDEBAR_WIDTH
           }px`,
@@ -412,7 +438,7 @@ export default function Page() {
     >
       <Sidebar
         activeView={state.view}
-        collapsed={layoutPreferences.isSidebarCollapsed}
+        collapsed={effectiveSidebarCollapsed}
         recentTasks={recentTasks}
         onNavigate={navigateFromSidebar}
         onOpenProfile={() => navigateFromSidebar("profile")}
@@ -699,7 +725,7 @@ export default function Page() {
         }
         preview={state.preview}
         sidebarWidth={
-          layoutPreferences.isSidebarCollapsed
+          effectiveSidebarCollapsed
             ? COLLAPSED_SIDEBAR_WIDTH
             : EXPANDED_SIDEBAR_WIDTH
         }
