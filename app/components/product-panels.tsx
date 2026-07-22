@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowUp, Check, CheckCircle2, Copy, FileText, GitCompareArrows, History, Laptop, LayoutTemplate, ListChecks, Monitor, MoreHorizontal, Plus, RotateCcw, Save, Smartphone, Sparkles, Tablet, Trash2, X } from "lucide-react";
+import { AlertTriangle, ArrowUp, Check, CheckCircle2, ChevronDown, Copy, FileText, GitCompareArrows, History, Laptop, LayoutTemplate, ListChecks, Monitor, MoreHorizontal, Plus, RotateCcw, Save, Smartphone, Sparkles, Tablet, Trash2, X } from "lucide-react";
 import { useState, type Dispatch } from "react";
 import { getProductReadiness, type ProductPackageAction, type ProductPackageState, type PrototypeComponent } from "../lib/product-package";
 import type { PreviewKind, ProductContextReference, Requirement } from "../lib/types";
@@ -35,6 +35,7 @@ function ProductPrototypePanel({ state, dispatch, canEdit, requirement, onScoped
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [inspect, setInspect] = useState(true);
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
+  const [isPageMenuOpen, setIsPageMenuOpen] = useState(false);
   const [pendingInstruction, setPendingInstruction] = useState("");
   const page = state.pages.find((item) => item.id === state.selectedPageId) ?? state.pages[0];
   const component = page.components.find((item) => item.id === state.selectedComponentId) ?? null;
@@ -44,13 +45,13 @@ function ProductPrototypePanel({ state, dispatch, canEdit, requirement, onScoped
     dispatch({ type: "select-component", componentId: null });
   };
   return <section className="product-panel prototype-workbench">
-    <ProductContext requirement={requirement} state={state} />
-    <div className="prototype-command-bar">
-      <div><b>{requirement?.title ?? "当前需求"}</b><span>{state.pages.length} 个页面 · 最新 {state.prototypeVersions.at(-1)?.version}</span></div>
-      <label className="prototype-page-select"><LayoutTemplate size={14} /><select aria-label="选择原型页面" onChange={(event) => { dispatch({ type: "select-page", pageId: event.target.value }); setIsInspectorOpen(false); }} value={page.id}>{state.pages.map((item) => <option key={item.id} value={item.id}>{item.start ? "首页 · " : ""}{item.name}{item.changed ? " · 本轮修改" : ""}</option>)}</select></label>
-      <div className="prototype-page-actions"><button aria-label="新增页面" disabled={!canEdit} onClick={() => { dispatch({ type: "add-page" }); setIsInspectorOpen(false); }} title="新增页面" type="button"><Plus size={14} /></button><button aria-label="复制当前页面" disabled={!canEdit} onClick={() => { dispatch({ type: "copy-page", pageId: page.id }); setIsInspectorOpen(false); }} title="复制页面" type="button"><Copy size={14} /></button><button aria-label="删除当前页面" disabled={!canEdit || state.pages.length <= 1} onClick={() => { dispatch({ type: "delete-page", pageId: page.id }); setIsInspectorOpen(false); }} title="删除页面" type="button"><Trash2 size={14} /></button></div>
-      <a href="/prototype?mode=inspect" rel="noreferrer" target="_blank"><Laptop size={14} />浏览器打开</a>
-      <button className={inspect ? "active" : ""} onClick={() => { setInspect(!inspect); if (inspect) closeInspector(); }} type="button"><Sparkles size={14} />{inspect ? "可选组件" : "开启组件选择"}</button>
+    <div className="prototype-compact-toolbar">
+      <div className="prototype-page-menu">
+        <button aria-expanded={isPageMenuOpen} className="prototype-page-trigger" onClick={() => setIsPageMenuOpen((open) => !open)} type="button"><LayoutTemplate size={14} /><span>{page.start && <i>首页</i>}<b>{page.name}</b><small>{state.pages.length} 个页面 · {state.prototypeVersions.at(-1)?.version}</small></span><ChevronDown size={14} /></button>
+        {isPageMenuOpen && <div className="prototype-page-popover"><header><b>原型页面</b><button disabled={!canEdit} onClick={() => { dispatch({ type: "add-page" }); setIsInspectorOpen(false); setIsPageMenuOpen(false); }} type="button"><Plus size={13} />新建页面</button></header>{state.pages.map((item) => <article className={item.id === page.id ? "active" : ""} key={item.id}><button className="page-select-row" onClick={() => { dispatch({ type: "select-page", pageId: item.id }); setIsInspectorOpen(false); setIsPageMenuOpen(false); }} type="button"><span>{item.start ? <Monitor size={13} /> : <LayoutTemplate size={13} />}<b>{item.name}</b>{item.changed && <i>本轮</i>}</span><small>{item.route}</small></button><div><button aria-label={`复制${item.name}`} disabled={!canEdit} onClick={() => { dispatch({ type: "copy-page", pageId: item.id }); setIsInspectorOpen(false); setIsPageMenuOpen(false); }} title="复制" type="button"><Copy size={13} /></button><button aria-label={`删除${item.name}`} disabled={!canEdit || state.pages.length <= 1} onClick={() => { dispatch({ type: "delete-page", pageId: item.id }); setIsInspectorOpen(false); setIsPageMenuOpen(false); }} title="删除" type="button"><Trash2 size={13} /></button></div></article>)}</div>}
+      </div>
+      <span className="prototype-toolbar-title">{requirement?.title ?? "当前需求"}</span>
+      <div className="prototype-toolbar-actions"><a href="/prototype?mode=inspect" rel="noreferrer" target="_blank"><Laptop size={14} />浏览器打开</a><button className={inspect ? "active" : ""} onClick={() => { setInspect(!inspect); if (inspect) closeInspector(); }} type="button"><Sparkles size={14} />{inspect ? "组件可选" : "选择组件"}</button></div>
     </div>
     <div className="prototype-workbench-stage">
       <div className="prototype-canvas-column">
