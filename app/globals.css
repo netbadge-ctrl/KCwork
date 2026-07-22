@@ -5948,6 +5948,18 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
 .prototype-command-bar > a,
 .prototype-command-bar > button { display: inline-flex; align-items: center; gap: 5px; padding: 7px 9px; color: var(--text); font-size: 10px; text-decoration: none; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
 .prototype-command-bar > button.active { color: var(--accent); background: var(--accent-soft); border-color: #d8cffc; }
+.prototype-page-select { display: flex; align-items: center; gap: 5px; min-width: 150px; padding: 0 7px; background: white; border: 1px solid var(--border); border-radius: 8px; }
+.prototype-page-select > svg { flex: none; color: var(--accent); }
+.prototype-page-select select { min-width: 0; width: 100%; padding: 7px 0; color: var(--text); font-size: 10px; background: transparent; border: 0; outline: 0; }
+.prototype-page-actions { display: flex; gap: 3px; }
+.prototype-page-actions button { display: grid; width: 29px; height: 29px; place-items: center; color: var(--text-muted); background: white; border: 1px solid var(--border); border-radius: 7px; }
+.prototype-page-actions button:hover { color: var(--accent); border-color: #d8cffc; }
+
+.prototype-workbench-stage { position: relative; min-width: 0; min-height: 570px; }
+.prototype-workbench-stage .prototype-canvas-column { min-height: 570px; }
+.product-prototype-canvas.desktop .prototype-demo-page { max-width: 760px; }
+.prototype-canvas-toolbar .page-start-action { width: auto; padding: 0 7px; color: var(--text-muted); font-size: 8px; border: 1px solid var(--border); }
+.prototype-canvas-toolbar .page-start-action:disabled { color: var(--accent); background: var(--accent-soft); opacity: 1; }
 
 .prototype-workbench-grid { display: grid; grid-template-columns: 150px minmax(0, 1fr) 190px; gap: 10px; min-height: 540px; }
 .prototype-page-tree,
@@ -5997,6 +6009,10 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
 
 .prototype-inspector { display: grid; align-content: start; gap: 10px; }
 .prototype-inspector header { display: flex; align-items: center; gap: 6px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.prototype-inspector.floating { position: absolute; top: 42px; right: 12px; z-index: 4; width: min(270px, calc(100% - 24px)); max-height: calc(100% - 96px); overflow-y: auto; background: rgb(255 255 255 / 97%); box-shadow: 0 18px 55px rgb(27 31 40 / 20%); backdrop-filter: blur(12px); }
+.prototype-inspector.floating > header { justify-content: space-between; }
+.prototype-inspector.floating > header > span { display: flex; align-items: center; gap: 6px; }
+.prototype-inspector.floating > header > button { display: grid; width: 25px; height: 25px; place-items: center; color: var(--text-muted); background: var(--surface-soft); border: 0; border-radius: 6px; }
 .prototype-inspector label { display: grid; gap: 4px; color: var(--text-muted); font-size: 9px; }
 .prototype-inspector input,
 .prototype-inspector select { min-width: 0; width: 100%; padding: 7px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 7px; }
@@ -6116,6 +6132,7 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
   .requirement-context-toolbar .package-artifacts { grid-column: auto; grid-row: auto; overflow-x: auto; }
   .prototype-workbench-grid { grid-template-columns: 120px minmax(0, 1fr); }
   .prototype-inspector { grid-column: 1 / -1; grid-template-columns: repeat(3, 1fr); }
+  .prototype-inspector.floating { grid-template-columns: 1fr; }
   .prototype-inspector header,
   .selected-component-name,
   .component-chat-reference,
@@ -6137,6 +6154,7 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
   .prd-editor-layout { grid-template-columns: 1fr; }
   .prototype-page-tree { max-height: 180px; overflow: auto; }
   .prototype-inspector { grid-template-columns: 1fr; }
+  .prototype-inspector.floating { display: grid; top: 38px; right: 8px; width: calc(100% - 16px); }
   .prototype-inspector header,
   .selected-component-name,
   .component-chat-reference,

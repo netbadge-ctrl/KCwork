@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowUp, Check, CheckCircle2, ChevronRight, Copy, FileText, GitCompareArrows, History, Laptop, LayoutTemplate, ListChecks, Monitor, MoreHorizontal, Plus, RotateCcw, Save, Smartphone, Sparkles, Tablet, Trash2, X } from "lucide-react";
+import { AlertTriangle, ArrowUp, Check, CheckCircle2, Copy, FileText, GitCompareArrows, History, Laptop, LayoutTemplate, ListChecks, Monitor, MoreHorizontal, Plus, RotateCcw, Save, Smartphone, Sparkles, Tablet, Trash2, X } from "lucide-react";
 import { useState, type Dispatch } from "react";
 import { getProductReadiness, type ProductPackageAction, type ProductPackageState, type PrototypeComponent } from "../lib/product-package";
 import type { PreviewKind, ProductContextReference, Requirement } from "../lib/types";
@@ -34,55 +34,47 @@ function ProductContext({ requirement, state }: { requirement: Requirement | nul
 function ProductPrototypePanel({ state, dispatch, canEdit, requirement, onScopedSend }: Props) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [inspect, setInspect] = useState(true);
+  const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [pendingInstruction, setPendingInstruction] = useState("");
   const page = state.pages.find((item) => item.id === state.selectedPageId) ?? state.pages[0];
   const component = page.components.find((item) => item.id === state.selectedComponentId) ?? null;
+  const closeInspector = () => {
+    setIsInspectorOpen(false);
+    setPendingInstruction("");
+    dispatch({ type: "select-component", componentId: null });
+  };
   return <section className="product-panel prototype-workbench">
     <ProductContext requirement={requirement} state={state} />
     <div className="prototype-command-bar">
       <div><b>{requirement?.title ?? "当前需求"}</b><span>{state.pages.length} 个页面 · 最新 {state.prototypeVersions.at(-1)?.version}</span></div>
-      <a href="/prototype?mode=inspect" rel="noreferrer" target="_blank"><Laptop size={14} />在浏览器打开</a>
-      <button className={inspect ? "active" : ""} onClick={() => setInspect(!inspect)} type="button"><Sparkles size={14} />{inspect ? "检查模式已开启" : "开启检查模式"}</button>
+      <label className="prototype-page-select"><LayoutTemplate size={14} /><select aria-label="选择原型页面" onChange={(event) => { dispatch({ type: "select-page", pageId: event.target.value }); setIsInspectorOpen(false); }} value={page.id}>{state.pages.map((item) => <option key={item.id} value={item.id}>{item.start ? "首页 · " : ""}{item.name}{item.changed ? " · 本轮修改" : ""}</option>)}</select></label>
+      <div className="prototype-page-actions"><button aria-label="新增页面" disabled={!canEdit} onClick={() => { dispatch({ type: "add-page" }); setIsInspectorOpen(false); }} title="新增页面" type="button"><Plus size={14} /></button><button aria-label="复制当前页面" disabled={!canEdit} onClick={() => { dispatch({ type: "copy-page", pageId: page.id }); setIsInspectorOpen(false); }} title="复制页面" type="button"><Copy size={14} /></button><button aria-label="删除当前页面" disabled={!canEdit || state.pages.length <= 1} onClick={() => { dispatch({ type: "delete-page", pageId: page.id }); setIsInspectorOpen(false); }} title="删除页面" type="button"><Trash2 size={14} /></button></div>
+      <a href="/prototype?mode=inspect" rel="noreferrer" target="_blank"><Laptop size={14} />浏览器打开</a>
+      <button className={inspect ? "active" : ""} onClick={() => { setInspect(!inspect); if (inspect) closeInspector(); }} type="button"><Sparkles size={14} />{inspect ? "可选组件" : "开启组件选择"}</button>
     </div>
-    <div className="prototype-workbench-grid">
-      <nav aria-label="原型页面" className="prototype-page-tree">
-        <header><b>页面</b><button aria-label="新增页面" disabled={!canEdit} onClick={() => dispatch({ type: "add-page" })} type="button"><Plus size={14} /></button></header>
-        {state.pages.map((item) => <button className={item.id === page.id ? "active" : ""} key={item.id} onClick={() => dispatch({ type: "select-page", pageId: item.id })} type="button"><span>{item.start ? <Monitor size={13} /> : <LayoutTemplate size={13} />}{item.name}</span>{item.changed && <i>本轮</i>}<ChevronRight size={13} /></button>)}
-        <div className="page-tree-actions"><button disabled={!canEdit} onClick={() => dispatch({ type: "copy-page", pageId: page.id })} type="button"><Copy size={13} />复制</button><button disabled={!canEdit || state.pages.length <= 1} onClick={() => dispatch({ type: "delete-page", pageId: page.id })} type="button"><Trash2 size={13} />删除</button></div>
-      </nav>
+    <div className="prototype-workbench-stage">
       <div className="prototype-canvas-column">
-        <div className="prototype-canvas-toolbar"><span>{page.route}</span><div>{(["desktop", "tablet", "mobile"] as const).map((item) => <button aria-label={item === "desktop" ? "桌面端" : item === "tablet" ? "平板" : "移动端"} className={device === item ? "active" : ""} key={item} onClick={() => setDevice(item)} type="button">{item === "desktop" ? <Monitor size={13} /> : item === "tablet" ? <Tablet size={13} /> : <Smartphone size={13} />}</button>)}</div></div>
+        <div className="prototype-canvas-toolbar"><span>{page.route}</span><div><button className="page-start-action" disabled={!canEdit || page.start} onClick={() => dispatch({ type: "set-start-page", pageId: page.id })} type="button">{page.start ? "起始页" : "设为起始页"}</button>{(["desktop", "tablet", "mobile"] as const).map((item) => <button aria-label={item === "desktop" ? "桌面端" : item === "tablet" ? "平板" : "移动端"} className={device === item ? "active" : ""} key={item} onClick={() => setDevice(item)} type="button">{item === "desktop" ? <Monitor size={13} /> : item === "tablet" ? <Tablet size={13} /> : <Smartphone size={13} />}</button>)}</div></div>
         <div className={`product-prototype-canvas ${device}`}>
           <div className="prototype-demo-page">
             <aside><b>KFlow</b><span>概览</span><span className="active">成员与角色</span><span>审计记录</span></aside>
             <main><small>企业客户门户 / 权限设置</small><h3>{page.name}</h3><p>管理项目成员角色及其可访问范围。</p><div className="prototype-demo-card">
-              {page.components.length ? page.components.map((item) => <PrototypeElement component={item} inspect={inspect} key={item.id} selected={component?.id === item.id} onSelect={() => inspect && dispatch({ type: "select-component", componentId: item.id })} />) : <div className="empty-prototype-page">新页面尚未添加组件<br /><button type="button">让 Agent 生成页面内容</button></div>}
+              {page.components.length ? page.components.map((item) => <PrototypeElement component={item} inspect={inspect} key={item.id} selected={isInspectorOpen && component?.id === item.id} onSelect={() => { if (!inspect) return; dispatch({ type: "select-component", componentId: item.id }); setIsInspectorOpen(true); setPendingInstruction(""); }} />) : <div className="empty-prototype-page">新页面尚未添加组件<br /><button type="button">让 Agent 生成页面内容</button></div>}
             </div></main>
           </div>
         </div>
         <div className="prototype-version-save"><span>{state.prototypeStatus === "draft" ? "有未保存的组件或页面修改" : `当前 ${state.prototypeVersions.at(-1)?.version} · 已确认`}</span><button disabled={!canEdit || state.prototypeStatus !== "draft"} onClick={() => dispatch({ type: "create-prototype-version", title: `更新${page.name}` })} type="button"><Save size={14} />保存为新版本</button></div>
       </div>
-      <aside className="prototype-inspector">
-        <header><Sparkles size={15} /><b>组件检查</b></header>
-        <label>页面<input disabled={!canEdit} onChange={(event) => dispatch({ type: "rename-page", pageId: page.id, name: event.target.value })} value={page.name} /></label>
-        <button className="set-start" disabled={!canEdit || page.start} onClick={() => dispatch({ type: "set-start-page", pageId: page.id })} type="button">{page.start ? "当前起始页" : "设为起始页"}</button>
-        {component ? <>
-          <div className="selected-component-name"><span>{component.type}</span><b>{component.name}</b><small>{component.specRef ?? "暂未关联 Spec"}</small></div>
-          <label>组件文案<input aria-label="组件文案" disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { text: event.target.value } })} value={component.text} /></label>
-          <label>视觉主色<input disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { color: event.target.value } })} type="color" value={component.color} /></label>
-          <label>组件状态<select disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { state: event.target.value as PrototypeComponent["state"] } })} value={component.state}><option value="default">默认</option><option value="disabled">禁用</option><option value="loading">加载中</option></select></label>
-          <label>交互目标<input disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { target: event.target.value } })} value={component.target ?? ""} /></label>
-          <ScopedArtifactComposer
-            canEdit={canEdit}
-            label={`原型 ${state.prototypeVersions.at(-1)?.version} / ${page.name} / ${component.name}`}
-            onSend={(text) => {
-              setPendingInstruction(text);
-              onScopedSend?.({ kind: "prototype", label: `原型 ${state.prototypeVersions.at(-1)?.version} / ${page.name} / ${component.name}` }, text);
-            }}
-          />
-          {pendingInstruction && <div className="scoped-change-preview"><b><GitCompareArrows size={13} />Agent 修改建议</b><p>{pendingInstruction}</p><footer><button onClick={() => setPendingInstruction("")} type="button"><X size={12} />放弃</button><button onClick={() => { dispatch({ type: "update-component", patch: { text: component.text } }); dispatch({ type: "create-prototype-version", title: `调整${component.name}` }); setPendingInstruction(""); }} type="button"><Check size={12} />应用并生成新版本</button></footer></div>}
-        </> : <div className="inspector-empty">在画布中选择一个组件进行针对性调整</div>}
-      </aside>
+      {isInspectorOpen && component && <aside className="prototype-inspector floating">
+        <header><span><Sparkles size={15} /><b>编辑所选组件</b></span><button aria-label="关闭组件编辑" onClick={closeInspector} type="button"><X size={15} /></button></header>
+        <div className="selected-component-name"><span>{component.type}</span><b>{component.name}</b><small>{component.specRef ?? "暂未关联 Spec"}</small></div>
+        <label>组件文案<input aria-label="组件文案" disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { text: event.target.value } })} value={component.text} /></label>
+        <label>视觉主色<input disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { color: event.target.value } })} type="color" value={component.color} /></label>
+        <label>组件状态<select disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { state: event.target.value as PrototypeComponent["state"] } })} value={component.state}><option value="default">默认</option><option value="disabled">禁用</option><option value="loading">加载中</option></select></label>
+        <label>交互目标<input disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { target: event.target.value } })} value={component.target ?? ""} /></label>
+        <ScopedArtifactComposer canEdit={canEdit} label={`原型 ${state.prototypeVersions.at(-1)?.version} / ${page.name} / ${component.name}`} onSend={(text) => { setPendingInstruction(text); onScopedSend?.({ kind: "prototype", label: `原型 ${state.prototypeVersions.at(-1)?.version} / ${page.name} / ${component.name}` }, text); }} />
+        {pendingInstruction && <div className="scoped-change-preview"><b><GitCompareArrows size={13} />Agent 修改建议</b><p>{pendingInstruction}</p><footer><button onClick={() => setPendingInstruction("")} type="button"><X size={12} />放弃</button><button onClick={() => { dispatch({ type: "update-component", patch: { text: component.text } }); dispatch({ type: "create-prototype-version", title: `调整${component.name}` }); setPendingInstruction(""); }} type="button"><Check size={12} />应用并生成新版本</button></footer></div>}
+      </aside>}
     </div>
   </section>;
 }
