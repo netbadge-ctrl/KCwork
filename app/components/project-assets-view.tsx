@@ -10,10 +10,11 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { ProductDocument, ProjectSection, Requirement } from "../lib/types";
+import { ProjectKnowledgeMemory } from "./project-knowledge-memory";
 
 const sectionLabels: Record<Exclude<ProjectSection, "overview">, string> = {
   documents: "产品文档",
-  memory: "项目记忆",
+  memory: "项目知识与记忆",
   repositories: "代码库",
   tests: "测试资产",
 };
@@ -86,9 +87,9 @@ export function ProjectAssetsView({
           </button>
           <p className="eyebrow">项目共享资产</p>
           <h1><HeaderIcon size={24} /> {label}</h1>
-          <p>查看、编辑并追踪资产与需求之间的引用关系。</p>
+          <p>{section === "memory" ? "维护系统长期上下文，并控制哪些知识与多人记忆可以被 Agent 使用。" : "查看、编辑并追踪资产与需求之间的引用关系。"}</p>
         </div>
-        <button className="primary-button" type="button"><Plus size={16} /> 新建{label}</button>
+        {section !== "memory" && <button className="primary-button" type="button"><Plus size={16} /> 新建{label}</button>}
       </header>
 
       <label className="search-box asset-search">
@@ -101,7 +102,7 @@ export function ProjectAssetsView({
         />
       </label>
 
-      <div className="project-asset-list">
+      {section === "memory" ? <ProjectKnowledgeMemory query={query} /> : <div className="project-asset-list">
         {filteredRows.map((row) => (
           <article className="project-asset-row" key={row.id}>
             <span className="project-asset-icon"><HeaderIcon size={18} /></span>
@@ -135,7 +136,7 @@ export function ProjectAssetsView({
             </span>
           </article>
         ))}
-      </div>
+      </div>}
     </div>
   );
 }

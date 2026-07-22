@@ -680,7 +680,7 @@ export default function Page() {
         onOpenAsset={(section) => {
           const destinations: Record<Exclude<ProjectSection, "overview">, string> = {
             documents: "产品文档",
-            memory: "项目记忆",
+            memory: "项目知识与记忆",
             repositories: "代码库",
             tests: "测试资产",
           };

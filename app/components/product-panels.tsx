@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowUp, Check, CheckCircle2, ChevronDown, Copy, FileText, GitCompareArrows, History, Laptop, LayoutTemplate, ListChecks, Monitor, MoreHorizontal, Plus, RotateCcw, Save, Smartphone, Sparkles, Tablet, Trash2, X } from "lucide-react";
+import { AlertTriangle, ArrowUp, Bell, Check, CheckCircle2, ChevronDown, CircleCheck, Copy, FileText, GitCompareArrows, History, Laptop, LayoutDashboard, LayoutTemplate, ListChecks, Monitor, MoreHorizontal, Plus, RotateCcw, Save, Search, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Tablet, Trash2, UserPlus, Users, X } from "lucide-react";
 import { useState, type Dispatch } from "react";
 import { getProductReadiness, type ProductPackageAction, type ProductPackageState, type PrototypeComponent } from "../lib/product-package";
 import type { PreviewKind, ProductContextReference, Requirement } from "../lib/types";
@@ -66,12 +66,7 @@ function ProductPrototypePanel({ state, dispatch, canEdit, onScopedSend, prototy
       <div className="prototype-canvas-column">
         <div className="prototype-canvas-toolbar"><span>{page.route}</span><div><button className="page-start-action" disabled={!canEdit || page.start} onClick={() => dispatch({ type: "set-start-page", pageId: page.id })} type="button">{page.start ? "起始页" : "设为起始页"}</button>{(["desktop", "tablet", "mobile"] as const).map((item) => <button aria-label={item === "desktop" ? "桌面端" : item === "tablet" ? "平板" : "移动端"} className={device === item ? "active" : ""} key={item} onClick={() => setDevice(item)} type="button">{item === "desktop" ? <Monitor size={13} /> : item === "tablet" ? <Tablet size={13} /> : <Smartphone size={13} />}</button>)}</div></div>
         <div className={`product-prototype-canvas ${device}`}>
-          <div className="prototype-demo-page">
-            <aside><b>KFlow</b><span>概览</span><span className="active">成员与角色</span><span>审计记录</span></aside>
-            <main><small>企业客户门户 / 权限设置</small><h3>{page.name}</h3><p>管理项目成员角色及其可访问范围。</p><div className="prototype-demo-card">
-              {page.components.length ? page.components.map((item) => <PrototypeElement component={item} inspect={prototypeInspect} key={item.id} selected={isInspectorOpen && component?.id === item.id} onSelect={() => { if (!prototypeInspect) return; dispatch({ type: "select-component", componentId: item.id }); setIsInspectorOpen(true); setPendingInstruction(""); }} />) : <div className="empty-prototype-page">新页面尚未添加组件<br /><button type="button">让 Agent 生成页面内容</button></div>}
-            </div></main>
-          </div>
+          <PrototypeDemoPage inspect={prototypeInspect} page={page} selectedComponentId={isInspectorOpen ? component?.id ?? null : null} onSelect={(item) => { if (!prototypeInspect) return; dispatch({ type: "select-component", componentId: item.id }); setIsInspectorOpen(true); setPendingInstruction(""); }} />
         </div>
         <div className="prototype-version-save"><span>{state.prototypeStatus === "draft" ? "有未保存的组件或页面修改" : `当前 ${state.prototypeVersions.at(-1)?.version} · 已确认`}</span><button disabled={!canEdit || state.prototypeStatus !== "draft"} onClick={() => dispatch({ type: "create-prototype-version", title: `更新${page.name}` })} type="button"><Save size={14} />保存为新版本</button></div>
       </div>
@@ -87,6 +82,30 @@ function ProductPrototypePanel({ state, dispatch, canEdit, onScopedSend, prototy
       </aside>}
     </div>
   </section>;
+}
+
+function PrototypeDemoPage({ page, inspect, selectedComponentId, onSelect }: { page: ProductPackageState["pages"][number]; inspect: boolean; selectedComponentId: string | null; onSelect(component: PrototypeComponent): void }) {
+  const title = page.components.find((item) => item.type === "text");
+  const editable = page.components.filter((item) => item.type !== "text" && item.type !== "navigation");
+  const titleNode = title ? <PrototypeElement component={title} inspect={inspect} selected={selectedComponentId === title.id} onSelect={() => onSelect(title)} /> : <h3>{page.name}</h3>;
+  return <div className="prototype-demo-page refined">
+    <aside className="prototype-demo-sidebar">
+      <div className="prototype-brand"><span>N</span><b>Nimbus</b></div>
+      <nav><button type="button"><LayoutDashboard size={14} />概览</button><button className="active" type="button"><Users size={14} />成员与权限</button><button type="button"><ShieldCheck size={14} />安全策略</button><button type="button"><History size={14} />审计日志</button></nav>
+      <div className="prototype-team-switch"><span>CP</span><p><b>客户门户</b><small>企业版</small></p></div>
+    </aside>
+    <section className="prototype-demo-shell">
+      <header className="prototype-demo-topbar"><label><Search size={13} /><span>搜索成员、角色或策略</span><kbd>⌘ K</kbd></label><button type="button"><Bell size={14} /></button><span className="prototype-user-avatar">陈</span></header>
+      <main className="prototype-demo-content">
+        <div className="prototype-demo-heading"><div><small>Workspace / Access control</small>{titleNode}<p>管理成员访问权限、角色策略与高风险变更。</p></div><button className="prototype-invite" type="button"><UserPlus size={13} />邀请成员</button></div>
+        <div className="prototype-demo-metrics"><article><span><Users size={14} /></span><p><small>项目成员</small><b>128</b><em>本月 +8</em></p></article><article><span><ShieldCheck size={14} /></span><p><small>自定义角色</small><b>6</b><em>2 个已锁定</em></p></article><article><span><CircleCheck size={14} /></span><p><small>策略覆盖</small><b>96%</b><em>3 项待确认</em></p></article></div>
+        <div className="prototype-demo-grid">
+          <section className="prototype-member-card"><header><div><b>成员目录</b><small>最近 30 天有活动的成员</small></div><button type="button"><SlidersHorizontal size={12} />筛选</button></header><div className="prototype-member-head"><span>成员</span><span>角色</span><span>状态</span><span /></div>{[["陈楠", "chennan@company.com", "项目管理员", "在线"], ["林川", "linchuan@company.com", "研发成员", "在线"], ["周祺", "zhouqi@company.com", "观察者", "2 小时前"]].map(([name, email, role, status], index) => <div className="prototype-member-row" key={email}><span className={`prototype-member-avatar tone-${index}`}>{name.slice(0, 1)}</span><p><b>{name}</b><small>{email}</small></p><span className="prototype-role-pill">{role}</span><span className={status === "在线" ? "online" : ""}>{status}</span><button type="button"><MoreHorizontal size={13} /></button></div>)}</section>
+          <aside className="prototype-policy-card"><header><span><ShieldCheck size={14} /></span><div><b>{page.id === "role-edit" ? "角色配置" : "本轮权限调整"}</b><small>{editable.length ? `${editable.length} 个可编辑组件` : "权限状态概览"}</small></div></header>{editable.length ? <div className="prototype-demo-card">{editable.map((item) => <PrototypeElement component={item} inspect={inspect} key={item.id} selected={selectedComponentId === item.id} onSelect={() => onSelect(item)} />)}</div> : <div className="prototype-policy-summary"><p><Check size={12} />管理员可管理成员</p><p><Check size={12} />观察者保持只读</p><p><Check size={12} />批量操作写入审计</p></div>}<footer><span>更新于 10 分钟前</span><button type="button">查看策略</button></footer></aside>
+        </div>
+      </main>
+    </section>
+  </div>;
 }
 
 function PrototypeElement({ component, inspect, selected, onSelect }: { component: PrototypeComponent; inspect: boolean; selected: boolean; onSelect(): void }) {

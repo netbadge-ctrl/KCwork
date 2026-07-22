@@ -19,7 +19,7 @@ const assetSections: {
   icon: typeof FileText;
 }[] = [
   { section: "documents", label: "产品文档", description: "PRD、原型与确认版本", icon: FileText },
-  { section: "memory", label: "项目记忆", description: "决策、约定与长期上下文", icon: Database },
+  { section: "memory", label: "项目知识与记忆", description: "系统知识、多人决策与长期上下文", icon: Database },
   { section: "repositories", label: "代码库", description: "关联仓库与索引状态", icon: GitBranch },
   { section: "tests", label: "测试资产", description: "测试用例、报告与质量状态", icon: TestTube2 },
 ];

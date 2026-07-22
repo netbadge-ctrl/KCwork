@@ -217,7 +217,7 @@ export const projectMembers: ProjectMember[] = [
 
 export const projectAssetSummaries: ProjectAssetSummary[] = [
   { section: "documents", label: "产品文档", value: "8 份", note: "PRD、原型与验收标准", updatedAt: "10 分钟前" },
-  { section: "memory", label: "项目记忆", value: "23 条", note: "人工确认的范围与决策", updatedAt: "昨天" },
+  { section: "memory", label: "项目知识与记忆", value: "4 源 · 23 条", note: "系统知识与多人确认的稳定结论", updatedAt: "8 分钟前" },
   { section: "repositories", label: "代码库", value: "3 个", note: "主仓库与依赖服务", updatedAt: "8 分钟前" },
   { section: "tests", label: "测试资产", value: "42 项", note: "用例、报告与缺陷", updatedAt: "20 分钟前" },
 ];

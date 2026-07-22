@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { Agent, AssetItem, AssetKind } from "../lib/types";
+import { KnowledgeMemoryWorkspace } from "./knowledge-memory-workspace";
 
 export interface AssetsViewProps {
   agents: Agent[];
@@ -139,7 +140,9 @@ export function AssetsView({ agents, assets }: AssetsViewProps) {
         </form>
       )}
 
-      {activeKind === "agent" ? (
+      {activeKind === "knowledge" || activeKind === "memory" ? (
+        <KnowledgeMemoryWorkspace assets={visibleAssets} kind={activeKind} query={query} />
+      ) : activeKind === "agent" ? (
         <div className="asset-grid agent-assets">
           {agents.filter((agent) => agent.name.includes(query)).map((agent) => (
             <article className="asset-card" key={agent.id}>
