@@ -153,16 +153,21 @@ export function TaskView({
       </header>
 
       {requirementBaseline && requirement && agent.mode !== "office" && (
-        <RequirementBaselineStrip onOpen={onOpenPreview} requirement={requirement} state={requirementBaseline} />
+        <div className={`requirement-context-toolbar ${agent.id === "product-design" ? "with-product" : ""}`}>
+          <RequirementBaselineStrip onOpen={onOpenPreview} requirement={requirement} state={requirementBaseline} />
+          {productPackage && onProductPackageAction && agent.id === "product-design" && (
+            <ProductPackageStrip
+              canEdit={canEdit}
+              dispatch={onProductPackageAction}
+              onOpen={onOpenPreview}
+              state={productPackage}
+            />
+          )}
+        </div>
       )}
 
-      {productPackage && onProductPackageAction && agent.id === "product-design" && (
-        <ProductPackageStrip
-          canEdit={canEdit}
-          dispatch={onProductPackageAction}
-          onOpen={onOpenPreview}
-          state={productPackage}
-        />
+      {!requirementBaseline && productPackage && onProductPackageAction && agent.id === "product-design" && (
+        <ProductPackageStrip canEdit={canEdit} dispatch={onProductPackageAction} onOpen={onOpenPreview} state={productPackage} />
       )}
 
       {productPackage && onProductPackageAction && ["frontend-dev", "backend-dev", "testing"].includes(agent.id) && (
