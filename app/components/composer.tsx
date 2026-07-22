@@ -3,7 +3,6 @@ import {
   FolderOpen,
   Plus,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Agent, Mode, ProductWorkMode, Project } from "../lib/types";
@@ -22,6 +21,7 @@ export interface ComposerProps {
   disabled?: boolean;
   productWorkMode?: ProductWorkMode;
   onProductWorkModeChange?(mode: ProductWorkMode): void;
+  selectedProductContext?: { pageName: string; componentName: string } | null;
 }
 
 export function Composer({
@@ -38,6 +38,7 @@ export function Composer({
   disabled = false,
   productWorkMode,
   onProductWorkModeChange,
+  selectedProductContext = null,
 }: ComposerProps) {
   const [text, setText] = useState("");
   const visibleAgents = useMemo(
@@ -53,6 +54,11 @@ export function Composer({
 
   return (
     <div className={`composer ${variant}`}>
+      {selectedProductContext && (
+        <div className="composer-product-reference">
+          当前引用：{selectedProductContext.pageName} / {selectedProductContext.componentName}
+        </div>
+      )}
       <textarea
         aria-label="任务输入"
         disabled={disabled}
@@ -114,26 +120,6 @@ export function Composer({
               ))}
             </select>
           </label>
-          {selectedAgentId === "product-design" &&
-            productWorkMode &&
-            onProductWorkModeChange && (
-              <label className="select-control product-stage-select">
-                <Sparkles size={15} />
-                <select
-                  aria-label="产品设计开始环节"
-                  onChange={(event) =>
-                    onProductWorkModeChange(
-                      event.target.value as ProductWorkMode,
-                    )
-                  }
-                  value={productWorkMode}
-                >
-                  <option value="analysis">需求分析</option>
-                  <option value="prototype">原型设计与审计</option>
-                  <option value="prd">PRD 撰写</option>
-                </select>
-              </label>
-            )}
           <button className="permission-tool" disabled={disabled} type="button">
             <ShieldCheck size={15} /> 权限
           </button>

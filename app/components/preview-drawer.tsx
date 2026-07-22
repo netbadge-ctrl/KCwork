@@ -5,7 +5,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type Dispatch } from "react";
 import {
   productDocuments,
   testCases,
@@ -37,6 +37,8 @@ import {
   getPrototypeBrowserUrl,
 } from "./prototype-editor";
 import { PrototypePreviewShell } from "./prototype-preview-shell";
+import { ProductPanel } from "./product-panels";
+import type { ProductPackageAction, ProductPackageState } from "../lib/product-package";
 import {
   clampRightPanelWidthForShell,
   DEFAULT_RIGHT_PANEL_WIDTH,
@@ -60,6 +62,8 @@ export interface PreviewDrawerProps {
   selectedProject: Project | null;
   selectedRequirement: Requirement | null;
   selectedAgentId: string;
+  productPackage: ProductPackageState;
+  onProductPackageAction: Dispatch<ProductPackageAction>;
   capabilities: ProjectCapabilities;
   currentRole: ProjectRole;
   selectedContextIds: string[];
@@ -110,6 +114,8 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   "test-run": "执行测试",
   failures: "失败证据",
   defects: "缺陷记录",
+  "delivery-check": "交付检查",
+  "version-history": "版本记录",
 };
 
 const fullAgentPanelKinds = new Set<PreviewKind>([
@@ -140,6 +146,8 @@ export function PreviewDrawer({
   selectedProject,
   selectedRequirement,
   selectedAgentId,
+  productPackage,
+  onProductPackageAction,
   capabilities,
   currentRole,
   selectedContextIds,
@@ -165,6 +173,7 @@ export function PreviewDrawer({
   const agentToolSession = useAgentToolSession();
   const isBackendRuntimeLog = preview === "log" && selectedAgentId === "backend-dev";
   const isTestingReport = preview === "test" && selectedAgentId === "testing" && explicitPreviewKind !== "test";
+  const isProductPanel = selectedAgentId === "product-design" && ["prototype", "prd", "delivery-check", "version-history"].includes(preview ?? "");
   const mainTools = tools.filter((tool) => tool.kind !== "context");
   const contextTools = tools.filter((tool) => tool.kind === "context");
   const [viewportWidth, setViewportWidth] = useState(
@@ -295,7 +304,7 @@ export function PreviewDrawer({
               <PreviewErrorState kind={previewError} onRetry={onRetryPreview ?? (() => undefined)} />
             ) : (
               <>
-            {preview === "prd" && (
+            {preview === "prd" && !isProductPanel && (
               <PrdPreview
                 canEdit={capabilities.canEditProductArtifacts}
                 documentDraft={documentDraft}
@@ -332,7 +341,7 @@ export function PreviewDrawer({
                 }
               />
             )}
-            {preview === "prototype" && <PrototypePreview canEdit={capabilities.canEditProductArtifacts} requirement={selectedRequirement} />}
+            {preview === "prototype" && !isProductPanel && <PrototypePreview canEdit={capabilities.canEditProductArtifacts} requirement={selectedRequirement} />}
             {preview === "pdf" && <PdfPreview requirement={selectedRequirement} />}
             {preview === "members" && (
               <MemberManager
@@ -389,6 +398,15 @@ export function PreviewDrawer({
               />
             )}
             {preview === "asset" && <AssetDetail assetId={selectedAssetId} canEdit={capabilities.canManageAssets} requirement={selectedRequirement} />}
+            {isProductPanel && preview && (
+              <ProductPanel
+                canEdit={capabilities.canEditProductArtifacts}
+                dispatch={onProductPackageAction}
+                kind={preview}
+                requirement={selectedRequirement}
+                state={productPackage}
+              />
+            )}
             {(fullAgentPanelKinds.has(preview) || isBackendRuntimeLog || isTestingReport) && (
               <AgentToolPanel
                 canEdit={capabilities.canEditAgentWork}
@@ -399,6 +417,7 @@ export function PreviewDrawer({
             )}
             {preview !== "files" &&
               !fullAgentPanelKinds.has(preview) &&
+              !isProductPanel &&
               !isBackendRuntimeLog &&
               !isTestingReport && (
                 <ContextualScenePreview kind={preview} />

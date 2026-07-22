@@ -42,6 +42,7 @@ import {
   readStoredBoolean,
   readStoredNumber,
 } from "./lib/layout-preferences";
+import { useProductPackageSession } from "./hooks/use-product-package-session";
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "kflow.sidebar.collapsed";
 const RIGHT_PANEL_WIDTH_STORAGE_KEY = "kflow.rightPanel.width";
@@ -106,6 +107,9 @@ interface PendingNavigation {
 
 export default function Page() {
   const [state, dispatch] = useReducer(clientReducer, initialClientState);
+  const productPackageSession = useProductPackageSession(
+    state.selectedRequirementId ?? "role-permissions",
+  );
   const [pendingNavigation, setPendingNavigation] =
     useState<PendingNavigation | null>(null);
   const [createdProjects, setCreatedProjects] = useState<Project[]>([]);
@@ -336,6 +340,21 @@ export default function Page() {
     } else run();
   };
 
+  const sendMessage = (text: string) => {
+    dispatch({ type: "send-message", text });
+    if (state.selectedAgentId !== "product-design") return;
+    if (/原型|页面|组件/.test(text)) {
+      productPackageSession.dispatch({
+        type: "create-prototype-version",
+        title: "根据本轮对话更新原型",
+      });
+      dispatch({ type: "open-preview", preview: "prototype" });
+    } else if (/PRD|产品文档|需求文档/i.test(text)) {
+      productPackageSession.dispatch({ type: "set-prd-revision", revision: text });
+      dispatch({ type: "open-preview", preview: "prd" });
+    }
+  };
+
   const navigateFromSidebar = (view: ViewId) => {
     const labels: Record<ViewId, string> = {
       home: "新建任务",
@@ -427,7 +446,7 @@ export default function Page() {
               dispatch({ type: "select-agent", agentId })
             }
             onSelectProject={selectProject}
-            onSend={(text) => dispatch({ type: "send-message", text })}
+            onSend={sendMessage}
             onOpenProject={openProject}
           />
         )}
@@ -548,7 +567,9 @@ export default function Page() {
                 dispatch({ type: "set-product-work-mode", mode }),
               );
             }}
-            onSend={(text) => dispatch({ type: "send-message", text })}
+            onSend={sendMessage}
+            productPackage={productPackageSession.state}
+            onProductPackageAction={productPackageSession.dispatch}
           />
         )}
 
@@ -580,8 +601,10 @@ export default function Page() {
               dispatch({ type: "select-agent", agentId })
             }
             onSelectProject={selectProject}
-            onSend={(text) => dispatch({ type: "send-message", text })}
+            onSend={sendMessage}
             onOpenPreview={openPreview}
+            productPackage={productPackageSession.state}
+            onProductPackageAction={productPackageSession.dispatch}
           />
         )}
       </section>
@@ -680,6 +703,8 @@ export default function Page() {
         selectedProject={selectedProject}
         selectedRequirement={selectedRequirement}
         selectedAgentId={selectedAgent.id}
+        productPackage={productPackageSession.state}
+        onProductPackageAction={productPackageSession.dispatch}
         selectedAssetId={state.selectedAssetId}
         onSelect={openPreview}
         onClose={() => {

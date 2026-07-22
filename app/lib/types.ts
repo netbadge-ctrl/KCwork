@@ -56,7 +56,9 @@ export type PreviewKind =
   | "data-model"
   | "test-cases"
   | "test-run"
-  | "defects";
+  | "defects"
+  | "delivery-check"
+  | "version-history";
 export type ExecutionState =
   | "idle"
   | "reading"

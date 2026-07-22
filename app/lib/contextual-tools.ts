@@ -12,18 +12,16 @@ import {
   FileText,
   GitBranch,
   GitCompareArrows,
-  HelpCircle,
+  History,
   LayoutTemplate,
   ListChecks,
   ListTree,
   MessageSquareText,
-  MousePointerClick,
   Presentation,
   Send,
   ScrollText,
   ShieldCheck,
   Table2,
-  Target,
   Terminal,
   TestTube2,
   Users,
@@ -113,12 +111,11 @@ const developmentTools: Record<string, ContextualTool[]> = {
 };
 
 const productTools: ContextualTool[] = [
-  tool("requirement-analysis", "需求分析", Target),
-  tool("prototype", "原型设计", LayoutTemplate),
-  tool("prd", "产品文档", FileText),
-  tool("acceptance-criteria", "验收标准", ListChecks),
-  tool("prototype-audit", "原型审计", ClipboardCheck),
-  tool("context", "产品上下文", ListTree),
+  tool("prototype", "原型", LayoutTemplate),
+  tool("prd", "PRD", FileText),
+  tool("delivery-check", "交付检查", ClipboardCheck),
+  tool("version-history", "版本记录", History),
+  tool("context", "项目知识", Database),
 ];
 
 export const contextualPreviewKinds = new Set<PreviewKind>([
@@ -128,6 +125,7 @@ export const contextualPreviewKinds = new Set<PreviewKind>([
   "requirement-analysis", "acceptance-criteria", "prototype-audit",
   "frontend-preview", "console", "api-debug", "data-model",
   "test-cases", "test-run", "defects",
+  "delivery-check", "version-history",
   "requirement-governance", "context-maintenance", "project-repositories",
   "project-requirements", "project-tests",
 ]);

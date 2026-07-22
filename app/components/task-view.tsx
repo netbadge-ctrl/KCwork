@@ -6,7 +6,7 @@ import {
   MoreHorizontal,
   RotateCcw,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, type Dispatch } from "react";
 import type {
   Agent,
   ExecutionState,
@@ -20,6 +20,8 @@ import type {
 } from "../lib/types";
 import { projectRoleLabels } from "../lib/project-capabilities";
 import { Composer } from "./composer";
+import { DownstreamProductContext, ProductPackageStrip } from "./product-package-strip";
+import type { ProductPackageAction, ProductPackageState } from "../lib/product-package";
 
 export interface TaskViewProps {
   task: RecentTask;
@@ -44,6 +46,8 @@ export interface TaskViewProps {
   onOpenPreview(kind: PreviewKind): void;
   onOpenSettings?(): void;
   onBackToProject?(): void;
+  productPackage?: ProductPackageState;
+  onProductPackageAction?: Dispatch<ProductPackageAction>;
 }
 
 const executionSteps = [
@@ -75,6 +79,8 @@ export function TaskView({
   onOpenPreview,
   onOpenSettings,
   onBackToProject,
+  productPackage,
+  onProductPackageAction,
 }: TaskViewProps) {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [savedArtifactIds, setSavedArtifactIds] = useState<Set<string>>(
@@ -141,6 +147,23 @@ export function TaskView({
           </button>
         </div>
       </header>
+
+      {productPackage && onProductPackageAction && agent.id === "product-design" && (
+        <ProductPackageStrip
+          canEdit={canEdit}
+          dispatch={onProductPackageAction}
+          onOpen={onOpenPreview}
+          state={productPackage}
+        />
+      )}
+
+      {productPackage && onProductPackageAction && ["frontend-dev", "backend-dev", "testing"].includes(agent.id) && (
+        <DownstreamProductContext
+          agentId={agent.id}
+          dispatch={onProductPackageAction}
+          state={productPackage}
+        />
+      )}
 
       <div className="conversation-scroll">
         <div className="conversation-inner">
@@ -256,6 +279,12 @@ export function TaskView({
           projects={projects}
           selectedAgentId={agent.id}
           selectedProjectId={selectedProjectId}
+          selectedProductContext={(() => {
+            if (agent.id !== "product-design" || !productPackage?.selectedComponentId) return null;
+            const page = productPackage.pages.find((item) => item.id === productPackage.selectedPageId);
+            const component = page?.components.find((item) => item.id === productPackage.selectedComponentId);
+            return page && component ? { pageName: page.name, componentName: component.name } : null;
+          })()}
           variant="task"
         />
         <p className="composer-hint">
