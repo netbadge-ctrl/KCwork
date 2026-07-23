@@ -104,8 +104,24 @@ const selectedContextIdsByRequirement = Object.fromEntries(
   ]),
 );
 
+function defaultPreviewForAgent(
+  agentId: string,
+  productWorkMode: ProductWorkMode,
+): PreviewKind {
+  if (agentId === "product-design") {
+    return productWorkMode === "prototype" ? "prototype" : "prd";
+  }
+  if (agentId === "frontend-dev" || agentId === "backend-dev") return "files";
+  if (agentId === "code-review") return "diff";
+  if (agentId === "testing") return "test-cases";
+  if (agentId === "meeting-notes") return "actions";
+  if (agentId === "data-analysis") return "chart";
+  if (agentId === "presentation") return "slides";
+  return "context";
+}
+
 export const initialClientState: ClientState = {
-  view: "task",
+  view: "home",
   mode: "research",
   selectedAgentId: "product-design",
   productWorkMode: "prd",
@@ -222,11 +238,22 @@ export function clientReducer(
           action.mode === "office" ? "meeting-notes" : "product-design",
       };
     case "set-product-work-mode":
-      return { ...state, productWorkMode: action.mode };
+      return {
+        ...state,
+        productWorkMode: action.mode,
+        preview:
+          state.view === "task" || state.view === "requirement-detail"
+            ? defaultPreviewForAgent(state.selectedAgentId, action.mode)
+            : state.preview,
+      };
     case "select-agent":
       return {
         ...state,
         selectedAgentId: action.agentId,
+        preview:
+          state.view === "task" || state.view === "requirement-detail"
+            ? defaultPreviewForAgent(action.agentId, state.productWorkMode)
+            : state.preview,
         taskAgentIdsById:
           state.view === "task"
             ? {
@@ -252,6 +279,9 @@ export function clientReducer(
               item.projectId === task.projectId,
           )
         : null;
+      const productWorkMode = task.productWorkMode ?? state.productWorkMode;
+      const selectedAgentId =
+        state.taskAgentIdsById[task.id] ?? task.agentId;
       return {
         ...state,
         view: "task",
@@ -259,8 +289,9 @@ export function clientReducer(
         selectedTaskId: task.id,
         selectedProjectId: task.projectId ?? null,
         selectedRequirementId: requirement?.id ?? null,
-        selectedAgentId: state.taskAgentIdsById[task.id] ?? task.agentId,
-        productWorkMode: task.productWorkMode ?? state.productWorkMode,
+        selectedAgentId,
+        productWorkMode,
+        preview: defaultPreviewForAgent(selectedAgentId, productWorkMode),
       };
     }
     case "select-project":
@@ -294,25 +325,33 @@ export function clientReducer(
           (item) => item.id === action.requirementId,
         );
         if (!requirement) return state;
+        const selectedAgentId =
+          state.lastAgentByRequirement[requirement.id] ?? "product-design";
         return {
           ...state,
           view: "requirement-detail",
           selectedProjectId: requirement.projectId,
           selectedRequirementId: requirement.id,
-          selectedAgentId:
-            state.lastAgentByRequirement[requirement.id] ?? "product-design",
+          selectedAgentId,
+          preview: defaultPreviewForAgent(
+            selectedAgentId,
+            state.productWorkMode,
+          ),
         };
       }
     case "resume-agent-work": {
       const session = agentWorkSessions.find((item) => item.id === action.sessionId);
       if (!session) return state;
+      const productWorkMode =
+        session.productWorkMode ?? state.productWorkMode;
       return {
         ...state,
         view: "requirement-detail",
         selectedProjectId: session.projectId,
         selectedRequirementId: session.requirementId,
         selectedAgentId: session.agentId,
-        productWorkMode: session.productWorkMode ?? state.productWorkMode,
+        productWorkMode,
+        preview: defaultPreviewForAgent(session.agentId, productWorkMode),
         lastAgentByRequirement: {
           ...state.lastAgentByRequirement,
           [session.requirementId]: session.agentId,
@@ -486,6 +525,10 @@ export function clientReducer(
       return {
         ...state,
         view: "task",
+        preview: defaultPreviewForAgent(
+          state.selectedAgentId,
+          state.productWorkMode,
+        ),
         taskExecutionsById: {
           ...state.taskExecutionsById,
           [state.selectedTaskId]: "reading",

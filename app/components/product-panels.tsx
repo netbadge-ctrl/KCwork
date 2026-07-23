@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowUp, Bell, Check, CheckCircle2, ChevronDown, CircleCheck, Copy, FileText, GitCompareArrows, History, Laptop, LayoutDashboard, LayoutTemplate, ListChecks, Monitor, MoreHorizontal, Plus, RotateCcw, Save, Search, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Tablet, Trash2, UserPlus, Users, X } from "lucide-react";
+import { AlertTriangle, ArrowUp, Bell, Check, CheckCircle2, ChevronDown, CircleCheck, Copy, FileText, GitCompareArrows, History, Laptop, LayoutDashboard, LayoutTemplate, Link2, ListChecks, Monitor, MoreHorizontal, Plus, RotateCcw, Save, Search, Share2, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Tablet, Trash2, UserPlus, Users, X } from "lucide-react";
 import { useState, type Dispatch } from "react";
 import { getProductReadiness, type ProductPackageAction, type ProductPackageState, type PrototypeComponent } from "../lib/product-package";
 import type { PreviewKind, ProductContextReference, Requirement } from "../lib/types";
@@ -33,7 +33,19 @@ type Props = { state: ProductPackageState; dispatch: Dispatch<ProductPackageActi
 
 export function PrototypeHeaderControls({ state, dispatch, canEdit, inspect, onInspectChange }: { state: ProductPackageState; dispatch: Dispatch<ProductPackageAction>; canEdit: boolean; inspect: boolean; onInspectChange(value: boolean): void }) {
   const [isPageMenuOpen, setIsPageMenuOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [shareScope, setShareScope] = useState("project");
+  const [copied, setCopied] = useState(false);
   const page = state.pages.find((item) => item.id === state.selectedPageId) ?? state.pages[0];
+  const shareLink = `https://prototype.kflow.work/share/req-032/${state.prototypeVersions.at(-1)?.version.toLowerCase() ?? "latest"}`;
+  const copyShareLink = async () => {
+    try {
+      await navigator.clipboard?.writeText(shareLink);
+    } finally {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    }
+  };
   return <div className="prototype-header-controls">
     <div className="prototype-page-menu">
       <div className="prototype-page-title-control">
@@ -42,7 +54,20 @@ export function PrototypeHeaderControls({ state, dispatch, canEdit, inspect, onI
       </div>
       {isPageMenuOpen && <div className="prototype-page-popover"><header><b>切换页面</b></header>{state.pages.map((item) => <article className={item.id === page.id ? "active" : ""} key={item.id}><button className="page-select-row" onClick={() => { dispatch({ type: "select-page", pageId: item.id }); setIsPageMenuOpen(false); }} type="button"><span>{item.start ? <Monitor size={13} /> : <LayoutTemplate size={13} />}<b>{item.name}</b>{item.changed && <i>本轮</i>}</span><small>{item.route}</small></button></article>)}</div>}
     </div>
-    <div className="prototype-toolbar-actions"><a href="/prototype?mode=inspect" rel="noreferrer" target="_blank"><Laptop size={14} />浏览器打开</a><button className={inspect ? "active" : ""} onClick={() => { onInspectChange(!inspect); if (inspect) dispatch({ type: "select-component", componentId: null }); }} type="button"><Sparkles size={14} />{inspect ? "组件可选" : "选择组件"}</button></div>
+    <div className="prototype-toolbar-actions">
+      <a href="/prototype?mode=inspect" rel="noreferrer" target="_blank"><Laptop size={14} />浏览器打开</a>
+      <button className={inspect ? "active" : ""} onClick={() => { onInspectChange(!inspect); if (inspect) dispatch({ type: "select-component", componentId: null }); }} type="button"><Sparkles size={14} />{inspect ? "组件可选" : "选择组件"}</button>
+      <div className="prototype-share">
+        <button aria-expanded={isShareOpen} className={isShareOpen ? "active" : ""} onClick={() => setIsShareOpen((open) => !open)} type="button"><Share2 size={14} />分享</button>
+        {isShareOpen && <div className="prototype-share-popover">
+          <header><span><Share2 size={14} /><b>分享当前原型</b></span><button aria-label="关闭分享面板" onClick={() => setIsShareOpen(false)} type="button"><X size={13} /></button></header>
+          <p>{page.name} · {state.prototypeVersions.at(-1)?.version}，分享后可直接在线预览。</p>
+          <label>访问范围<select onChange={(event) => setShareScope(event.target.value)} value={shareScope}><option value="project">项目成员</option><option value="company">企业内成员</option><option value="invited">仅受邀成员</option></select></label>
+          <div className="prototype-share-link"><Link2 size={13} /><input aria-label="原型分享链接" readOnly value={shareLink} /><button onClick={copyShareLink} type="button">{copied ? <><Check size={12} />已复制</> : "复制链接"}</button></div>
+          <small>链接固定到当前版本；后续版本不会覆盖此预览。</small>
+        </div>}
+      </div>
+    </div>
   </div>;
 }
 

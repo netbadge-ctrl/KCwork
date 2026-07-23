@@ -124,7 +124,7 @@ export default function Page() {
   );
   const wasArtifactFocusRef = useRef(false);
   const regularRightPanelWidthRef = useRef<number | null>(null);
-  const effectiveSidebarCollapsed = layoutPreferences.isSidebarCollapsed || isArtifactFocus;
+  const effectiveSidebarCollapsed = layoutPreferences.isSidebarCollapsed;
   const selectedTaskExecution =
     state.taskExecutionsById[state.selectedTaskId] ?? "idle";
   const availableProjects = useMemo(
@@ -194,12 +194,15 @@ export default function Page() {
     if (isArtifactFocus && !wasArtifactFocusRef.current) {
       regularRightPanelWidthRef.current = layoutPreferences.rightPanelWidth;
       const desiredMainWidth = Math.min(520, Math.max(420, Math.floor(window.innerWidth * 0.32)));
+      const sidebarWidth = layoutPreferences.isSidebarCollapsed
+        ? COLLAPSED_SIDEBAR_WIDTH
+        : EXPANDED_SIDEBAR_WIDTH;
       dispatchLayoutPreferences({
         type: "set-right-panel-width",
         width: clampPreferredRightPanelWidth(
-          window.innerWidth - COLLAPSED_SIDEBAR_WIDTH - desiredMainWidth,
+          window.innerWidth - sidebarWidth - desiredMainWidth,
           window.innerWidth,
-          COLLAPSED_SIDEBAR_WIDTH,
+          sidebarWidth,
         ),
       });
     }
@@ -208,7 +211,11 @@ export default function Page() {
       regularRightPanelWidthRef.current = null;
     }
     wasArtifactFocusRef.current = isArtifactFocus;
-  }, [isArtifactFocus, layoutPreferences.hydrated]);
+  }, [
+    isArtifactFocus,
+    layoutPreferences.hydrated,
+    layoutPreferences.isSidebarCollapsed,
+  ]);
 
   useEffect(() => {
     if (["idle", "done", "error"].includes(selectedTaskExecution)) return;
