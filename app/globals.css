@@ -5700,12 +5700,14 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
 .pdf-sheet > p:not(.document-meta):not(.check-line) { color: #5e5a65; line-height: 1.7; }
 .pdf-page-number { bottom: 18px; color: #aaa7b1; font-size: 9px; left: 0; position: absolute; right: 0; text-align: center; }
 
-.prd-sheet { margin: 0; padding: 28px 26px; min-height: auto; }
+.prd-sheet { margin: 0; padding: 28px 26px; min-height: auto; width: 100%; box-shadow: none; }
 .prd-sheet h2 { margin-top: 20px; margin-bottom: 6px; font-size: 13px; }
 .prd-sheet .check-line { display: flex; align-items: center; gap: 6px; margin: 3px 0; color: var(--text-secondary); font-size: 10px; }
 .prd-anchor-strip { display: flex; flex-wrap: wrap; gap: 5px; padding: 6px 0 10px; }
 .prd-anchor-strip button { height: 24px; padding: 0 9px; color: var(--text-muted); font-size: 9px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 7px; }
 .prd-anchor-strip button.active { color: var(--accent); background: var(--accent-soft); border-color: #ddd5ff; }
+.prd-document-scroll { min-height: 0; overflow-y: auto; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 10px; }
+.artifact-focus .product-panel.prd-workbench { height: 100%; min-height: 0; grid-template-rows: auto auto auto minmax(0, 1fr) auto; }
 
 @media (max-width: 1050px) {
   .prototype-layout,
