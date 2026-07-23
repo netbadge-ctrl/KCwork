@@ -1,6 +1,7 @@
 import { AlertTriangle, ArrowUp, Bell, Check, CheckCircle2, ChevronDown, CircleCheck, Copy, FileText, GitCompareArrows, History, Laptop, LayoutDashboard, LayoutTemplate, Link2, ListChecks, Monitor, MoreHorizontal, Plus, RotateCcw, Save, Search, Share2, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Tablet, Trash2, UserPlus, Users, X } from "lucide-react";
 import { useState, type Dispatch } from "react";
 import { getProductReadiness, type ProductPackageAction, type ProductPackageState, type PrototypeComponent } from "../lib/product-package";
+import { PrdDocumentSheet } from "./prd-document-sheet";
 import type { PreviewKind, ProductContextReference, Requirement } from "../lib/types";
 
 export function ProductPanel({
@@ -149,10 +150,8 @@ function ProductPrdPanel({ state, dispatch, canEdit, requirement, onScopedSend }
   return <section className="product-panel prd-workbench">
     <ProductContext requirement={requirement} state={state} />
     <div className="product-panel-heading"><div><span>产品需求文档</span><h3>{requirement?.title ?? "角色与成员权限重构"}</h3><p>PRD {state.prdVersions.at(-1)?.version} · 关联原型 {state.prototypeVersions.at(-1)?.version} · 引用 {state.knowledgeIds.length} 项项目知识</p></div><button disabled={!canEdit} onClick={() => setEditing(!editing)} type="button">{editing ? "完成编辑" : "直接编辑"}</button></div>
-    <div className="prd-editor-layout">
-      <nav><b>文档目录</b>{sections.map((item) => <button className={item === selectedSection ? "active" : ""} key={item} onClick={() => setSelectedSection(item)} type="button">{item}</button>)}<div><small>实际引用</small><span>企业产品规范库</span><span>权限域项目记忆</span><span>历史需求 REQ-019</span></div></nav>
-      <div className="prd-document-editor"><span className="document-tag">PRD {state.prdVersions.at(-1)?.version}</span>{editing ? <textarea aria-label="PRD 正文" onChange={(event) => dispatch({ type: "set-prd-body", body: event.target.value })} value={state.prdBody} /> : state.prdBody.split("\n").map((line, index) => line.startsWith("##") ? <h4 key={`${line}-${index}`}>{line.replace("## ", "")}</h4> : <p key={`${line}-${index}`}>{line}</p>)}</div>
-    </div>
+    <div className="prd-anchor-strip">{sections.map((item) => <button className={item === selectedSection ? "active" : ""} key={item} onClick={() => setSelectedSection(item)} type="button">{item}</button>)}</div>
+    <PrdDocumentSheet title={requirement?.title ?? "角色与成员权限重构"} meta={`${requirement?.code ?? ""} · Spec ${requirement?.specVersion ?? ""} · PRD ${state.prdVersions.at(-1)?.version ?? ""}`} body={state.prdBody} editable={editing} onChange={(body) => dispatch({ type: "set-prd-body", body })} />
     <div className="prd-natural-revision"><ScopedArtifactComposer canEdit={canEdit} label={`PRD ${state.prdVersions.at(-1)?.version} / ${selectedSection}`} onSend={(text) => { dispatch({ type: "set-prd-revision", revision: text }); onScopedSend?.({ kind: "prd", label: `PRD ${state.prdVersions.at(-1)?.version} / ${selectedSection}` }, text); }} />{state.prdRevision && <div className="prd-revision-preview"><b><GitCompareArrows size={14} />Agent 已生成待确认修订</b><p>将在“{selectedSection}”中补充：{state.prdRevision}</p><footer><button onClick={() => dispatch({ type: "set-prd-revision", revision: "" })} type="button">放弃</button><button onClick={() => dispatch({ type: "confirm-prd-revision" })} type="button">确认并生成新版本</button></footer></div>}</div>
   </section>;
 }
@@ -164,7 +163,29 @@ function ScopedArtifactComposer({ canEdit, label, onSend }: { canEdit: boolean; 
     onSend(text.trim());
     setText("");
   };
-  return <div className="scoped-artifact-composer"><header><div><Sparkles size={15} /><span><b>发送到主对话</b><small>右侧只提供精准引用，不创建新会话</small></span></div><em>{label}</em></header><div><textarea disabled={!canEdit} onChange={(event) => setText(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); submit(); } }} placeholder="描述针对当前选择的修改…" value={text} /><button aria-label="发送到主对话" disabled={!canEdit || !text.trim()} onClick={submit} type="button"><ArrowUp size={15} /></button></div></div>;
+  return (
+    <div className="composer scoped-composer">
+      <div className="composer-product-reference scoped-reference">
+        当前引用：{label}
+      </div>
+      <textarea
+        aria-label="精准引用修改要求"
+        disabled={!canEdit}
+        onChange={(event) => setText(event.target.value)}
+        onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); submit(); } }}
+        placeholder="描述针对当前选择的修改…"
+        value={text}
+      />
+      <div className="composer-toolbar">
+        <div className="composer-controls">
+          <span className="scoped-ref-tag">精准引用</span>
+        </div>
+        <button aria-label="发送到主对话" className="send-button" disabled={!canEdit || !text.trim()} onClick={submit} type="button">
+          <ArrowUp size={15} />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function DeliveryCheckPanel({ state, dispatch, canEdit, requirement }: Props) {

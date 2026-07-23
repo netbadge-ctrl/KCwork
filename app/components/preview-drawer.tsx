@@ -32,6 +32,7 @@ import { AgentToolPanel, useAgentToolSession } from "./agent-tool-panels";
 import { CreateSystemPanel } from "./create-system-panel";
 import { MemberManager } from "./member-manager";
 import { PreviewErrorState, type PreviewErrorKind } from "./preview-error-state";
+import { PrdDocumentSheet } from "./prd-document-sheet";
 import { ProjectContextPanel } from "./project-context-panel";
 import { ProjectSettingsPanel } from "./project-settings-panel";
 import {
@@ -328,6 +329,7 @@ export function PreviewDrawer({
                 documentDraft={documentDraft}
                 onSaveDocumentDraft={onSaveDocumentDraft}
                 requirement={selectedRequirement}
+                productPackage={productPackage}
               />
             )}
             {(preview === "files" || preview === "diff") && (
@@ -591,11 +593,13 @@ function PrdPreview({
   canEdit,
   documentDraft,
   onSaveDocumentDraft,
+  productPackage,
 }: {
   requirement: Requirement | null;
   canEdit: boolean;
   documentDraft: string;
   onSaveDocumentDraft(draft: string): void;
+  productPackage: ProductPackageState;
 }) {
   const [request, setRequest] = useState("");
   const document = productDocuments.find(
@@ -609,23 +613,11 @@ function PrdPreview({
       <div className="document-toolbar">
         <span>{document.title} {document.version}</span>
       </div>
-      <div className="document-sheet">
-        <span className="document-tag">产品需求文档</span>
-        <h1>{requirement.title}</h1>
-        <p className="document-meta">{requirement.code} · 版本 {document.version} · {document.updatedAt}</p>
-        <h2>1. 背景与目标</h2>
-        <p>为企业客户提供清晰、可控的角色管理能力，支持租户与项目两个权限范围。</p>
-        <h2>2. 角色定义</h2>
-        <div className="role-table">
-          <div><b>租户管理员</b><span>管理企业级成员与全局策略</span></div>
-          <div><b>项目管理员</b><span>仅管理当前项目成员与权限</span></div>
-          <div><b>普通成员</b><span>访问被授权的项目资源</span></div>
-        </div>
-        <h2>3. 验收标准</h2>
-        {["不同角色只能看到权限内的操作", "移除成员需要二次确认", "权限变更即时写入审计记录"].map((item) => (
-          <p className="check-line" key={item}><Check size={14} /> {item}</p>
-        ))}
-      </div>
+      <PrdDocumentSheet
+        title={requirement.title}
+        meta={`${requirement.code} · 版本 ${document.version} · ${document.updatedAt}`}
+        body={productPackage.prdBody}
+      />
       <aside className="prd-ai-panel drawer-prd-ai-panel">
         <div><Sparkles size={17} /><strong>通过对话修改</strong></div>
         <p>描述需要修改的章节或规则，Agent 会先生成修订建议。</p>

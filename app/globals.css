@@ -5700,6 +5700,13 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
 .pdf-sheet > p:not(.document-meta):not(.check-line) { color: #5e5a65; line-height: 1.7; }
 .pdf-page-number { bottom: 18px; color: #aaa7b1; font-size: 9px; left: 0; position: absolute; right: 0; text-align: center; }
 
+.prd-sheet { margin: 0; padding: 28px 26px; min-height: auto; }
+.prd-sheet h2 { margin-top: 20px; margin-bottom: 6px; font-size: 13px; }
+.prd-sheet .check-line { display: flex; align-items: center; gap: 6px; margin: 3px 0; color: var(--text-secondary); font-size: 10px; }
+.prd-anchor-strip { display: flex; flex-wrap: wrap; gap: 5px; padding: 6px 0 10px; }
+.prd-anchor-strip button { height: 24px; padding: 0 9px; color: var(--text-muted); font-size: 9px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 7px; }
+.prd-anchor-strip button.active { color: var(--accent); background: var(--accent-soft); border-color: #ddd5ff; }
+
 @media (max-width: 1050px) {
   .prototype-layout,
   .prd-layout { grid-template-columns: 155px minmax(0, 1fr); }
@@ -6208,18 +6215,12 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
 .selected-component-name small { color: var(--text-muted); }
 .component-chat-reference { padding: 8px; color: var(--accent); font-size: 9px; background: var(--accent-soft); border-radius: 8px; }
 .component-chat-reference b { display: block; margin-top: 3px; }
-.scoped-artifact-composer { display: grid; gap: 8px; padding: 10px; background: #f8f7ff; border: 1px solid #ddd7f8; border-radius: 9px; }
-.scoped-artifact-composer > header { display: grid; gap: 7px; }
-.scoped-artifact-composer > header > div { display: flex; align-items: flex-start; gap: 6px; }
-.scoped-artifact-composer > header svg { flex: none; color: var(--accent); }
-.scoped-artifact-composer > header span { display: grid; gap: 2px; }
-.scoped-artifact-composer > header small { color: var(--text-muted); font-size: 8px; font-weight: 400; }
-.scoped-artifact-composer > header em { overflow: hidden; padding: 4px 6px; color: var(--accent); font-size: 8px; font-style: normal; text-overflow: ellipsis; white-space: nowrap; background: white; border: 1px solid #e0daf8; border-radius: 5px; }
-.scoped-artifact-composer > div { position: relative; }
-.scoped-artifact-composer textarea { width: 100%; min-height: 58px; padding: 8px 34px 8px 8px; resize: vertical; font: 9px/1.5 inherit; background: white; border: 1px solid var(--border); border-radius: 7px; outline: 0; }
-.scoped-artifact-composer textarea:focus { border-color: var(--accent); }
-.scoped-artifact-composer > div > button { position: absolute; right: 6px; bottom: 7px; display: grid; width: 25px; height: 25px; place-items: center; color: white; background: var(--text); border: 0; border-radius: 7px; }
-.scoped-artifact-composer > div > button:disabled { opacity: .35; }
+.scoped-composer { position: relative; display: grid; gap: 6px; padding: 10px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-float); }
+.scoped-reference { position: relative; bottom: auto; left: auto; margin: 0; }
+.scoped-ref-tag { display: inline-flex; align-items: center; height: 26px; padding: 0 9px; color: var(--accent); font-size: 9px; background: var(--accent-soft); border: 1px solid #ddd5ff; border-radius: 8px; }
+.scoped-composer textarea { width: 100%; min-height: 48px; padding: 8px 10px; resize: vertical; font: 11px/1.5 inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; outline: 0; }
+.scoped-composer textarea:focus { border-color: var(--accent); }
+.scoped-composer .composer-toolbar { padding-top: 2px; }
 .scoped-change-preview { display: grid; gap: 6px; padding: 9px; background: white; border: 1px solid #ddd7f8; border-radius: 8px; }
 .scoped-change-preview > b { display: flex; align-items: center; gap: 5px; color: var(--accent); font-size: 9px; }
 .scoped-change-preview p { margin: 0; color: var(--text-muted); font-size: 9px; line-height: 1.5; }
@@ -6249,8 +6250,8 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
 .prd-document-editor textarea { width: 100%; height: 100%; min-height: 300px; padding: 0; resize: vertical; font: 12px/1.8 inherit; border: 0; outline: 0; }
 .prd-natural-revision { display: grid; gap: 9px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
 .prd-natural-revision small { color: var(--text-muted); }
-.prd-natural-revision > .scoped-artifact-composer { display: grid; padding: 10px; }
-.prd-natural-revision .scoped-artifact-composer textarea { min-height: 58px; padding: 8px 34px 8px 8px; }
+.prd-natural-revision > .scoped-composer { padding: 10px; box-shadow: none; }
+.prd-natural-revision .scoped-composer textarea { min-height: 48px; padding: 8px 10px; }
 .prd-revision-preview { padding: 10px; background: var(--accent-soft); border-radius: 8px; }
 .prd-revision-preview > b { display: flex; align-items: center; gap: 5px; color: var(--accent); }
 .prd-revision-preview p { font-size: 11px; }

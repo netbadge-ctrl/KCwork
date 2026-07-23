@@ -1,6 +1,7 @@
 import { render } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { projectMembers, requirements } from "../lib/demo-data";
+import { createInitialProductPackage } from "../lib/product-package";
 import { PreviewDrawer } from "./preview-drawer";
 
 const storedValues = new Map<string, string>();
@@ -46,6 +47,7 @@ test("bypasses contextual compatibility only for the explicitly selected preview
     onToggleContextSource: vi.fn(),
     onWidthChange: vi.fn(),
     preview: "prd" as const,
+    productPackage: createInitialProductPackage(requirements[0].id),
     requirementStages: {},
     requirements,
     selectedAssetId: "prd-role-permissions",
