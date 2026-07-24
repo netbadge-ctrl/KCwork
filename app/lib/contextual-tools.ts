@@ -118,6 +118,7 @@ export const contextualPreviewKinds = new Set<PreviewKind>([
   "requirement-spec", "requirement-acceptance",
   "requirement-governance", "context-maintenance", "project-repositories",
   "project-requirements", "project-tests",
+  "investment",
 ]);
 
 export function resolveContextualTools(context: ContextualToolContext): ContextualTool[] {
@@ -129,6 +130,7 @@ export function resolveContextualTools(context: ContextualToolContext): Contextu
       tool("context-maintenance", "共享上下文", Database),
       tool("members", "成员与角色", Users),
       tool("requirement-governance", "需求状态与门禁", ShieldCheck),
+      tool("investment", "投入分析", BarChart3),
     ];
   }
   if (!["task", "requirement-detail"].includes(context.view)) return [];
@@ -140,7 +142,12 @@ export function resolveContextualTools(context: ContextualToolContext): Contextu
 
   const tools = context.mode === "research" ? [...mapped.filter((item) => item.kind !== "context"), ...sharedRequirementTools, ...mapped.filter((item) => item.kind === "context")] : mapped;
 
-  return tools
+  // Add investment tool for requirement-detail view
+  const investmentTool = context.view === "requirement-detail"
+    ? [tool("investment", "投入分析", BarChart3)]
+    : [];
+
+  return [...tools, ...investmentTool]
     .filter((item) => item.kind !== "log" || context.hasExecution)
     .filter((item) => item.kind !== "test" || context.agentId === "testing" || context.hasTestEvidence);
 }

@@ -60,7 +60,8 @@ export type PreviewKind =
   | "delivery-check"
   | "version-history"
   | "requirement-spec"
-  | "requirement-acceptance";
+  | "requirement-acceptance"
+  | "investment";
 export type ExecutionState =
   | "idle"
   | "reading"

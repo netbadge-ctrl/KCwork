@@ -14,7 +14,6 @@ import type {
 } from "../lib/types";
 import { projectRoleLabels } from "../lib/project-capabilities";
 import { Composer } from "./composer";
-import { RequirementInvestmentCard } from "./investment-analysis";
 import { RequirementAgentActivity } from "./requirement-agent-activity";
 import { stageLabels } from "./requirement-list";
 import { WorkspaceRouter } from "./workspaces/workspace-router";
@@ -155,7 +154,6 @@ export function RequirementWorkspace({
           messages={messages}
           onOpenPreview={onOpenPreview}
         />
-        <RequirementInvestmentCard requirementId={requirement.id} />
       </div>
 
       <div className="task-composer-wrap requirement-composer-wrap">

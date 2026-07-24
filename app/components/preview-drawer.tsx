@@ -125,6 +125,7 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   "version-history": "版本记录",
   "requirement-spec": "需求 Spec",
   "requirement-acceptance": "验收标准",
+  investment: "投入分析",
 };
 
 const fullAgentPanelKinds = new Set<PreviewKind>([
@@ -370,6 +371,12 @@ export function PreviewDrawer({
                 onChangeRole={onChangeMemberRole}
                 roles={memberRoles}
               />
+            )}
+            {preview === "investment" && selectedProject && (
+              <ProjectInvestmentCard projectId={selectedProject.id} />
+            )}
+            {preview === "investment" && selectedRequirement && !selectedProject && (
+              <RequirementInvestmentCard requirementId={selectedRequirement.id} />
             )}
             {preview === "project-settings" && (
               <ProjectSettingsPanel
