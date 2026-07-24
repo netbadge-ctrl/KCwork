@@ -223,6 +223,7 @@ export interface ProjectMember {
   initials: string;
   role: ProjectRole;
   team: string;
+  digital?: boolean;
 }
 
 export interface Requirement {

@@ -211,8 +211,11 @@ export const projectMembers: ProjectMember[] = [
   { id: "member-zhao", projectId: "customer-portal", name: "赵屿", initials: "赵", role: "development", team: "后端研发" },
   { id: "member-zhou", projectId: "customer-portal", name: "周祺", initials: "周", role: "testing", team: "质量保障" },
   { id: "member-gu", projectId: "customer-portal", name: "顾言", initials: "顾", role: "product", team: "产品中心" },
+  { id: "member-digital-portal", projectId: "customer-portal", name: "数字人", initials: "AI", role: "development", team: "智能体", digital: true },
   { id: "member-chen-expense", projectId: "expense", name: "陈楠", initials: "陈", role: "product", team: "产品中心" },
+  { id: "member-digital-expense", projectId: "expense", name: "数字人", initials: "AI", role: "development", team: "智能体", digital: true },
   { id: "member-chen-ops", projectId: "ops", name: "陈楠", initials: "陈", role: "product", team: "产品中心" },
+  { id: "member-digital-ops", projectId: "ops", name: "数字人", initials: "AI", role: "development", team: "智能体", digital: true },
 ];
 
 export const projectAssetSummaries: ProjectAssetSummary[] = [

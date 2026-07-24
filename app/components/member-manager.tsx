@@ -1,4 +1,4 @@
-import { Plus, UserRoundCog } from "lucide-react";
+import { Bot, Plus, UserRoundCog } from "lucide-react";
 import type { ProjectMember, ProjectRole } from "../lib/types";
 
 const roleLabels: Record<ProjectRole, string> = {
@@ -34,12 +34,15 @@ export function MemberManager({
       </div>
       <div className="member-list">
         {members.map((member) => (
-          <div className="member-row" key={member.id}>
-            <span className="member-avatar">{member.initials}</span>
+          <div className={`member-row${member.digital ? " digital" : ""}`} key={member.id}>
+            <span className="member-avatar">{member.digital ? <Bot size={16} /> : member.initials}</span>
             <span className="member-identity">
               <strong>{member.name}</strong>
               <small>{member.team}</small>
             </span>
+            {member.digital ? (
+              <span className="member-role-digital" aria-label={`${member.name}为数字人，不可调整角色`}>数字人</span>
+            ) : (
             <select
               aria-label={`修改${member.name}的项目角色`}
               className="member-role-select"
@@ -53,6 +56,7 @@ export function MemberManager({
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
+            )}
           </div>
         ))}
       </div>

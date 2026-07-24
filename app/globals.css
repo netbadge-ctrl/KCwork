@@ -4041,6 +4041,9 @@ select:focus-visible {
   padding: 0 7px;
 }
 
+.member-row.digital .member-avatar { background: linear-gradient(135deg, #634bc5, #8b5cf6); color: #fff; }
+.member-role-digital { display: inline-flex; align-items: center; height: 32px; padding: 0 10px; font-size: 11px; color: var(--accent); background: var(--accent-soft); border: 1px solid #ddd5ff; border-radius: 8px; }
+
 .member-visibility-note {
   color: #7f7c88;
   font-size: 11px;
