@@ -247,6 +247,8 @@ export interface Requirement {
     tests: number;
   };
   updatedAt: string;
+  createdAt: string;
+  createdBy: string;
 }
 
 export interface ProjectAssetSummary {

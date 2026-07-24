@@ -170,6 +170,8 @@ export const requirements: Requirement[] = [
     owners: { product: "陈楠", development: "林川", testing: "周祺" },
     counts: { prototypes: 3, documents: 2, tasks: 6, changes: 8, tests: 26 },
     updatedAt: "10 分钟前",
+    createdAt: "3 天前",
+    createdBy: "陈楠",
   },
   {
     id: "sso-login",
@@ -185,6 +187,8 @@ export const requirements: Requirement[] = [
     owners: { product: "顾言", development: "赵屿", testing: "周祺" },
     counts: { prototypes: 0, documents: 0, tasks: 0, changes: 0, tests: 34 },
     updatedAt: "昨天",
+    createdAt: "5 天前",
+    createdBy: "顾言",
   },
   {
     id: "audit-export",
@@ -200,6 +204,8 @@ export const requirements: Requirement[] = [
     owners: { product: "陈楠", development: "林川", testing: "待分配" },
     counts: { prototypes: 0, documents: 0, tasks: 0, changes: 0, tests: 0 },
     updatedAt: "2 小时前",
+    createdAt: "2 小时前",
+    createdBy: "陈楠",
   },
 ];
 
