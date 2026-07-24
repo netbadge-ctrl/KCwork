@@ -810,6 +810,7 @@ export default function Page() {
         selectedProject={selectedProject}
         selectedRequirement={selectedRequirement}
         selectedAgentId={selectedAgent.id}
+        view={state.view}
         productPackage={productPackageSession.state}
         onProductPackageAction={productPackageSession.dispatch}
         onScopedProductSend={(reference, text) => sendMessage(text, reference)}

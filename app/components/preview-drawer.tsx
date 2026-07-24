@@ -35,6 +35,7 @@ import { PreviewErrorState, type PreviewErrorKind } from "./preview-error-state"
 import { PrdDocumentSheet } from "./prd-document-sheet";
 import { ProjectContextPanel } from "./project-context-panel";
 import { ProjectSettingsPanel } from "./project-settings-panel";
+import { ProjectInvestmentCard, RequirementInvestmentCard } from "./investment-analysis";
 import {
   getPrototypeBrowserUrl,
 } from "./prototype-editor";
@@ -54,6 +55,7 @@ import {
 
 export interface PreviewDrawerProps {
   preview: PreviewKind | null;
+  view: "home" | "projects" | "project-detail" | "project-asset" | "requirement-detail" | "assets" | "profile" | "task";
   sidebarWidth: number;
   width: number;
   tools: ContextualTool[];
@@ -144,6 +146,7 @@ const fullAgentPanelKinds = new Set<PreviewKind>([
 
 export function PreviewDrawer({
   preview,
+  view,
   sidebarWidth,
   width,
   tools,
@@ -372,10 +375,10 @@ export function PreviewDrawer({
                 roles={memberRoles}
               />
             )}
-            {preview === "investment" && selectedProject && (
+            {preview === "investment" && view === "project-detail" && selectedProject && (
               <ProjectInvestmentCard projectId={selectedProject.id} />
             )}
-            {preview === "investment" && selectedRequirement && !selectedProject && (
+            {preview === "investment" && view === "requirement-detail" && selectedRequirement && (
               <RequirementInvestmentCard requirementId={selectedRequirement.id} />
             )}
             {preview === "project-settings" && (
