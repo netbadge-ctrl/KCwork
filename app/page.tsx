@@ -63,6 +63,7 @@ type LayoutPreferencesAction =
       rightPanelWidth: number;
     }
   | { type: "toggle-sidebar"; currentEffective: boolean; viewportWidth: number }
+  | { type: "reset-to-auto"; viewportWidth: number }
   | { type: "set-right-panel-width"; width: number };
 
 const initialLayoutPreferences: LayoutPreferencesState = {
@@ -101,6 +102,18 @@ function layoutPreferencesReducer(
     }
     case "set-right-panel-width":
       return { ...state, rightPanelWidth: action.width };
+    case "reset-to-auto":
+      // Reset to auto mode when entering task/project view
+      // This ensures auto-collapsed behavior on entry
+      return {
+        ...state,
+        sidebarPreference: "auto",
+        rightPanelWidth: clampPreferredRightPanelWidth(
+          state.rightPanelWidth,
+          action.viewportWidth,
+          COLLAPSED_SIDEBAR_WIDTH,
+        ),
+      };
   }
 }
 
@@ -129,6 +142,31 @@ export default function Page() {
   );
   const wasArtifactFocusRef = useRef(false);
   const regularRightPanelWidthRef = useRef<number | null>(null);
+  const previousViewRef = useRef<ViewId>("home");
+
+  // When entering task/project-detail from another view, reset sidebar
+  // preference to "auto" so it collapses by default.
+  useEffect(() => {
+    const prev = previousViewRef.current;
+    const current = state.view;
+    const enteringTask =
+      current === "task" || current === "project-detail";
+    const comingFromNonTask =
+      prev !== "task" && prev !== "project-detail";
+
+    if (enteringTask && comingFromNonTask) {
+      dispatchLayoutPreferences({
+        type: "reset-to-auto",
+        viewportWidth: window.innerWidth,
+      });
+    }
+
+    previousViewRef.current = current;
+  }, [state.view]);
+  // Compute effective collapsed state
+  // - "collapsed" preference: always collapsed
+  // - "expanded" preference: always expanded
+  // - "auto" preference: collapsed on task/project-detail, expanded elsewhere
   const effectiveSidebarCollapsed =
     layoutPreferences.sidebarPreference === "collapsed"
       ? true
@@ -477,13 +515,13 @@ export default function Page() {
             dispatch({ type: "open-task", taskId: task.id });
           });
         }}
-        onToggleCollapsed={() =>
+        onToggleCollapsed={() => {
           dispatchLayoutPreferences({
             type: "toggle-sidebar",
             currentEffective: effectiveSidebarCollapsed,
             viewportWidth: window.innerWidth,
-          })
-        }
+          });
+        }}
       />
 
       <section className="main-stage">
