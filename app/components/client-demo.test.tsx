@@ -252,7 +252,7 @@ describe("enterprise AI client demo", () => {
     expect(
       screen.getByRole("button", { name: /会议纪要 Agent/ }),
     ).toBeInTheDocument();
-    expect(screen.queryByText("前端开发 Agent")).not.toBeInTheDocument();
+    expect(screen.queryByText("开发 Agent")).not.toBeInTheDocument();
   });
 
   test("preserves office mode and all Agent-specific evidence workspaces", async () => {
@@ -262,7 +262,7 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByRole("button", { name: /会议纪要 Agent/ })).toBeInTheDocument();
 
     await openRoleRequirement();
-    await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "frontend-dev");
+    await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "development");
     expect(screen.getByRole("button", { name: "代码差异" })).toBeInTheDocument();
     expect(screen.queryByText("开发工作台")).not.toBeInTheDocument();
     await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "testing");
@@ -399,8 +399,8 @@ describe("enterprise AI client demo", () => {
     render(<Page />);
     const taskCases = [
       ["完善角色管理 PRD14:32", "完善角色管理 PRD", /租户管理员、项目管理员和普通成员/, "product-design"],
-      ["实现权限配置页面昨天", "实现权限配置页面", /观察者的操作范围已分别覆盖/, "frontend-dev"],
-      ["分析登录失败问题周一", "分析登录失败问题", /登录失败集中在过期会话/, "backend-dev"],
+      ["实现权限配置页面昨天", "实现权限配置页面", /观察者的操作范围已分别覆盖/, "development"],
+      ["分析登录失败问题周一", "分析登录失败问题", /登录失败集中在过期会话/, "development"],
       ["Q3 经营分析报告7 月 12 日", "Q3 经营分析报告", /Q3 营收同比增长/, "data-analysis"],
     ] as const;
 
@@ -419,9 +419,9 @@ describe("enterprise AI client demo", () => {
     );
     await userEvent.selectOptions(
       screen.getByLabelText("选择 Agent"),
-      "code-review",
+      "development",
     );
-    expect(screen.getByLabelText("选择 Agent")).toHaveValue("code-review");
+    expect(screen.getByLabelText("选择 Agent")).toHaveValue("development");
 
     await userEvent.click(
       screen.getByRole("button", { name: "Q3 经营分析报告7 月 12 日" }),
@@ -431,7 +431,7 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("button", { name: "实现权限配置页面昨天" }),
     );
 
-    expect(screen.getByLabelText("选择 Agent")).toHaveValue("code-review");
+    expect(screen.getByLabelText("选择 Agent")).toHaveValue("development");
   });
 
   test("opens login-failure work with its own project, Agent, and conversation", async () => {
@@ -444,7 +444,7 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByRole("heading", { name: "分析登录失败问题" })).toBeInTheDocument();
     expect(screen.getByText("任务 · 周一")).toBeInTheDocument();
     expect(screen.getAllByText("智能报销系统").length).toBeGreaterThan(0);
-    expect(screen.getByText("✦ 后端开发 Agent")).toBeInTheDocument();
+    expect(screen.getByText("✦ 开发 Agent")).toBeInTheDocument();
     expect(screen.getByText(/登录失败集中在过期会话/)).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "完善角色管理 PRD" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "查看角色管理模块 PRD v1.3" })).not.toBeInTheDocument();
@@ -468,7 +468,7 @@ describe("enterprise AI client demo", () => {
     await userEvent.click(screen.getByRole("button", { name: "测试报告" }));
     expect(screen.getByRole("button", { name: "创建修复任务" })).toBeDisabled();
     await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
-    await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "frontend-dev");
+    await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "development");
     expect(screen.getByLabelText("任务输入")).toBeDisabled();
     await userEvent.click(screen.getByRole("button", { name: "代码差异" }));
     expect(screen.getByRole("button", { name: "接受变更" })).toBeDisabled();
@@ -484,7 +484,7 @@ describe("enterprise AI client demo", () => {
     await userEvent.click(screen.getByRole("button", { name: "文档预览" }));
     expect(screen.getByLabelText("PRD 修改要求")).toBeDisabled();
     await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
-    await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "frontend-dev");
+    await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "development");
     expect(screen.getByLabelText("任务输入")).toBeEnabled();
     await userEvent.click(screen.getByRole("button", { name: "代码差异" }));
     expect(screen.getByRole("button", { name: "接受变更" })).toBeEnabled();
@@ -497,7 +497,7 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("button", { name: "恢复角色与成员权限重构工作区" }),
     );
 
-    await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "frontend-dev");
+    await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "development");
     expect(screen.getByLabelText("任务输入")).toBeDisabled();
     await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "testing");
     expect(screen.getByLabelText("任务输入")).toBeEnabled();
@@ -552,7 +552,7 @@ describe("enterprise AI client demo", () => {
     }
     expect(screen.getAllByText("角色与成员权限重构").length).toBeGreaterThan(0);
     expect(screen.getAllByText("企业 SSO 登录体验优化").length).toBeGreaterThan(0);
-    expect(screen.getByText("权限审计记录导出")).toBeInTheDocument();
+    expect(screen.getAllByText("权限审计记录导出").length).toBeGreaterThan(0);
   });
 
   test("shows an accurate empty project state without an empty recent section", async () => {
@@ -1149,7 +1149,7 @@ describe("enterprise AI client demo", () => {
     await openRoleRequirement();
     await userEvent.selectOptions(
       screen.getByLabelText("选择 Agent"),
-      "frontend-dev",
+      "development",
     );
     expect(screen.getByLabelText("任务输入")).toBeEnabled();
     await userEvent.click(screen.getByRole("button", { name: "代码差异" }));
@@ -1226,7 +1226,7 @@ describe("enterprise AI client demo", () => {
     await userEvent.click(screen.getByRole("button", { name: "新建任务" }));
     await userEvent.selectOptions(
       screen.getByLabelText("选择 Agent"),
-      "frontend-dev",
+      "development",
     );
     await userEvent.type(
       screen.getByLabelText("任务输入"),

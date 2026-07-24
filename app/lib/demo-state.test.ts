@@ -73,8 +73,8 @@ describe("clientReducer", () => {
   it("opens every recent task atomically with its exact associations", () => {
     const taskAssociations = [
       ["prd-role", "customer-portal", "role-permissions", "product-design", "research"],
-      ["permission-ui", "customer-portal", "role-permissions", "frontend-dev", "research"],
-      ["login-failure", "expense", null, "backend-dev", "research"],
+      ["permission-ui", "customer-portal", "role-permissions", "development", "research"],
+      ["login-failure", "expense", null, "development", "research"],
       ["q3-report", null, null, "data-analysis", "office"],
     ] as const;
 
@@ -102,7 +102,7 @@ describe("clientReducer", () => {
     });
     const reviewed = clientReducer(permissionTask, {
       type: "select-agent",
-      agentId: "code-review",
+      agentId: "testing",
     });
     const q3 = clientReducer(reviewed, {
       type: "open-task",
@@ -113,8 +113,8 @@ describe("clientReducer", () => {
       taskId: "permission-ui",
     });
 
-    expect(reopened.selectedAgentId).toBe("code-review");
-    expect(reopened.taskAgentIdsById["permission-ui"]).toBe("code-review");
+    expect(reopened.selectedAgentId).toBe("testing");
+    expect(reopened.taskAgentIdsById["permission-ui"]).toBe("testing");
     expect(reopened.taskAgentIdsById["q3-report"]).toBe("data-analysis");
   });
 
@@ -125,7 +125,7 @@ describe("clientReducer", () => {
     });
     const reviewed = clientReducer(permissionTask, {
       type: "select-agent",
-      agentId: "code-review",
+      agentId: "product-design",
     });
     const sent = clientReducer(reviewed, {
       type: "send-message",
@@ -133,7 +133,7 @@ describe("clientReducer", () => {
     });
     const switched = clientReducer(sent, {
       type: "select-agent",
-      agentId: "frontend-dev",
+      agentId: "development",
     });
     const failed = clientReducer(switched, {
       type: "fail-execution",
@@ -153,14 +153,14 @@ describe("clientReducer", () => {
     });
 
     expect(sent.taskInvocationAgentIdsById["permission-ui"]).toBe(
-      "code-review",
+      "product-design",
     );
     expect(failed.taskInvocationAgentIdsById["permission-ui"]).toBe(
-      "code-review",
+      "product-design",
     );
-    expect(done.taskAgentIdsById["permission-ui"]).toBe("frontend-dev");
+    expect(done.taskAgentIdsById["permission-ui"]).toBe("development");
     expect(done.taskMessagesById["permission-ui"].at(-1)?.agentId).toBe(
-      "code-review",
+      "product-design",
     );
   });
 
@@ -353,7 +353,7 @@ describe("clientReducer", () => {
     const home = clientReducer(opened, { type: "navigate", view: "home" });
     const selected = clientReducer(home, {
       type: "select-agent",
-      agentId: "frontend-dev",
+      agentId: "development",
     });
     const reopened = clientReducer(selected, {
       type: "select-requirement",

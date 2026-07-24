@@ -31,9 +31,7 @@ describe("resolveContextualTools", () => {
       .toEqual(["prototype", "components", "interaction", "context"]);
     expect(kinds("product-design", "research", true, false, "prd"))
       .toEqual(["prd", "pdf", "analysis", "context"]);
-    expect(kinds("frontend-dev")).toEqual(["files", "diff", "log", "context"]);
-    expect(kinds("backend-dev")).toEqual(["files", "diff", "log", "context"]);
-    expect(kinds("code-review")).toEqual(["diff", "issues", "analysis", "context"]);
+    expect(kinds("development")).toEqual(["files", "frontend-preview", "diff", "console", "requirement-spec", "requirement-acceptance", "context"]);
     expect(kinds("testing", "research", true, true)).toEqual(["test", "failures", "log", "context"]);
   });
 
@@ -42,6 +40,6 @@ describe("resolveContextualTools", () => {
       expect(kinds(legacyId, "research", false)).toEqual(["context", "analysis"]);
     }
     expect(kinds("testing", "research", false, false)).toEqual(["test", "failures", "context"]);
-    expect(kinds("frontend-dev").length).toBeLessThanOrEqual(4);
+    expect(kinds("development").length).toBeLessThanOrEqual(4);
   });
 });

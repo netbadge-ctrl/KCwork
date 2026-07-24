@@ -111,8 +111,7 @@ function defaultPreviewForAgent(
   if (agentId === "product-design") {
     return productWorkMode === "prototype" ? "prototype" : "prd";
   }
-  if (agentId === "frontend-dev" || agentId === "backend-dev") return "files";
-  if (agentId === "code-review") return "diff";
+  if (agentId === "development") return "files";
   if (agentId === "testing") return "test-cases";
   if (agentId === "meeting-notes") return "actions";
   if (agentId === "data-analysis") return "chart";
@@ -509,8 +508,7 @@ export function clientReducer(
                 artifact:
                   state.selectedAgentId === "testing"
                     ? "test"
-                    : state.selectedAgentId.includes("dev") ||
-                        state.selectedAgentId === "code-review"
+                    : state.selectedAgentId.includes("dev")
                       ? "diff"
                       : state.selectedAgentId === "product-design"
                         ? action.contextReference?.kind ?? (state.productWorkMode === "analysis"

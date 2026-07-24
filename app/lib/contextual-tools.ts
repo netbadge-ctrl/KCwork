@@ -18,10 +18,8 @@ import {
   ListTree,
   MessageSquareText,
   Presentation,
-  Send,
   ScrollText,
   ShieldCheck,
-  Table2,
   Terminal,
   TestTube2,
   Users,
@@ -74,26 +72,12 @@ const officeTools: Record<string, ContextualTool[]> = {
 };
 
 const developmentTools: Record<string, ContextualTool[]> = {
-  "frontend-dev": [
+  "development": [
     tool("files", "代码与文件", FileCode2),
     tool("frontend-preview", "页面预览", LayoutTemplate),
     tool("diff", "代码差异", GitCompareArrows),
     tool("console", "控制台", Terminal),
     tool("context", "开发上下文", ListTree),
-  ],
-  "backend-dev": [
-    tool("files", "代码与文件", FileCode2),
-    tool("api-debug", "接口调试", Send),
-    tool("diff", "代码差异", GitCompareArrows),
-    tool("log", "运行日志", ScrollText),
-    tool("data-model", "数据模型", Table2),
-    tool("context", "开发上下文", ListTree),
-  ],
-  "code-review": [
-    tool("diff", "代码差异", GitCompareArrows),
-    tool("issues", "问题清单", Bug),
-    tool("analysis", "审查结论", ClipboardList),
-    tool("context", "引用规范", ListTree),
   ],
   testing: [
     tool("test-cases", "测试用例", ClipboardCheck),

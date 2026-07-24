@@ -5,7 +5,6 @@ import type {
   ProductWorkMode,
   Requirement,
 } from "../../lib/types";
-import { CodeReviewWorkspace } from "./code-review-workspace";
 import { DevelopmentWorkspace } from "./development-workspace";
 import { ProductDesignWorkspace } from "./product-design-workspace";
 import { RequirementAnalysisWorkspace } from "./requirement-analysis-workspace";
@@ -31,8 +30,7 @@ export interface WorkspaceRouterProps {
 export function WorkspaceRouter(props: WorkspaceRouterProps) {
   const { agent } = props;
   if (agent.id === "product-design") return <ProductDesignWorkspace {...props} />;
-  if (agent.id === "frontend-dev" || agent.id === "backend-dev") return <DevelopmentWorkspace {...props} />;
-  if (agent.id === "code-review") return <CodeReviewWorkspace {...props} />;
+  if (agent.id === "development") return <DevelopmentWorkspace {...props} />;
   if (agent.id === "testing") return <TestingWorkspace {...props} />;
   return <RequirementAnalysisWorkspace {...props} />;
 }

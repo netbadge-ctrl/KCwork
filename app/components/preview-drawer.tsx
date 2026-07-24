@@ -183,7 +183,7 @@ export function PreviewDrawer({
 }: PreviewDrawerProps) {
   const selectedTool = tools.find((tool) => tool.kind === preview);
   const agentToolSession = useAgentToolSession();
-  const isBackendRuntimeLog = preview === "log" && selectedAgentId === "backend-dev";
+  const isBackendRuntimeLog = preview === "log" && selectedAgentId === "development";
   const isTestingReport = preview === "test" && selectedAgentId === "testing" && explicitPreviewKind !== "test";
   const isProductPanel = selectedAgentId === "product-design" && ["prototype", "prd", "delivery-check", "version-history"].includes(preview ?? "");
   const isRequirementBaselinePanel = ["requirement-spec", "requirement-acceptance"].includes(preview ?? "");

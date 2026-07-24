@@ -40,7 +40,7 @@ export function canEditAgentWorkspace(
   if (agentId === "product-design") {
     return capabilities.canEditProductArtifacts;
   }
-  if (["frontend-dev", "backend-dev", "code-review"].includes(agentId)) {
+  if (agentId === "development") {
     return capabilities.canEditDevelopmentArtifacts;
   }
   if (agentId === "testing") return capabilities.canEditTestArtifacts;

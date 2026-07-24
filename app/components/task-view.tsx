@@ -191,7 +191,7 @@ export function TaskView({
         <ProductPackageStrip canEdit={canEdit} dispatch={onProductPackageAction} onOpen={onOpenPreview} state={productPackage} />
       )}
 
-      {productPackage && onProductPackageAction && ["frontend-dev", "backend-dev", "testing"].includes(agent.id) && (
+      {productPackage && onProductPackageAction && ["development", "testing"].includes(agent.id) && (
         <DownstreamProductContext
           agentId={agent.id}
           dispatch={onProductPackageAction}

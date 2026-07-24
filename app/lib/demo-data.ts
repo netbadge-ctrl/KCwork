@@ -18,9 +18,7 @@ import type {
 
 export const agents: Agent[] = [
   { id: "product-design", name: "产品设计 Agent", shortName: "产", mode: "research", category: "产品", description: "从需求分析、原型设计与审计或 PRD 撰写任一环节开始" },
-  { id: "frontend-dev", name: "前端开发 Agent", shortName: "前", mode: "research", category: "研发", description: "理解代码库并完成前端实现" },
-  { id: "backend-dev", name: "后端开发 Agent", shortName: "后", mode: "research", category: "研发", description: "实现接口、服务和数据逻辑" },
-  { id: "code-review", name: "代码审查 Agent", shortName: "审", mode: "research", category: "研发", description: "检查质量、安全与需求覆盖" },
+  { id: "development", name: "开发 Agent", shortName: "开", mode: "research", category: "研发", description: "理解代码库并完成前后端实现" },
   { id: "testing", name: "测试 Agent", shortName: "测", mode: "research", category: "测试", description: "设计用例并生成测试报告" },
   { id: "meeting-notes", name: "会议纪要 Agent", shortName: "会", mode: "office", category: "办公", description: "提炼决议、风险和待办" },
   { id: "document-writer", name: "文档写作 Agent", shortName: "文", mode: "office", category: "办公", description: "撰写报告、制度与工作方案" },
@@ -74,8 +72,8 @@ export const projects: Project[] = [
 
 export const recentTasks: RecentTask[] = [
   { id: "prd-role", title: "完善角色管理 PRD", mode: "research", projectId: "customer-portal", requirementId: "role-permissions", agentId: "product-design", productWorkMode: "prd", time: "14:32" },
-  { id: "permission-ui", title: "实现权限配置页面", mode: "research", projectId: "customer-portal", requirementId: "role-permissions", agentId: "frontend-dev", time: "昨天" },
-  { id: "login-failure", title: "分析登录失败问题", mode: "research", projectId: "expense", agentId: "backend-dev", time: "周一" },
+  { id: "permission-ui", title: "实现权限配置页面", mode: "research", projectId: "customer-portal", requirementId: "role-permissions", agentId: "development", time: "昨天" },
+  { id: "login-failure", title: "分析登录失败问题", mode: "research", projectId: "expense", agentId: "development", time: "周一" },
   { id: "q3-report", title: "Q3 经营分析报告", mode: "office", agentId: "data-analysis", time: "7 月 12 日" },
 ];
 
@@ -105,7 +103,7 @@ export const recentTaskMessages: Record<string, Message[]> = {
     {
       id: "permission-ui-agent",
       role: "agent",
-      agentId: "frontend-dev",
+      agentId: "development",
       text: "角色配置页面已完成，项目管理员和观察者的操作范围已分别覆盖。",
       artifact: "diff",
       artifactTitle: "角色配置页面代码变更",
@@ -121,7 +119,7 @@ export const recentTaskMessages: Record<string, Message[]> = {
     {
       id: "login-failure-agent",
       role: "agent",
-      agentId: "backend-dev",
+      agentId: "development",
       text: "登录失败集中在过期会话和企业身份源超时，尚未生成可确认的代码变更或诊断产物。",
     },
   ],

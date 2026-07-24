@@ -129,7 +129,6 @@ function fileName(path: string) {
 }
 
 export function CodeWorkbenchPreview({
-  agentId,
   canEdit,
   initialMode,
   requirement,
@@ -140,9 +139,9 @@ export function CodeWorkbenchPreview({
   requirement: Requirement | null;
 }) {
   const changes = useMemo(
-    () => (agentId === "backend-dev" ? backendChanges : codeChanges)
+    () => [...codeChanges, ...backendChanges]
       .filter((change) => change.requirementId === requirement?.id),
-    [agentId, requirement?.id],
+    [requirement?.id],
   );
   const [mode, setMode] = useState<WorkbenchMode>(initialMode);
   const [selectedFile, setSelectedFile] = useState(changes[0]?.file ?? "");
@@ -170,8 +169,8 @@ export function CodeWorkbenchPreview({
     <section className="code-workbench" aria-label="代码查看与编辑">
       <div className="code-workbench-toolbar">
         <div>
-          <span>{agentId === "backend-dev" ? "permission-service" : "customer-portal"}</span>
-          <b>{agentId === "backend-dev" ? "feature/project-role-scope" : "feature/role-permissions"}</b>
+          <span>customer-portal</span>
+          <b>feature/role-permissions</b>
         </div>
         <span className="workbench-context">{requirement.code} · 对话上下文已连接</span>
       </div>
