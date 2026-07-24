@@ -65,7 +65,7 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByRole("navigation", { name: "主导航" })).toHaveClass(
       "collapsed",
     );
-    expect(window.localStorage.getItem("kflow.sidebar.collapsed")).toBe("true");
+    expect(window.localStorage.getItem("kflow.sidebar.collapsed")).toBe("collapsed");
   });
 
   test("does not overwrite a sidebar toggle made during preference hydration", async () => {
@@ -76,7 +76,7 @@ describe("enterprise AI client demo", () => {
         "collapsed",
       );
       expect(window.localStorage.getItem("kflow.sidebar.collapsed")).toBe(
-        "true",
+        "collapsed",
       );
     });
   });

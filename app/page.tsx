@@ -48,24 +48,26 @@ import { useRequirementBaselineSession } from "./hooks/use-requirement-baseline-
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "kflow.sidebar.collapsed";
 const RIGHT_PANEL_WIDTH_STORAGE_KEY = "kflow.rightPanel.width";
 
+type SidebarPreference = "auto" | "expanded" | "collapsed";
+
 interface LayoutPreferencesState {
   hydrated: boolean;
-  isSidebarCollapsed: boolean;
+  sidebarPreference: SidebarPreference;
   rightPanelWidth: number;
 }
 
 type LayoutPreferencesAction =
   | {
       type: "hydrate";
-      isSidebarCollapsed: boolean;
+      sidebarPreference: SidebarPreference;
       rightPanelWidth: number;
     }
-  | { type: "toggle-sidebar"; viewportWidth: number }
+  | { type: "toggle-sidebar"; currentEffective: boolean; viewportWidth: number }
   | { type: "set-right-panel-width"; width: number };
 
 const initialLayoutPreferences: LayoutPreferencesState = {
   hydrated: false,
-  isSidebarCollapsed: false,
+  sidebarPreference: "auto",
   rightPanelWidth: DEFAULT_RIGHT_PANEL_WIDTH,
 };
 
@@ -77,20 +79,23 @@ function layoutPreferencesReducer(
     case "hydrate":
       return {
         hydrated: true,
-        isSidebarCollapsed: action.isSidebarCollapsed,
+        sidebarPreference: action.sidebarPreference,
         rightPanelWidth: action.rightPanelWidth,
       };
     case "toggle-sidebar": {
-      const isSidebarCollapsed = !state.isSidebarCollapsed;
+      // Flips from current effective state to explicit opposite
+      const sidebarPreference: SidebarPreference = action.currentEffective
+        ? "expanded"
+        : "collapsed";
       return {
         ...state,
-        isSidebarCollapsed,
+        sidebarPreference,
         rightPanelWidth: clampPreferredRightPanelWidth(
           state.rightPanelWidth,
           action.viewportWidth,
-          isSidebarCollapsed
-            ? COLLAPSED_SIDEBAR_WIDTH
-            : EXPANDED_SIDEBAR_WIDTH,
+          action.currentEffective
+            ? EXPANDED_SIDEBAR_WIDTH
+            : COLLAPSED_SIDEBAR_WIDTH,
         ),
       };
     }
@@ -124,7 +129,12 @@ export default function Page() {
   );
   const wasArtifactFocusRef = useRef(false);
   const regularRightPanelWidthRef = useRef<number | null>(null);
-  const effectiveSidebarCollapsed = layoutPreferences.isSidebarCollapsed;
+  const effectiveSidebarCollapsed =
+    layoutPreferences.sidebarPreference === "collapsed"
+      ? true
+      : layoutPreferences.sidebarPreference === "expanded"
+        ? false
+        : state.view === "task" || state.view === "project-detail";
   const selectedTaskExecution =
     state.taskExecutionsById[state.selectedTaskId] ?? "idle";
   const availableProjects = useMemo(
@@ -133,20 +143,33 @@ export default function Page() {
   );
 
   useEffect(() => {
-    const isSidebarCollapsed = readStoredBoolean(
-      window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY),
-      false,
-    );
+    const raw = window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY);
+    // Migrate legacy boolean values to new 3-state preference
+    let sidebarPreference: SidebarPreference = "auto";
+    if (raw === "expanded" || raw === "collapsed") {
+      sidebarPreference = raw;
+    } else if (raw === "true") {
+      sidebarPreference = "collapsed";
+    } else if (raw === "false") {
+      sidebarPreference = "expanded";
+    }
+    // Hydrate: compute effective for initial width clamp
+    const effectiveForHydrate =
+      sidebarPreference === "collapsed"
+        ? true
+        : sidebarPreference === "expanded"
+          ? false
+          : state.view === "task" || state.view === "project-detail";
     dispatchLayoutPreferences({
       type: "hydrate",
-      isSidebarCollapsed,
+      sidebarPreference,
       rightPanelWidth: clampPreferredRightPanelWidth(
         readStoredNumber(
           window.localStorage.getItem(RIGHT_PANEL_WIDTH_STORAGE_KEY),
           DEFAULT_RIGHT_PANEL_WIDTH,
         ),
         window.innerWidth,
-        isSidebarCollapsed
+        effectiveForHydrate
           ? COLLAPSED_SIDEBAR_WIDTH
           : EXPANDED_SIDEBAR_WIDTH,
       ),
@@ -157,9 +180,9 @@ export default function Page() {
     if (!layoutPreferences.hydrated) return;
     window.localStorage.setItem(
       SIDEBAR_COLLAPSED_STORAGE_KEY,
-      String(layoutPreferences.isSidebarCollapsed),
+      layoutPreferences.sidebarPreference,
     );
-  }, [layoutPreferences.hydrated, layoutPreferences.isSidebarCollapsed]);
+  }, [layoutPreferences.hydrated, layoutPreferences.sidebarPreference]);
 
   useEffect(() => {
     if (!layoutPreferences.hydrated) return;
@@ -185,7 +208,7 @@ export default function Page() {
     return () => window.removeEventListener("resize", clampToViewport);
   }, [
     isArtifactFocus,
-    layoutPreferences.isSidebarCollapsed,
+    effectiveSidebarCollapsed,
     layoutPreferences.rightPanelWidth,
   ]);
 
@@ -194,7 +217,7 @@ export default function Page() {
     if (isArtifactFocus && !wasArtifactFocusRef.current) {
       regularRightPanelWidthRef.current = layoutPreferences.rightPanelWidth;
       const desiredMainWidth = Math.min(520, Math.max(420, Math.floor(window.innerWidth * 0.32)));
-      const sidebarWidth = layoutPreferences.isSidebarCollapsed
+      const sidebarWidth = effectiveSidebarCollapsed
         ? COLLAPSED_SIDEBAR_WIDTH
         : EXPANDED_SIDEBAR_WIDTH;
       dispatchLayoutPreferences({
@@ -214,7 +237,7 @@ export default function Page() {
   }, [
     isArtifactFocus,
     layoutPreferences.hydrated,
-    layoutPreferences.isSidebarCollapsed,
+    effectiveSidebarCollapsed,
   ]);
 
   useEffect(() => {
@@ -457,6 +480,7 @@ export default function Page() {
         onToggleCollapsed={() =>
           dispatchLayoutPreferences({
             type: "toggle-sidebar",
+            currentEffective: effectiveSidebarCollapsed,
             viewportWidth: window.innerWidth,
           })
         }
