@@ -8,6 +8,7 @@ import type {
   RequirementStage,
 } from "../lib/types";
 import { AgentRequirementList } from "./agent-requirement-list";
+import { ProjectInvestmentCard } from "./investment-analysis";
 import { RecentAgentWork } from "./recent-agent-work";
 
 export interface ProjectDetailViewProps {
@@ -84,6 +85,7 @@ export function ProjectDetailView({
           <button onClick={onCreateRequirement} type="button">新建需求</button>
         </section>
       )}
+      {requirements.length > 0 && <ProjectInvestmentCard projectId={project.id} />}
     </div>
   );
 }

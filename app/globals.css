@@ -6519,3 +6519,26 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
   .context-assembly-flow { align-items: flex-start; flex-direction: column; }
   .context-assembly-flow i { width: 1px; height: 12px; margin-left: 7px; }
 }
+
+/* 投入分析 */
+.investment-card { margin-top: 14px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.investment-card > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.investment-card h3 { margin: 0; font-size: 14px; }
+.investment-totals { display: flex; flex-wrap: wrap; gap: 12px; }
+.investment-totals span { display: inline-flex; align-items: center; gap: 5px; color: var(--text-muted); font-size: 11px; }
+.investment-totals b { color: var(--text); font-size: 12px; }
+.investment-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.investment-table th { text-align: left; padding: 7px 8px; color: var(--text-muted); font-size: 10px; font-weight: 600; border-bottom: 1px solid var(--border); }
+.investment-table th svg { vertical-align: -2px; margin-right: 3px; }
+.investment-table td { padding: 8px; border-bottom: 1px solid #f0f0f3; }
+.investment-table td:first-child { display: flex; align-items: center; gap: 8px; }
+.investment-avatar { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; background: #eee9ff; color: #634bc5; font-weight: 700; font-size: 11px; flex: none; }
+.investment-avatar.digital { background: linear-gradient(135deg, #634bc5, #8b5cf6); color: #fff; }
+.investment-requirements { display: grid; gap: 6px; }
+.investment-requirement { background: var(--surface-soft); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.investment-requirement-head { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 11px; background: transparent; border: 0; text-align: left; cursor: pointer; font: inherit; }
+.investment-requirement-head span { flex: 1; font-size: 12px; }
+.investment-requirement-head small { color: var(--text-muted); font-size: 10px; }
+.investment-requirement-head .open { transform: rotate(0deg); }
+.investment-requirement-head svg:not(.open) { transform: rotate(-90deg); }
+.investment-requirement .investment-table { margin: 0 8px 8px; }
