@@ -1,8 +1,9 @@
-import { ArrowLeft, FilePlus2 } from "lucide-react";
+import { ArrowLeft, FilePlus2, Settings } from "lucide-react";
 import type {
   Agent,
   AgentWorkSession,
   ContextSource,
+  PreviewKind,
   Project,
   Requirement,
   RequirementStage,
@@ -22,6 +23,7 @@ export interface ProjectDetailViewProps {
   onResumeSession(sessionId: string): void;
   onOpenRequirement(requirementId: string): void;
   onCreateRequirement(): void;
+  onOpenPreview(kind: PreviewKind): void;
 }
 
 export function ProjectDetailView({
@@ -36,12 +38,20 @@ export function ProjectDetailView({
   onResumeSession,
   onOpenRequirement,
   onCreateRequirement,
+  onOpenPreview,
 }: ProjectDetailViewProps) {
   return (
     <div className="project-detail page-scroll">
       <header className="page-header detail-header">
         <button className="back-button" onClick={onBack} type="button">
           <ArrowLeft size={17} /> 返回项目
+        </button>
+        <button
+          className="secondary-button project-settings-entry"
+          onClick={() => onOpenPreview("project-settings")}
+          type="button"
+        >
+          <Settings size={15} /> 项目设置
         </button>
         <div className="detail-title-row">
           <div>

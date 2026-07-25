@@ -27,6 +27,13 @@ beforeEach(() => {
   });
 });
 
+const roleLabels: Record<string, string> = {
+  product: "产品",
+  development: "研发",
+  testing: "测试",
+  viewer: "观察者",
+};
+
 async function openCustomerPortal() {
   await userEvent.click(screen.getByRole("button", { name: "项目" }));
   await userEvent.click(
@@ -44,15 +51,26 @@ async function openRoleRequirement() {
 }
 
 async function setCurrentUserRole(
-  role: "admin" | "product" | "development" | "testing" | "viewer",
+  role: "product" | "development" | "testing" | "viewer",
 ) {
   await openCustomerPortal();
   await userEvent.click(screen.getByRole("button", { name: "项目设置" }));
-  await userEvent.click(screen.getByRole("button", { name: "成员与角色" }));
-  await userEvent.selectOptions(
-    screen.getByLabelText("修改陈楠的项目角色"),
-    role,
+  // 展开 ProjectSettingsPanel 的"成员与角色"区(用 aria-expanded 区分于工具栏同名按钮)
+  await userEvent.click(
+    screen.getByRole("button", { name: "成员与角色", expanded: false }),
   );
+  // 取消陈楠所有已选角色(每次重新查询容器,因为点击会重渲染)
+  for (const label of Object.values(roleLabels)) {
+    const chip = within(
+      screen.getByLabelText("修改陈楠的项目角色"),
+    ).queryByRole("button", { name: `${label}（已选）` });
+    if (chip) await userEvent.click(chip);
+  }
+  // 选中目标角色(若未选)
+  const target = within(
+    screen.getByLabelText("修改陈楠的项目角色"),
+  ).queryByRole("button", { name: roleLabels[role] });
+  if (target) await userEvent.click(target);
   await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
 }
 
@@ -837,7 +855,7 @@ describe("enterprise AI client demo", () => {
             "kflow.projectCapability.customer-portal",
           ) ?? "{}",
         ),
-      ).toMatchObject({ canEditProductArtifacts: true, role: "admin" });
+      ).toMatchObject({ canEditProductArtifacts: true, roles: ["product", "development"] });
     });
 
     await setCurrentUserRole("viewer");
@@ -848,7 +866,7 @@ describe("enterprise AI client demo", () => {
             "kflow.projectCapability.customer-portal",
           ) ?? "{}",
         ),
-      ).toMatchObject({ canEditProductArtifacts: false, role: "viewer" });
+      ).toMatchObject({ canEditProductArtifacts: false, roles: ["viewer"] });
     });
   });
 

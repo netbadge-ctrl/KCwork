@@ -585,6 +585,7 @@ export default function Page() {
             }
             onStartCreateProject={() => openPreview("create-system")}
             onOpenProject={openProject}
+            onOpenPreview={openPreview}
             onBack={() => dispatch({ type: "navigate", view: "projects" })}
           />
         )}

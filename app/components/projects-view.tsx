@@ -4,6 +4,7 @@ import type {
   Agent,
   AgentWorkSession,
   ContextSource,
+  PreviewKind,
   Project,
   Requirement,
   RequirementStage,
@@ -25,6 +26,7 @@ export interface ProjectsViewProps {
   onOpenRequirement(id: string): void;
   onCreateRequirement(): void;
   onStartCreateProject(): void;
+  onOpenPreview(kind: PreviewKind): void;
 }
 
 export function ProjectsView({
@@ -42,6 +44,7 @@ export function ProjectsView({
   onOpenRequirement,
   onCreateRequirement,
   onStartCreateProject,
+  onOpenPreview,
 }: ProjectsViewProps) {
   const [query, setQuery] = useState("");
   const project = projects.find((item) => item.id === selectedProjectId);
@@ -53,6 +56,7 @@ export function ProjectsView({
         contextSources={contextSources.filter((source) => source.projectId === project.id)}
         lastAgentByRequirement={lastAgentByRequirement}
         onBack={onBack}
+        onOpenPreview={onOpenPreview}
         onOpenRequirement={onOpenRequirement}
         onCreateRequirement={onCreateRequirement}
         onResumeSession={onResumeSession}
