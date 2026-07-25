@@ -88,57 +88,6 @@ export function ProjectSettingsPanel({
         )}
       </section>}
 
-      {(section === "all" || section === "governance") && <section className="project-settings-section">
-        {section === "all" && <button
-          aria-expanded={openSection === "governance"}
-          className="project-settings-section-toggle"
-          onClick={() => toggleSection("governance")}
-          type="button"
-        >
-          <span>需求状态与门禁</span>
-          <ChevronDown size={17} />
-        </button>}
-        {(section === "governance" || openSection === "governance") && (
-          <div className="project-settings-section-content requirement-governance-settings">
-            <p className="project-settings-help">调整状态会记录为项目治理变更；门禁状态由对应评审结果维护。</p>
-            <div className="project-requirement-settings-list">
-              {requirements.map((requirement) => {
-                const stage = requirementStages[requirement.id] ?? requirement.stage;
-                return (
-                  <article className="project-requirement-setting" key={requirement.id}>
-                    <div>
-                      <strong>{requirement.title}</strong>
-                      <small>{requirement.code} · Spec {requirement.specVersion}</small>
-                    </div>
-                    <label>
-                      状态
-                      <select
-                        aria-label={`设置${requirement.title}状态`}
-                        disabled={!capabilities.canManageRequirements}
-                        onChange={(event) =>
-                          onSetRequirementStage(
-                            requirement.id,
-                            event.target.value as RequirementStage,
-                          )
-                        }
-                        value={stage}
-                      >
-                        {Object.entries(stageLabels).map(([value, label]) => (
-                          <option key={value} value={value}>{label}</option>
-                        ))}
-                      </select>
-                    </label>
-                    <p className="requirement-gate-summary">
-                      当前门禁：{requirement.gateLabel}（{requirement.gateStatus}）
-                    </p>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </section>}
-
       {(section === "all" || section === "context") && <section className="project-settings-section">
         {section === "all" && <button
           aria-expanded={openSection === "assets"}

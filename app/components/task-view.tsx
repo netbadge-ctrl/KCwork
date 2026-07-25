@@ -49,7 +49,6 @@ export interface TaskViewProps {
   onProductWorkModeChange?(mode: ProductWorkMode): void;
   onSend(text: string, contextReference?: ProductContextReference): void;
   onOpenPreview(kind: PreviewKind): void;
-  onOpenSettings?(): void;
   onBackToProject?(): void;
   productPackage?: ProductPackageState;
   onProductPackageAction?: Dispatch<ProductPackageAction>;
@@ -85,7 +84,6 @@ export function TaskView({
   onProductWorkModeChange,
   onSend,
   onOpenPreview,
-  onOpenSettings,
   onBackToProject,
   productPackage,
   onProductPackageAction,
@@ -146,15 +144,6 @@ export function TaskView({
                   </button>
                   {isMoreMenuOpen && (
                     <div className="requirement-more-menu">
-                      <button
-                        onClick={() => {
-                          setIsMoreMenuOpen(false);
-                          onOpenSettings?.();
-                        }}
-                        type="button"
-                      >
-                        调整状态与门禁
-                      </button>
                       <button disabled={!canEdit} type="button">编辑负责人</button>
                       <button disabled={!canEdit} type="button">归档需求</button>
                     </div>

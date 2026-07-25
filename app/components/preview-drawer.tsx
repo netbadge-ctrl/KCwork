@@ -74,7 +74,7 @@ export interface PreviewDrawerProps {
   onRequirementBaselineAction: Dispatch<RequirementBaselineAction>;
   onScopedProductSend(reference: ProductContextReference, text: string): void;
   capabilities: ProjectCapabilities;
-  currentRole: ProjectRole;
+  currentRoles: ProjectRole[];
   selectedContextIds: string[];
   lockedContextIds: string[];
   selectedAssetId: string | null;
@@ -102,7 +102,6 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   members: "成员管理",
   sources: "自动上下文",
   "project-settings": "项目设置",
-  "requirement-governance": "需求状态与门禁",
   "context-maintenance": "共享上下文",
   "create-system": "新建系统项目",
   "project-repositories": "代码仓库",
@@ -165,7 +164,7 @@ export function PreviewDrawer({
   onRequirementBaselineAction,
   onScopedProductSend,
   capabilities,
-  currentRole,
+  currentRoles,
   selectedContextIds,
   lockedContextIds,
   selectedAssetId,
@@ -384,7 +383,7 @@ export function PreviewDrawer({
             {preview === "project-settings" && (
               <ProjectSettingsPanel
                 capabilities={capabilities}
-                currentRole={currentRole}
+                currentRoles={currentRoles}
                 memberRoles={memberRoles}
                 members={members}
                 onChangeMemberRole={onChangeMemberRole}
@@ -392,20 +391,6 @@ export function PreviewDrawer({
                 onSetRequirementStage={onSetRequirementStage}
                 requirementStages={requirementStages}
                 requirements={requirements}
-              />
-            )}
-            {preview === "requirement-governance" && (
-              <ProjectSettingsPanel
-                capabilities={capabilities}
-                currentRole={currentRole}
-                memberRoles={memberRoles}
-                members={members}
-                onChangeMemberRole={onChangeMemberRole}
-                onOpenAsset={onOpenAsset}
-                onSetRequirementStage={onSetRequirementStage}
-                requirementStages={requirementStages}
-                requirements={requirements}
-                section="governance"
               />
             )}
             {preview === "project-repositories" && selectedProject && (

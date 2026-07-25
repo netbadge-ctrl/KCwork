@@ -116,7 +116,7 @@ export const contextualPreviewKinds = new Set<PreviewKind>([
   "test-cases", "test-run", "defects",
   "delivery-check", "version-history",
   "requirement-spec", "requirement-acceptance",
-  "requirement-governance", "context-maintenance", "project-repositories",
+  "context-maintenance", "project-repositories",
   "project-requirements", "project-tests",
   "investment",
 ]);
@@ -129,7 +129,6 @@ export function resolveContextualTools(context: ContextualToolContext): Contextu
       tool("project-tests", "测试资产", TestTube2),
       tool("context-maintenance", "共享上下文", Database),
       tool("members", "成员与角色", Users),
-      tool("requirement-governance", "需求状态与门禁", ShieldCheck),
       tool("investment", "投入分析", BarChart3),
     ];
   }

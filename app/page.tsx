@@ -647,7 +647,6 @@ export default function Page() {
             onOpenPreview={openPreview}
             activePreview={state.preview}
             onClearProductContext={() => dispatch({ type: "close-preview" })}
-            onOpenSettings={() => openPreview("requirement-governance")}
             onBackToProject={() =>
               requestNavigation(selectedProject.name, () =>
                 dispatch({ type: "navigate", view: "project-detail" }),
