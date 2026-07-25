@@ -3,9 +3,9 @@ export const COLLAPSED_SIDEBAR_WIDTH = 64;
 export const DEFAULT_RIGHT_PANEL_WIDTH = 560;
 export const MIN_RIGHT_PANEL_WIDTH = 420;
 export const MIN_MAIN_STAGE_WIDTH = 420;
-export const OVERLAY_BREAKPOINT = 1120;
+const OVERLAY_BREAKPOINT = 1120;
 export const MOBILE_BREAKPOINT = 760;
-export const MOBILE_SIDEBAR_WIDTH = 68;
+const MOBILE_SIDEBAR_WIDTH = 68;
 
 export function clampRightPanelWidth(width: number, viewportWidth: number) {
   return Math.min(

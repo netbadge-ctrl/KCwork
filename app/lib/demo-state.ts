@@ -104,6 +104,14 @@ const selectedContextIdsByRequirement = Object.fromEntries(
   ]),
 );
 
+const AGENT_DEFAULT_PREVIEW: Record<string, PreviewKind> = {
+  development: "files",
+  testing: "test-cases",
+  "meeting-notes": "actions",
+  "data-analysis": "chart",
+  presentation: "slides",
+};
+
 function defaultPreviewForAgent(
   agentId: string,
   productWorkMode: ProductWorkMode,
@@ -111,12 +119,7 @@ function defaultPreviewForAgent(
   if (agentId === "product-design") {
     return productWorkMode === "prototype" ? "prototype" : "prd";
   }
-  if (agentId === "development") return "files";
-  if (agentId === "testing") return "test-cases";
-  if (agentId === "meeting-notes") return "actions";
-  if (agentId === "data-analysis") return "chart";
-  if (agentId === "presentation") return "slides";
-  return "context";
+  return AGENT_DEFAULT_PREVIEW[agentId] ?? "context";
 }
 
 export const initialClientState: ClientState = {

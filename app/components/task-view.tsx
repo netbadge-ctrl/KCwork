@@ -5,7 +5,6 @@ import {
   Clock3,
   FileText,
   Layers3,
-  MoreHorizontal,
   RotateCcw,
 } from "lucide-react";
 import { useState, type Dispatch } from "react";
@@ -27,6 +26,7 @@ import { DownstreamProductContext, ProductPackageStrip } from "./product-package
 import type { ProductPackageAction, ProductPackageState } from "../lib/product-package";
 import { RequirementBaselineStrip } from "./requirement-baseline";
 import type { RequirementBaselineState } from "../lib/requirement-baseline";
+import { RequirementMoreActions } from "./requirement-more-actions";
 
 export interface TaskViewProps {
   task: RecentTask;
@@ -91,7 +91,6 @@ export function TaskView({
   activePreview = null,
   onClearProductContext,
 }: TaskViewProps) {
-  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isRequirementContextOpen, setIsRequirementContextOpen] = useState(false);
   const [savedArtifactIds, setSavedArtifactIds] = useState<Set<string>>(
     () => new Set(),
@@ -131,25 +130,7 @@ export function TaskView({
                   <ChevronDown size={13} />
                 </button>
               )}
-              {requirement && (
-                <div className="requirement-more-actions">
-                  <button
-                    aria-expanded={isMoreMenuOpen}
-                    aria-label="更多需求操作"
-                    className="icon-button"
-                    onClick={() => setIsMoreMenuOpen((isOpen) => !isOpen)}
-                    type="button"
-                  >
-                    <MoreHorizontal size={18} />
-                  </button>
-                  {isMoreMenuOpen && (
-                    <div className="requirement-more-menu">
-                      <button disabled={!canEdit} type="button">编辑负责人</button>
-                      <button disabled={!canEdit} type="button">归档需求</button>
-                    </div>
-                  )}
-                </div>
-              )}
+              {requirement && <RequirementMoreActions canEdit={canEdit} />}
             </div>
           )}
           <button

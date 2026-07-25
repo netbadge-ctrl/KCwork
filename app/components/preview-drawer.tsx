@@ -129,6 +129,13 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   investment: "投入分析",
 };
 
+const PROJECT_CONTEXT_PREVIEW_KIND: Partial<Record<PreviewKind, "repositories" | "requirements" | "tests" | "context">> = {
+  "project-repositories": "repositories",
+  "project-requirements": "requirements",
+  "project-tests": "tests",
+  "context-maintenance": "context",
+};
+
 const fullAgentPanelKinds = new Set<PreviewKind>([
   "requirement-analysis",
   "acceptance-criteria",
@@ -393,17 +400,8 @@ export function PreviewDrawer({
                 requirements={requirements}
               />
             )}
-            {preview === "project-repositories" && selectedProject && (
-              <ProjectContextPanel kind="repositories" onOpenAsset={onOpenAsset} project={selectedProject} requirements={requirements} sources={sources} />
-            )}
-            {preview === "project-requirements" && selectedProject && (
-              <ProjectContextPanel kind="requirements" onOpenAsset={onOpenAsset} project={selectedProject} requirements={requirements} sources={sources} />
-            )}
-            {preview === "project-tests" && selectedProject && (
-              <ProjectContextPanel kind="tests" onOpenAsset={onOpenAsset} project={selectedProject} requirements={requirements} sources={sources} />
-            )}
-            {preview === "context-maintenance" && selectedProject && (
-              <ProjectContextPanel kind="context" onOpenAsset={onOpenAsset} project={selectedProject} requirements={requirements} sources={sources} />
+            {selectedProject && PROJECT_CONTEXT_PREVIEW_KIND[preview ?? ""] && (
+              <ProjectContextPanel kind={PROJECT_CONTEXT_PREVIEW_KIND[preview]} onOpenAsset={onOpenAsset} project={selectedProject} requirements={requirements} sources={sources} />
             )}
             {preview === "create-system" && (
               <CreateSystemPanel
@@ -651,11 +649,6 @@ function PrdPreview({
       </aside>
     </article>
   );
-}
-
-function ContextPreview({ sources, selectedIds }: { sources: ContextSource[]; selectedIds: string[] }) {
-  const selectedSources = sources.filter((source) => selectedIds.includes(source.id));
-  return <div className="context-preview"><h3>本次引用 {selectedSources.length} 项上下文</h3>{selectedSources.map((source) => <div key={source.id}><Check size={15} /><span>{source.name} · {source.detail}</span></div>)}</div>;
 }
 
 function LogPreview({ requirement }: { requirement: Requirement | null }) {

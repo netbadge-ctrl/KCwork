@@ -33,7 +33,7 @@ import {
   discardPrototypeDraft,
   usePrototypeDocumentStatus,
 } from "./lib/prototype-state";
-import type { PreviewKind, ProductContextReference, Project, ProjectSection, ViewId } from "./lib/types";
+import type { PreviewKind, ProductContextReference, ProductWorkMode, Project, ProjectSection, ViewId } from "./lib/types";
 import {
   clampPreferredRightPanelWidth,
   COLLAPSED_SIDEBAR_WIDTH,
@@ -49,6 +49,17 @@ const SIDEBAR_COLLAPSED_STORAGE_KEY = "kflow.sidebar.collapsed";
 const RIGHT_PANEL_WIDTH_STORAGE_KEY = "kflow.rightPanel.width";
 
 type SidebarPreference = "auto" | "expanded" | "collapsed";
+
+// Whether the sidebar is effectively collapsed given the preference and current view.
+// "auto" collapses on task/project-detail, expands elsewhere.
+function isSidebarCollapsed(preference: SidebarPreference, view: ViewId): boolean {
+  if (preference === "collapsed") return true;
+  if (preference === "expanded") return false;
+  return view === "task" || view === "project-detail";
+}
+
+const sidebarWidthFor = (collapsed: boolean) =>
+  collapsed ? COLLAPSED_SIDEBAR_WIDTH : EXPANDED_SIDEBAR_WIDTH;
 
 interface LayoutPreferencesState {
   hydrated: boolean;
@@ -167,12 +178,11 @@ export default function Page() {
   // - "collapsed" preference: always collapsed
   // - "expanded" preference: always expanded
   // - "auto" preference: collapsed on task/project-detail, expanded elsewhere
-  const effectiveSidebarCollapsed =
-    layoutPreferences.sidebarPreference === "collapsed"
-      ? true
-      : layoutPreferences.sidebarPreference === "expanded"
-        ? false
-        : state.view === "task" || state.view === "project-detail";
+  const effectiveSidebarCollapsed = isSidebarCollapsed(
+    layoutPreferences.sidebarPreference,
+    state.view,
+  );
+  const effectiveSidebarWidth = sidebarWidthFor(effectiveSidebarCollapsed);
   const selectedTaskExecution =
     state.taskExecutionsById[state.selectedTaskId] ?? "idle";
   const availableProjects = useMemo(
@@ -192,12 +202,7 @@ export default function Page() {
       sidebarPreference = "expanded";
     }
     // Hydrate: compute effective for initial width clamp
-    const effectiveForHydrate =
-      sidebarPreference === "collapsed"
-        ? true
-        : sidebarPreference === "expanded"
-          ? false
-          : state.view === "task" || state.view === "project-detail";
+    const effectiveForHydrate = isSidebarCollapsed(sidebarPreference, state.view);
     dispatchLayoutPreferences({
       type: "hydrate",
       sidebarPreference,
@@ -207,9 +212,7 @@ export default function Page() {
           DEFAULT_RIGHT_PANEL_WIDTH,
         ),
         window.innerWidth,
-        effectiveForHydrate
-          ? COLLAPSED_SIDEBAR_WIDTH
-          : EXPANDED_SIDEBAR_WIDTH,
+        sidebarWidthFor(effectiveForHydrate),
       ),
     });
   }, []);
@@ -237,9 +240,7 @@ export default function Page() {
         width: clampPreferredRightPanelWidth(
           layoutPreferences.rightPanelWidth,
           window.innerWidth,
-          effectiveSidebarCollapsed
-            ? COLLAPSED_SIDEBAR_WIDTH
-            : EXPANDED_SIDEBAR_WIDTH,
+          effectiveSidebarWidth,
         ),
       });
     window.addEventListener("resize", clampToViewport);
@@ -255,9 +256,7 @@ export default function Page() {
     if (isArtifactFocus && !wasArtifactFocusRef.current) {
       regularRightPanelWidthRef.current = layoutPreferences.rightPanelWidth;
       const desiredMainWidth = Math.min(520, Math.max(420, Math.floor(window.innerWidth * 0.32)));
-      const sidebarWidth = effectiveSidebarCollapsed
-        ? COLLAPSED_SIDEBAR_WIDTH
-        : EXPANDED_SIDEBAR_WIDTH;
+      const sidebarWidth = effectiveSidebarWidth;
       dispatchLayoutPreferences({
         type: "set-right-panel-width",
         width: clampPreferredRightPanelWidth(
@@ -436,6 +435,13 @@ export default function Page() {
     } else run();
   };
 
+  const handleProductWorkModeChange = (mode: ProductWorkMode) => {
+    if (mode === state.productWorkMode) return;
+    requestNavigation("产品工作模式", () =>
+      dispatch({ type: "set-product-work-mode", mode }),
+    );
+  };
+
   const sendMessage = (text: string, contextReference?: ProductContextReference) => {
     dispatch({ type: "send-message", text, contextReference });
     if (state.selectedAgentId !== "product-design") return;
@@ -493,11 +499,7 @@ export default function Page() {
       data-prototype-pending={prototypeStatus.pending}
       style={
         {
-          "--sidebar-width": `${
-            effectiveSidebarCollapsed
-              ? COLLAPSED_SIDEBAR_WIDTH
-              : EXPANDED_SIDEBAR_WIDTH
-          }px`,
+          "--sidebar-width": `${effectiveSidebarWidth}px`,
           "--right-panel-width": `${layoutPreferences.rightPanelWidth}px`,
         } as CSSProperties
       }
@@ -534,12 +536,7 @@ export default function Page() {
             selectedAgentId={state.selectedAgentId}
             selectedProjectId={state.selectedProjectId}
             onModeChange={(mode) => dispatch({ type: "set-mode", mode })}
-            onProductWorkModeChange={(mode) => {
-              if (mode === state.productWorkMode) return;
-              requestNavigation("产品工作模式", () =>
-                dispatch({ type: "set-product-work-mode", mode }),
-              );
-            }}
+            onProductWorkModeChange={handleProductWorkModeChange}
             onSelectAgent={(agentId) =>
               dispatch({ type: "select-agent", agentId })
             }
@@ -660,12 +657,7 @@ export default function Page() {
                 dispatch({ type: "select-agent", agentId }),
               );
             }}
-            onProductWorkModeChange={(mode) => {
-              if (mode === state.productWorkMode) return;
-              requestNavigation("产品工作模式", () =>
-                dispatch({ type: "set-product-work-mode", mode }),
-              );
-            }}
+            onProductWorkModeChange={handleProductWorkModeChange}
             onSend={sendMessage}
             productPackage={productPackageSession.state}
             onProductPackageAction={productPackageSession.dispatch}
@@ -693,10 +685,7 @@ export default function Page() {
             canEdit={canEditSelectedWorkspace}
             currentRoles={currentRoles}
             productWorkMode={state.productWorkMode}
-            onProductWorkModeChange={(mode) => {
-              if (mode === state.productWorkMode) return;
-              dispatch({ type: "set-product-work-mode", mode });
-            }}
+            onProductWorkModeChange={handleProductWorkModeChange}
             onSelectAgent={(agentId) =>
               dispatch({ type: "select-agent", agentId })
             }

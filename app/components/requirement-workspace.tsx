@@ -1,5 +1,4 @@
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
 import type {
   Agent,
   DevelopmentTaskStatus,
@@ -15,6 +14,7 @@ import type {
 import { projectRoleLabels } from "../lib/project-capabilities";
 import { Composer } from "./composer";
 import { RequirementAgentActivity } from "./requirement-agent-activity";
+import { RequirementMoreActions } from "./requirement-more-actions";
 import { stageLabels } from "./requirement-list";
 import { WorkspaceRouter } from "./workspaces/workspace-router";
 
@@ -69,7 +69,6 @@ export function RequirementWorkspace({
   onSaveDocumentDraft,
   onSetDevelopmentTaskStatus,
 }: RequirementWorkspaceProps) {
-  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const researchAgents = agents.filter((item) => item.mode === "research" || item.mode === "both");
   return (
     <div className="requirement-workspace">
@@ -105,20 +104,7 @@ export function RequirementWorkspace({
             ))}
           </select>
           <div className="requirement-more-actions">
-            <button
-              aria-expanded={isMoreMenuOpen}
-              className="secondary-button"
-              onClick={() => setIsMoreMenuOpen((isOpen) => !isOpen)}
-              type="button"
-            >
-              更多需求操作
-            </button>
-            {isMoreMenuOpen && (
-              <div className="requirement-more-menu">
-                <button disabled={!canEdit} type="button">编辑负责人</button>
-                <button disabled={!canEdit} type="button">归档需求</button>
-              </div>
-            )}
+            <RequirementMoreActions canEdit={canEdit} />
           </div>
         </div>
       </header>
