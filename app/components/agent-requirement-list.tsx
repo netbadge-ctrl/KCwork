@@ -68,39 +68,29 @@ export function AgentRequirementList({
               >
                 <span className="requirement-code">{requirement.code}</span>
                 <strong>{requirement.title}</strong>
-                <p>{requirement.summary}</p>
               </button>
-              <dl className="requirement-meta">
-                <div>
-                  <dt>创建人</dt>
-                  <dd>{requirement.createdBy}</dd>
-                </div>
-                <div>
-                  <dt>创建时间</dt>
-                  <dd>{requirement.createdAt}</dd>
-                </div>
-                <div>
-                  <dt>需求状态</dt>
-                  <dd><span className="compact-stage-label">{stageLabels[stage]}</span></dd>
-                </div>
-              </dl>
-              <footer>
-                <div className="requirement-participants" aria-label="参与人">
-                  {participants.map((name) => (
-                    <span className="requirement-participant" key={name} title={name}>
-                      {name.slice(0, 1)}
-                    </span>
-                  ))}
-                  <small>{participants.join("、")}</small>
-                </div>
-                <button
-                  aria-label={`恢复${requirement.title}工作区`}
-                  onClick={() => onOpen(requirement.id)}
-                  type="button"
-                >
-                  {lastAgent?.name ? `继续 ${lastAgent.name}` : "恢复工作区"}
-                </button>
-              </footer>
+              <div className="requirement-meta-inline">
+                <span>{requirement.createdBy}</span>
+                <span className="dot" aria-hidden="true">·</span>
+                <span>{requirement.createdAt}</span>
+                <span className="compact-stage-label">{stageLabels[stage]}</span>
+              </div>
+              <div className="requirement-participants" aria-label="参与人">
+                {participants.map((name) => (
+                  <span className="requirement-participant" key={name} title={name}>
+                    {name.slice(0, 1)}
+                  </span>
+                ))}
+                <small>{participants.join("、")}</small>
+              </div>
+              <button
+                aria-label={`恢复${requirement.title}工作区`}
+                className="requirement-resume"
+                onClick={() => onOpen(requirement.id)}
+                type="button"
+              >
+                {lastAgent?.name ? `继续 ${lastAgent.name}` : "恢复工作区"}
+              </button>
             </article>
           );
         })}

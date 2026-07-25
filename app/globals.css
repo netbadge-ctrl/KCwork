@@ -1491,19 +1491,22 @@ select:focus-visible {
   font-weight: 650;
 }
 
-/* 重构后的需求卡片:纵向堆叠,展示创建人/时间/状态/参与人 */
-.agent-requirement-card { flex-direction: column; align-items: stretch; gap: 10px; }
-.agent-requirement-main { display: grid; gap: 5px; text-align: left; background: transparent; border: 0; padding: 0; cursor: pointer; }
-.agent-requirement-main strong { font-size: 14px; }
-.agent-requirement-main p { margin: 0; color: var(--text-muted); font-size: 12px; }
-.requirement-meta { display: flex; flex-wrap: wrap; gap: 14px; margin: 0; padding: 8px 10px; background: var(--surface-soft); border-radius: 8px; }
-.requirement-meta > div { display: grid; gap: 2px; }
-.requirement-meta dt { color: var(--text-muted); font-size: 10px; }
-.requirement-meta dd { margin: 0; font-size: 12px; }
-.agent-requirement-card footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.requirement-participants { display: flex; align-items: center; gap: 4px; }
-.requirement-participant { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #eee9ff; color: #634bc5; font-size: 10px; font-weight: 700; }
-.requirement-participants small { color: var(--text-muted); font-size: 11px; }
+/* 紧凑单行需求卡片:code+标题 | 创建人·时间·状态 | 参与人 | 恢复按钮 */
+.agent-requirement-card { flex-direction: row; align-items: center; gap: 14px; padding: 9px 12px; border-radius: 10px; }
+.agent-requirement-main { display: flex; align-items: center; gap: 8px; flex: 0 1 auto; min-width: 0; text-align: left; background: transparent; border: 0; padding: 0; cursor: pointer; }
+.agent-requirement-main strong { font-size: 13px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agent-requirement-main .requirement-code { flex: none; }
+.requirement-meta-inline { display: inline-flex; align-items: center; gap: 6px; flex: none; font-size: 11px; color: var(--text-muted); }
+.requirement-meta-inline .dot { color: var(--text-muted); opacity: .5; }
+.requirement-meta-inline .compact-stage-label { font-size: 10px; padding: 2px 7px; }
+.requirement-participants { display: inline-flex; align-items: center; gap: 3px; flex: 1 1 auto; justify-content: flex-end; min-width: 0; }
+.requirement-participant { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #eee9ff; color: #634bc5; font-size: 9px; font-weight: 700; }
+.requirement-participants small { color: var(--text-muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.requirement-resume { flex: none; padding: 6px 9px; color: var(--accent); background: var(--accent-soft); border: 0; border-radius: 8px; font-size: 11px; font-weight: 650; }
+@media (max-width: 1080px) {
+  .agent-requirement-card { flex-wrap: wrap; gap: 8px; }
+  .requirement-participants { flex-basis: 100%; }
+}
 
 .project-empty-state {
   align-items: center;
