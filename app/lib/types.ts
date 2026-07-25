@@ -185,7 +185,6 @@ export type ReviewGateStatus =
   | "objected"
   | "skipped";
 export type ProjectRole =
-  | "admin"
   | "product"
   | "development"
   | "testing"
@@ -222,7 +221,7 @@ export interface ProjectMember {
   projectId: string;
   name: string;
   initials: string;
-  role: ProjectRole;
+  roles: ProjectRole[];
   team: string;
   digital?: boolean;
 }

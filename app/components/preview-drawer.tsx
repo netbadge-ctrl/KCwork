@@ -61,7 +61,7 @@ export interface PreviewDrawerProps {
   tools: ContextualTool[];
   assets: AssetItem[];
   members: ProjectMember[];
-  memberRoles: Record<string, ProjectRole>;
+  memberRoles: Record<string, ProjectRole[]>;
   requirements: Requirement[];
   requirementStages: Record<string, RequirementStage>;
   sources: ContextSource[];
@@ -85,7 +85,7 @@ export interface PreviewDrawerProps {
   onSaveDocumentDraft?(draft: string): void;
   onToggleContextSource(sourceId: string): void;
   onToggleContextLock(sourceId: string): void;
-  onChangeMemberRole(memberId: string, role: ProjectRole): void;
+  onChangeMemberRole(memberId: string, roles: ProjectRole[]): void;
   onSetRequirementStage(requirementId: string, stage: RequirementStage): void;
   onOpenAsset(section: Exclude<ProjectSection, "overview">): void;
   onCreateProject(project: Project): void;

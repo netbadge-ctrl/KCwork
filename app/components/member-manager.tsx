@@ -11,9 +11,9 @@ const roleLabels: Record<ProjectRole, string> = {
 
 export interface MemberManagerProps {
   members: ProjectMember[];
-  roles: Record<string, ProjectRole>;
+  roles: Record<string, ProjectRole[]>;
   canManage?: boolean;
-  onChangeRole(memberId: string, role: ProjectRole): void;
+  onChangeRole(memberId: string, roles: ProjectRole[]): void;
 }
 
 export function MemberManager({
@@ -43,19 +43,30 @@ export function MemberManager({
             {member.digital ? (
               <span className="member-role-digital" aria-label={`${member.name}为数字人，不可调整角色`}>数字人</span>
             ) : (
-            <select
-              aria-label={`修改${member.name}的项目角色`}
-              className="member-role-select"
-              disabled={!canManage}
-              onChange={(event) =>
-                onChangeRole(member.id, event.target.value as ProjectRole)
-              }
-              value={roles[member.id] ?? member.role}
-            >
-              {Object.entries(roleLabels).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
+              <div className="member-role-chips" aria-label={`修改${member.name}的项目角色`}>
+                {Object.entries(roleLabels).map(([value, label]) => {
+                  const current = roles[member.id] ?? member.roles;
+                  const active = current.includes(value as ProjectRole);
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      disabled={!canManage}
+                      className={`member-role-chip${active ? " active" : ""}`}
+                      aria-pressed={active}
+                      aria-label={`${label}${active ? "（已选）" : ""}`}
+                      onClick={() => {
+                        const next = active
+                          ? current.filter((r) => r !== value)
+                          : [...current, value as ProjectRole];
+                        onChangeRole(member.id, next);
+                      }}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
             )}
           </div>
         ))}

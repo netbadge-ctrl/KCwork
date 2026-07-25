@@ -37,7 +37,7 @@ function setTrustedProductCapability(canEditProductArtifacts: boolean) {
   const value = JSON.stringify({
     canEditProductArtifacts,
     projectId: "customer-portal",
-    role: canEditProductArtifacts ? "product" : "viewer",
+    roles: canEditProductArtifacts ? ["product"] : ["viewer"],
   });
   window.localStorage.setItem(key, value);
   return { key, value };

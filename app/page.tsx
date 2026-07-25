@@ -331,13 +331,11 @@ export default function Page() {
   const currentMember = selectedProjectMembers.find(
     (member) => member.name === "陈楠",
   );
-  const currentRole = currentMember
-    ? state.memberRoles[currentMember.id] ?? currentMember.role
-    : createdProjects.some((project) => project.id === state.selectedProjectId)
-      ? "admin"
-      : "viewer";
+  const currentRoles: ProjectRole[] = currentMember
+    ? (state.memberRoles[currentMember.id] ?? currentMember.roles)
+    : ["viewer"];
   const capabilities = selectedProject
-    ? getProjectCapabilities(currentRole)
+    ? getProjectCapabilities(currentRoles)
     : unscopedCapabilities;
   const prototypeStatus = usePrototypeDocumentStatus(
     selectedRequirement?.id ?? null,
@@ -347,12 +345,12 @@ export default function Page() {
     if (!selectedProject) return;
     publishProjectCapability(
       selectedProject.id,
-      currentRole,
+      currentRoles,
       capabilities.canEditProductArtifacts,
     );
   }, [
     capabilities.canEditProductArtifacts,
-    currentRole,
+    currentRoles,
     selectedProject,
   ]);
   const canEditSelectedWorkspace = canEditAgentWorkspace(
@@ -529,7 +527,7 @@ export default function Page() {
           <HomeView
             mode={state.mode}
             canEdit={canEditSelectedWorkspace}
-            currentRole={currentRole}
+            currentRoles={currentRoles}
             agents={agents}
             projects={availableProjects}
             productWorkMode={state.productWorkMode}
@@ -626,7 +624,7 @@ export default function Page() {
             agents={agents}
             canEdit={canEditSelectedWorkspace}
             contextCount={activeSelectedContextIds.length}
-            currentRole={currentRole}
+            currentRoles={currentRoles}
             execution={state.requirementExecutions[selectedRequirement.id] ?? "idle"}
             executionAgent={selectedAgent}
             messages={state.requirementMessages[selectedRequirement.id] ?? []}
@@ -694,7 +692,7 @@ export default function Page() {
             projects={availableProjects}
             selectedProjectId={state.selectedProjectId}
             canEdit={canEditSelectedWorkspace}
-            currentRole={currentRole}
+            currentRoles={currentRoles}
             productWorkMode={state.productWorkMode}
             onProductWorkModeChange={(mode) => {
               if (mode === state.productWorkMode) return;
@@ -729,14 +727,14 @@ export default function Page() {
             : null
         }
         capabilities={capabilities}
-        currentRole={currentRole}
+        currentRoles={currentRoles}
         lockedContextIds={activeLockedContextIds.filter((id) =>
           activeContextSourceIds.includes(id),
         )}
         memberRoles={state.memberRoles}
         members={selectedProjectMembers}
-        onChangeMemberRole={(memberId, role) =>
-          dispatch({ type: "set-member-role", memberId, role })
+        onChangeMemberRole={(memberId, roles) =>
+          dispatch({ type: "set-member-role", memberId, roles })
         }
         onSetRequirementStage={(requirementId, stage) =>
           dispatch({

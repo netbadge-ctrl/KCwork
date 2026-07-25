@@ -43,7 +43,7 @@ export interface ClientState {
   requirementMessages: Record<string, Message[]>;
   requirementStages: Record<string, RequirementStage>;
   stageRisks: Record<string, string>;
-  memberRoles: Record<string, ProjectRole>;
+  memberRoles: Record<string, ProjectRole[]>;
   developmentTaskStatuses: Record<string, DevelopmentTaskStatus>;
   documentDrafts: Record<string, string>;
 }
@@ -71,7 +71,7 @@ export type ClientAction =
       assetId: string | null;
       previewKind: PreviewKind | null;
     }
-  | { type: "set-member-role"; memberId: string; role: ProjectRole }
+  | { type: "set-member-role"; memberId: string; roles: ProjectRole[] }
   | {
       type: "set-development-task-status";
       taskId: string;
@@ -192,7 +192,7 @@ export const initialClientState: ClientState = {
   ),
   stageRisks: {},
   memberRoles: Object.fromEntries(
-    projectMembers.map((member) => [member.id, member.role]),
+    projectMembers.map((member) => [member.id, member.roles]),
   ),
   developmentTaskStatuses: Object.fromEntries(
     developmentTasks.map((task) => [task.id, task.status]),
@@ -219,7 +219,7 @@ function canEditRequirementContext(
       member.projectId === requirement?.projectId && member.name === "陈楠",
   );
   if (!currentMember) return false;
-  return (state.memberRoles[currentMember.id] ?? currentMember.role) !== "viewer";
+  return !(state.memberRoles[currentMember.id] ?? currentMember.roles).includes("viewer");
 }
 
 export function clientReducer(
@@ -451,7 +451,7 @@ export function clientReducer(
     case "set-member-role":
       return {
         ...state,
-        memberRoles: { ...state.memberRoles, [action.memberId]: action.role },
+        memberRoles: { ...state.memberRoles, [action.memberId]: action.roles },
       };
     case "set-development-task-status":
       return {

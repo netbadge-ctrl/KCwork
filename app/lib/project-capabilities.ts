@@ -1,7 +1,6 @@
 import type { ProjectCapabilities, ProjectRole } from "./types";
 
 export const projectRoleLabels: Record<ProjectRole, string> = {
-  admin: "项目管理员",
   product: "产品",
   development: "研发",
   testing: "测试",
@@ -9,17 +8,16 @@ export const projectRoleLabels: Record<ProjectRole, string> = {
 };
 
 export function getProjectCapabilities(
-  role: ProjectRole,
+  roles: ProjectRole[],
 ): ProjectCapabilities {
   return {
-    canEditAgentWork: role !== "viewer",
-    canEditProductArtifacts: role === "admin" || role === "product",
-    canEditDevelopmentArtifacts:
-      role === "admin" || role === "development",
-    canEditTestArtifacts: role === "admin" || role === "testing",
-    canManageMembers: role === "admin",
-    canManageRequirements: role === "admin" || role === "product",
-    canManageAssets: role !== "viewer",
+    canEditAgentWork: !roles.includes("viewer"),
+    canEditProductArtifacts: roles.includes("product"),
+    canEditDevelopmentArtifacts: roles.includes("development"),
+    canEditTestArtifacts: roles.includes("testing"),
+    canManageMembers: false,
+    canManageRequirements: roles.includes("product"),
+    canManageAssets: !roles.includes("viewer"),
   };
 }
 

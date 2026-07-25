@@ -27,12 +27,12 @@ const assetSections: {
 export interface ProjectSettingsPanelProps {
   section?: "all" | "governance" | "context";
   members: ProjectMember[];
-  memberRoles: Record<string, ProjectRole>;
+  memberRoles: Record<string, ProjectRole[]>;
   requirements: Requirement[];
   requirementStages: Record<string, RequirementStage>;
   capabilities: ProjectCapabilities;
-  currentRole: ProjectRole;
-  onChangeMemberRole(memberId: string, role: ProjectRole): void;
+  currentRoles: ProjectRole[];
+  onChangeMemberRole(memberId: string, roles: ProjectRole[]): void;
   onSetRequirementStage(requirementId: string, stage: RequirementStage): void;
   onOpenAsset(section: Exclude<ProjectSection, "overview">): void;
 }
@@ -44,7 +44,7 @@ export function ProjectSettingsPanel({
   requirements,
   requirementStages,
   capabilities,
-  currentRole,
+  currentRoles,
   onChangeMemberRole,
   onSetRequirementStage,
   onOpenAsset,
@@ -59,9 +59,9 @@ export function ProjectSettingsPanel({
       <div className="project-settings-intro">
         <span className="project-settings-role">
           <ShieldCheck size={16} />
-          {currentRole === "viewer"
+          {currentRoles.includes("viewer")
             ? "当前角色仅可查看"
-            : `当前角色：${projectRoleLabels[currentRole]}`}
+            : `当前角色：${currentRoles.map((r) => projectRoleLabels[r]).join("、")}`}
         </span>
         <p>项目治理和共享上下文维护集中在此处，日常工作仍围绕 Agent 与需求展开。</p>
       </div>

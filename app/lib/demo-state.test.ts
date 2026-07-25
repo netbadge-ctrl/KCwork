@@ -264,10 +264,10 @@ describe("clientReducer", () => {
     const next = clientReducer(initialClientState, {
       type: "set-member-role",
       memberId: "member-lin",
-      role: "testing",
+      roles: ["testing"],
     });
 
-    expect(next.memberRoles["member-lin"]).toBe("testing");
+    expect(next.memberRoles["member-lin"]).toEqual(["testing"]);
   });
 
   it("marks a development task and saves a document draft", () => {
@@ -476,7 +476,7 @@ describe("clientReducer", () => {
     const viewer = clientReducer(initialClientState, {
       type: "set-member-role",
       memberId: "member-chen",
-      role: "viewer",
+      roles: ["viewer"],
     });
     const toggled = clientReducer(viewer, {
       type: "toggle-context-source",

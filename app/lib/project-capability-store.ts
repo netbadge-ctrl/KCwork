@@ -6,14 +6,13 @@ import type { ProjectRole } from "./types";
 
 interface StoredProjectCapability {
   projectId: string;
-  role: ProjectRole;
+  roles: ProjectRole[];
   canEditProductArtifacts: boolean;
 }
 
 const PROJECT_CAPABILITY_STORAGE_PREFIX = "kflow.projectCapability.";
 const PROJECT_CAPABILITY_EVENT = "kflow:project-capability";
 const projectRoles = new Set<ProjectRole>([
-  "admin",
   "product",
   "development",
   "testing",
@@ -35,13 +34,14 @@ function readCapability(projectId: string, value?: string | null) {
     const stored = JSON.parse(storedValue) as StoredProjectCapability;
     if (
       stored.projectId !== projectId ||
-      !projectRoles.has(stored.role) ||
+      !Array.isArray(stored.roles) ||
+      stored.roles.some((r) => !projectRoles.has(r)) ||
       typeof stored.canEditProductArtifacts !== "boolean"
     ) {
       return false;
     }
     const roleCapability =
-      getProjectCapabilities(stored.role).canEditProductArtifacts;
+      getProjectCapabilities(stored.roles).canEditProductArtifacts;
     return stored.canEditProductArtifacts === roleCapability
       ? roleCapability
       : false;
@@ -52,11 +52,11 @@ function readCapability(projectId: string, value?: string | null) {
 
 export function publishProjectCapability(
   projectId: string,
-  role: ProjectRole,
+  roles: ProjectRole[],
   canEditProductArtifacts: boolean,
 ) {
   if (typeof window === "undefined" || !window.localStorage) return;
-  const value = JSON.stringify({ projectId, role, canEditProductArtifacts });
+  const value = JSON.stringify({ projectId, roles, canEditProductArtifacts });
   window.localStorage.setItem(storageKey(projectId), value);
   window.dispatchEvent(
     new CustomEvent(PROJECT_CAPABILITY_EVENT, {
