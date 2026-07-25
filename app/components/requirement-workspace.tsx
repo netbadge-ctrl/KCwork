@@ -40,7 +40,6 @@ export interface RequirementWorkspaceProps {
   onSend(text: string): void;
   onOpenPreview(kind: PreviewKind): void;
   onOpenContext(): void;
-  onOpenSettings(): void;
   onSaveDocumentDraft(draft: string): void;
   onSetDevelopmentTaskStatus(taskId: string, status: DevelopmentTaskStatus): void;
 }
@@ -67,7 +66,6 @@ export function RequirementWorkspace({
   onSend,
   onOpenPreview,
   onOpenContext,
-  onOpenSettings,
   onSaveDocumentDraft,
   onSetDevelopmentTaskStatus,
 }: RequirementWorkspaceProps) {
@@ -117,15 +115,6 @@ export function RequirementWorkspace({
             </button>
             {isMoreMenuOpen && (
               <div className="requirement-more-menu">
-                <button
-                  onClick={() => {
-                    setIsMoreMenuOpen(false);
-                    onOpenSettings();
-                  }}
-                  type="button"
-                >
-                  调整状态与门禁
-                </button>
                 <button disabled={!canEdit} type="button">编辑负责人</button>
                 <button disabled={!canEdit} type="button">归档需求</button>
               </div>
