@@ -4057,8 +4057,8 @@ select:focus-visible {
 
 .member-row.digital .member-avatar { background: linear-gradient(135deg, #634bc5, #8b5cf6); color: #fff; }
 .member-role-digital { display: inline-flex; align-items: center; height: 32px; padding: 0 10px; font-size: 11px; color: var(--accent); background: var(--accent-soft); border: 1px solid #ddd5ff; border-radius: 8px; }
-.member-role-chips { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; max-width: 60%; }
-.member-role-chip { height: 26px; padding: 0 9px; font-size: 11px; color: var(--text-muted); background: var(--surface-soft); border: 1px solid var(--border); border-radius: 7px; cursor: pointer; }
+.member-role-chips { display: inline-flex; flex-wrap: nowrap; gap: 4px; justify-content: flex-end; flex-shrink: 0; }
+.member-role-chip { height: 22px; padding: 0 7px; font-size: 10px; line-height: 22px; color: var(--text-muted); background: var(--surface-soft); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; white-space: nowrap; }
 .member-role-chip.active { color: var(--accent); background: var(--accent-soft); border-color: #ddd5ff; font-weight: 600; }
 .member-role-chip:disabled { opacity: .45; cursor: not-allowed; }
 

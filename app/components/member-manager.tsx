@@ -2,7 +2,6 @@ import { Bot, Plus, UserRoundCog } from "lucide-react";
 import type { ProjectMember, ProjectRole } from "../lib/types";
 
 const roleLabels: Record<ProjectRole, string> = {
-  admin: "项目管理员",
   product: "产品",
   development: "研发",
   testing: "测试",
