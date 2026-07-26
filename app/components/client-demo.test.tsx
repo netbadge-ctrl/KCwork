@@ -70,13 +70,13 @@ async function setCurrentUserRole(
     const chip = within(
       screen.getByLabelText("修改陈楠的项目角色"),
     ).queryByRole("button", { name: `${label}（已选）` });
-    if (chip) await userEvent.click(chip);
+    if (chip) fireEvent.click(chip);
   }
   // 选中目标角色(若未选)
   const target = within(
     screen.getByLabelText("修改陈楠的项目角色"),
   ).queryByRole("button", { name: roleLabels[role] });
-  if (target) await userEvent.click(target);
+  if (target) fireEvent.click(target);
   await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
 }
 
@@ -487,7 +487,10 @@ describe("enterprise AI client demo", () => {
     await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "development");
     expect(screen.getByLabelText("任务输入")).toBeEnabled();
     await userEvent.click(screen.getByRole("button", { name: "代码差异" }));
-    expect(screen.getByRole("button", { name: "接受变更" })).toBeEnabled();
+    // development 可编辑代码：切到代码视图，编辑区非只读
+    await userEvent.click(screen.getByRole("tab", { name: "代码" }));
+    const codeArea = within(screen.getByLabelText("代码查看与编辑")).getByRole("textbox");
+    expect(codeArea).not.toHaveAttribute("readOnly");
   });
 
   test("lets testing edit test artifacts but not development artifacts", async () => {
@@ -502,7 +505,7 @@ describe("enterprise AI client demo", () => {
     await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "testing");
     expect(screen.getByLabelText("任务输入")).toBeEnabled();
     await userEvent.click(screen.getByRole("button", { name: "测试报告" }));
-    expect(screen.getByRole("button", { name: "创建修复任务" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "从失败证据创建" })).toBeEnabled();
   });
 
   test("closes project settings with Escape", async () => {
