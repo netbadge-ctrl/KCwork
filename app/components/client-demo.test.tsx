@@ -470,7 +470,7 @@ describe("enterprise AI client demo", () => {
     await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
     await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     await userEvent.click(screen.getByRole("button", { name: "原型" }));
-    expect(screen.getByRole("button", { name: "在画布中编辑" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "组件可选" })).toBeEnabled();
     await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
     await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "testing");
     await userEvent.click(screen.getByRole("button", { name: "测试报告" }));
