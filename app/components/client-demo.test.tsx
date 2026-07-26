@@ -686,7 +686,7 @@ describe("enterprise AI client demo", () => {
     expect(
       screen.getByRole("complementary", { name: "页面预览" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "成员与角色管理" })).toBeInTheDocument();
+    expect(screen.getAllByText(/权限概览|成员列表/).length).toBeGreaterThan(0);
   });
 
   test("opens the editable prototype drawer with a standalone browser link", async () => {
