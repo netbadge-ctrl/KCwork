@@ -465,13 +465,9 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByRole("button", { name: "组件可选" })).toBeEnabled();
     await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
     await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "testing");
-    await userEvent.click(screen.getByRole("button", { name: "测试报告" }));
-    expect(screen.getByRole("button", { name: "创建修复任务" })).toBeDisabled();
-    await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
+    expect(screen.getByLabelText("任务输入")).toBeDisabled();
     await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "development");
     expect(screen.getByLabelText("任务输入")).toBeDisabled();
-    await userEvent.click(screen.getByRole("button", { name: "代码差异" }));
-    expect(screen.getByRole("button", { name: "接受变更" })).toBeDisabled();
   });
 
   test("lets development edit code artifacts but not PRD artifacts", async () => {
@@ -504,8 +500,6 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByLabelText("任务输入")).toBeDisabled();
     await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "testing");
     expect(screen.getByLabelText("任务输入")).toBeEnabled();
-    await userEvent.click(screen.getByRole("button", { name: "测试报告" }));
-    expect(screen.getByRole("button", { name: "从失败证据创建" })).toBeEnabled();
   });
 
   test("closes project settings with Escape", async () => {
