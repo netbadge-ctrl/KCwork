@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Agent, Mode, ProductWorkMode, Project } from "../lib/types";
+import { ProductModePicker } from "./product-mode-picker";
 
 export interface ComposerProps {
   mode: Mode;
@@ -124,6 +125,13 @@ export function Composer({
               ))}
             </select>
           </label>
+          {selectedAgentId === "product-design" && productWorkMode && onProductWorkModeChange && (
+            <ProductModePicker
+              value={productWorkMode}
+              onChange={onProductWorkModeChange}
+              variant="compact"
+            />
+          )}
           <button className="permission-tool" disabled={disabled} type="button">
             <ShieldCheck size={15} /> 权限
           </button>
