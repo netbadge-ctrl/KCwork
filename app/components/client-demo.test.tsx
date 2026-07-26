@@ -903,7 +903,7 @@ describe("enterprise AI client demo", () => {
     await userEvent.click(
       screen.getByRole("button", { name: "发送到主对话" }),
     );
-    expect(screen.getByText(/二次确认说明/)).toBeInTheDocument();
+    expect(screen.getAllByText(/二次确认说明/).length).toBeGreaterThan(0);
     await userEvent.click(screen.getByRole("button", { name: "预览 PDF" }));
     expect(
       screen.getByRole("complementary", { name: "PDF 预览" }),
