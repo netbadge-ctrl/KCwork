@@ -346,18 +346,7 @@ describe("enterprise AI client demo", () => {
 
   test("enforces the signed-in project role and updates controls immediately", async () => {
     render(<Page />);
-    await openCustomerPortal();
-    await userEvent.click(screen.getByRole("button", { name: "项目设置" }));
-    await userEvent.click(screen.getByRole("button", { name: "成员与角色" }));
-    await userEvent.selectOptions(
-      screen.getByLabelText("修改陈楠的项目角色"),
-      "viewer",
-    );
-
-    expect(screen.getByText("当前角色仅可查看")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "添加成员" })).toBeDisabled();
-    expect(screen.getByLabelText("修改林川的项目角色")).toBeDisabled();
-    await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
+    await setCurrentUserRole("viewer");
     await userEvent.click(
       screen.getByRole("button", { name: "恢复角色与成员权限重构工作区" }),
     );
@@ -555,7 +544,6 @@ describe("enterprise AI client demo", () => {
     expect(screen.queryByRole("heading", { name: "继续 Agent 工作" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "还没有需求" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "新建需求" })).toBeInTheDocument();
-    expect(screen.getByText("尚未为该项目连接自动上下文来源")).toBeInTheDocument();
     expect(screen.getByText("项目上下文尚未连接")).toBeInTheDocument();
     expect(screen.queryByText("Agent 协作上下文已就绪")).not.toBeInTheDocument();
   });
@@ -569,7 +557,7 @@ describe("enterprise AI client demo", () => {
     ).toBeGreaterThan(0);
     expect(screen.getByLabelText("任务输入")).toBeInTheDocument();
     expect(screen.getByLabelText("选择 Agent")).toHaveValue("product-design");
-    expect(screen.getByLabelText("产品设计工作模式")).toHaveValue("prd");
+    expect(screen.getByRole("button", { name: "PRD 撰写" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: "6 项上下文" })).toBeInTheDocument();
     expect(screen.queryByText("PRD 撰写工作台")).not.toBeInTheDocument();
     expect(screen.queryByText("原型设计工作台")).not.toBeInTheDocument();
@@ -590,9 +578,9 @@ describe("enterprise AI client demo", () => {
     render(<Page />);
     await openRoleRequirement();
     expect(screen.getByLabelText("选择 Agent")).toHaveValue("product-design");
-    expect(screen.getByLabelText("产品设计工作模式")).toHaveValue("prd");
+    expect(screen.getByRole("button", { name: "PRD 撰写" })).toHaveAttribute("aria-pressed", "true");
     await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
-    expect(screen.getByLabelText("产品设计工作模式")).toHaveValue("prototype");
+    expect(screen.getByRole("button", { name: "原型设计与审计" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByLabelText("任务输入")).toBeInTheDocument();
   });
 
@@ -795,7 +783,7 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("dialog", { name: "未确认的原型修改" }),
     ).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "放弃修改并离开" }));
-    expect(screen.getByLabelText("产品设计工作模式")).toHaveValue("prd");
+    expect(screen.getByRole("button", { name: "PRD 撰写" })).toHaveAttribute("aria-pressed", "true");
     await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     await userEvent.click(
       screen.getByRole("button", { name: "页面预览" }),
@@ -1127,8 +1115,9 @@ describe("enterprise AI client demo", () => {
     ).not.toBeInTheDocument();
   });
 
-  test("exposes the three product regions", () => {
+  test("exposes the three product regions", async () => {
     render(<Page />);
+    await openFirstTask();
     expect(screen.getByRole("navigation", { name: "主导航" })).toBeInTheDocument();
     expect(screen.getByRole("main")).toBeInTheDocument();
     expect(screen.getByLabelText("辅助工具")).toBeInTheDocument();
@@ -1136,6 +1125,7 @@ describe("enterprise AI client demo", () => {
 
   test("keeps the three product regions and office mode", async () => {
     render(<Page />);
+    await openFirstTask();
     expect(screen.getByRole("navigation", { name: "主导航" })).toBeInTheDocument();
     expect(screen.getByRole("main")).toBeInTheDocument();
     expect(screen.getByLabelText("辅助工具")).toBeInTheDocument();

@@ -15,7 +15,7 @@ export function getProjectCapabilities(
     canEditProductArtifacts: roles.includes("product"),
     canEditDevelopmentArtifacts: roles.includes("development"),
     canEditTestArtifacts: roles.includes("testing"),
-    canManageMembers: false,
+    canManageMembers: roles.includes("product"),
     canManageRequirements: roles.includes("product"),
     canManageAssets: !roles.includes("viewer"),
   };
