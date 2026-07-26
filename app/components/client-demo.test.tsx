@@ -715,7 +715,7 @@ describe("enterprise AI client demo", () => {
     await openRoleRequirement();
     await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     await userEvent.click(
-      screen.getByRole("button", { name: "页面预览" }),
+      screen.getByRole("button", { name: "原型" }),
     );
     let drawer = screen.getByRole("complementary", { name: "页面预览" });
     await userEvent.click(
@@ -727,7 +727,7 @@ describe("enterprise AI client demo", () => {
     await userEvent.click(within(drawer).getByRole("button", { name: "应用修改" }));
     await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
 
-    await userEvent.click(screen.getByRole("button", { name: "页面预览" }));
+    await userEvent.click(screen.getByRole("button", { name: "原型" }));
     drawer = screen.getByRole("complementary", { name: "页面预览" });
     expect(
       within(drawer).getByRole("button", { name: "选择邀请成员按钮" }),
@@ -739,7 +739,7 @@ describe("enterprise AI client demo", () => {
     await openRoleRequirement();
     await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     await userEvent.click(
-      screen.getByRole("button", { name: "页面预览" }),
+      screen.getByRole("button", { name: "原型" }),
     );
     const drawer = screen.getByRole("complementary", { name: "页面预览" });
     await userEvent.click(
@@ -758,7 +758,7 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("dialog", { name: "未确认的原型修改" }),
     ).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "保留修改并离开" }));
-    await userEvent.click(screen.getByRole("button", { name: "页面预览" }));
+    await userEvent.click(screen.getByRole("button", { name: "原型" }));
     expect(screen.getByText(/添加成员 → 邀请同事/)).toBeInTheDocument();
   });
 
@@ -767,7 +767,7 @@ describe("enterprise AI client demo", () => {
     await openRoleRequirement();
     await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     await userEvent.click(
-      screen.getByRole("button", { name: "页面预览" }),
+      screen.getByRole("button", { name: "原型" }),
     );
     const drawer = screen.getByRole("complementary", { name: "页面预览" });
     await userEvent.click(
@@ -789,7 +789,7 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByRole("button", { name: "PRD 撰写" })).toHaveAttribute("aria-pressed", "true");
     await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     await userEvent.click(
-      screen.getByRole("button", { name: "页面预览" }),
+      screen.getByRole("button", { name: "原型" }),
     );
     const updatedDrawer = screen.getByRole("complementary", {
       name: "页面预览",
@@ -807,7 +807,7 @@ describe("enterprise AI client demo", () => {
     await openRoleRequirement();
     await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     await userEvent.click(
-      screen.getByRole("button", { name: "页面预览" }),
+      screen.getByRole("button", { name: "原型" }),
     );
     const drawer = screen.getByRole("complementary", { name: "页面预览" });
     await userEvent.click(
@@ -869,7 +869,7 @@ describe("enterprise AI client demo", () => {
     await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
 
     await userEvent.click(
-      screen.getByRole("button", { name: "页面预览" }),
+      screen.getByRole("button", { name: "原型" }),
     );
     const drawer = screen.getByRole("complementary", { name: "页面预览" });
     expect(
@@ -980,7 +980,7 @@ describe("enterprise AI client demo", () => {
     await openRoleRequirement();
     await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     await userEvent.click(
-      screen.getByRole("button", { name: "页面预览" }),
+      screen.getByRole("button", { name: "原型" }),
     );
     const drawer = screen.getByRole("complementary", { name: "页面预览" });
     await userEvent.click(
@@ -1169,7 +1169,7 @@ describe("enterprise AI client demo", () => {
     await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "product-design");
     await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     expect(screen.queryByRole("complementary", { name: "测试报告" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "页面预览" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "原型" })).toBeInTheDocument();
   });
 
 });
