@@ -166,6 +166,7 @@ describe("enterprise AI client demo", () => {
   test("resizes the right panel with a pointer within its bounds", async () => {
     render(<Page />);
     await openFirstTask();
+    await userEvent.click(screen.getByRole("button", { name: "展开左侧导航" }));
     await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
     const separator = screen.getByRole("separator", {
       name: "调整辅助面板宽度",
@@ -225,6 +226,7 @@ describe("enterprise AI client demo", () => {
     window.innerWidth = 800;
     render(<Page />);
     await openFirstTask();
+    await userEvent.click(screen.getByRole("button", { name: "展开左侧导航" }));
     await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
     const separator = screen.getByRole("separator", {
       name: "调整辅助面板宽度",
@@ -237,6 +239,7 @@ describe("enterprise AI client demo", () => {
     window.innerWidth = 1121;
     render(<Page />);
     await openFirstTask();
+    await userEvent.click(screen.getByRole("button", { name: "展开左侧导航" }));
     await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
     const separator = screen.getByRole("separator", {
       name: "调整辅助面板宽度",
