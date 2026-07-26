@@ -34,6 +34,12 @@ const roleLabels: Record<string, string> = {
   viewer: "观察者",
 };
 
+async function openFirstTask() {
+  await userEvent.click(
+    screen.getByRole("button", { name: "开发任务：完善角色管理 PRD14:32" }),
+  );
+}
+
 async function openCustomerPortal() {
   await userEvent.click(screen.getByRole("button", { name: "项目" }));
   await userEvent.click(
@@ -101,6 +107,7 @@ describe("enterprise AI client demo", () => {
 
   test("opens a wider adjustable right panel", async () => {
     render(<Page />);
+    await openFirstTask();
     await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
     expect(
       screen.getByRole("separator", { name: "调整辅助面板宽度" }),
@@ -122,6 +129,7 @@ describe("enterprise AI client demo", () => {
   test("restores the saved right panel width", async () => {
     window.localStorage.setItem("kflow.rightPanel.width", "640");
     render(<Page />);
+    await openFirstTask();
     await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
     expect(
       screen.getByRole("separator", { name: "调整辅助面板宽度" }),
@@ -130,6 +138,7 @@ describe("enterprise AI client demo", () => {
 
   test("resizes the right panel from the keyboard and persists the width", async () => {
     render(<Page />);
+    await openFirstTask();
     await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
     const separator = screen.getByRole("separator", {
       name: "调整辅助面板宽度",
@@ -145,6 +154,7 @@ describe("enterprise AI client demo", () => {
   test("resets the right panel width on double click", async () => {
     window.localStorage.setItem("kflow.rightPanel.width", "640");
     render(<Page />);
+    await openFirstTask();
     await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
     const separator = screen.getByRole("separator", {
       name: "调整辅助面板宽度",
@@ -155,6 +165,7 @@ describe("enterprise AI client demo", () => {
 
   test("resizes the right panel with a pointer within its bounds", async () => {
     render(<Page />);
+    await openFirstTask();
     await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
     const separator = screen.getByRole("separator", {
       name: "调整辅助面板宽度",
@@ -180,6 +191,7 @@ describe("enterprise AI client demo", () => {
 
   test("ignores non-primary pointer resizing", async () => {
     render(<Page />);
+    await openFirstTask();
     await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
     const separator = screen.getByRole("separator", {
       name: "调整辅助面板宽度",
@@ -197,6 +209,7 @@ describe("enterprise AI client demo", () => {
   test("reclamps a saved right panel width when the viewport narrows", async () => {
     window.localStorage.setItem("kflow.rightPanel.width", "900");
     render(<Page />);
+    await openFirstTask();
     await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
     const separator = screen.getByRole("separator", {
       name: "调整辅助面板宽度",
@@ -211,6 +224,7 @@ describe("enterprise AI client demo", () => {
   test("matches the overlay resize bounds to the space beside the sidebar", async () => {
     window.innerWidth = 800;
     render(<Page />);
+    await openFirstTask();
     await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
     const separator = screen.getByRole("separator", {
       name: "调整辅助面板宽度",
@@ -222,6 +236,7 @@ describe("enterprise AI client demo", () => {
   test("preserves the center stage at the inline breakpoint for both sidebar states", async () => {
     window.innerWidth = 1121;
     render(<Page />);
+    await openFirstTask();
     await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
     const separator = screen.getByRole("separator", {
       name: "调整辅助面板宽度",
@@ -237,6 +252,7 @@ describe("enterprise AI client demo", () => {
   test("preserves the desktop panel preference across the mobile overlay", async () => {
     window.localStorage.setItem("kflow.rightPanel.width", "640");
     render(<Page />);
+    await openFirstTask();
     await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
     const separator = screen.getByRole("separator", {
       name: "调整辅助面板宽度",
@@ -300,6 +316,7 @@ describe("enterprise AI client demo", () => {
   test("opens adjustable automatic context from the task context count", async () => {
     render(<Page />);
 
+    await openFirstTask();
     await userEvent.click(screen.getByRole("button", { name: "23 项上下文" }));
 
     expect(screen.getByRole("complementary", { name: "自动上下文" })).toBeInTheDocument();
@@ -322,9 +339,7 @@ describe("enterprise AI client demo", () => {
 
     expect(screen.getByRole("heading", { name: "继续 Agent 工作" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "继续 产品设计 Agent 对话" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "从需求开始" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "恢复角色与成员权限重构工作区" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "查看自动上下文来源" })).toBeInTheDocument();
     expect(screen.queryByRole("combobox", { name: "切换 角色与成员权限重构 状态" })).not.toBeInTheDocument();
   });
 
@@ -360,7 +375,7 @@ describe("enterprise AI client demo", () => {
     expect(interview).toBeChecked();
     await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
     await userEvent.click(
-      screen.getByRole("button", { name: "完善角色管理 PRD14:32" }),
+      screen.getByRole("button", { name: "开发任务：完善角色管理 PRD14:32" }),
     );
     expect(screen.getByText("当前角色仅可查看")).toBeInTheDocument();
     expect(screen.getByLabelText("任务输入")).toBeDisabled();
@@ -370,7 +385,7 @@ describe("enterprise AI client demo", () => {
     render(<Page />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: "Q3 经营分析报告7 月 12 日" }),
+      screen.getByRole("button", { name: "办公任务：Q3 经营分析报告7 月 12 日" }),
     );
 
     expect(screen.getByRole("heading", { name: "Q3 经营分析报告" })).toBeInTheDocument();
@@ -391,10 +406,10 @@ describe("enterprise AI client demo", () => {
   test("opens every recent task with its own content and active Agent", async () => {
     render(<Page />);
     const taskCases = [
-      ["完善角色管理 PRD14:32", "完善角色管理 PRD", /租户管理员、项目管理员和普通成员/, "product-design"],
-      ["实现权限配置页面昨天", "实现权限配置页面", /观察者的操作范围已分别覆盖/, "development"],
-      ["分析登录失败问题周一", "分析登录失败问题", /登录失败集中在过期会话/, "development"],
-      ["Q3 经营分析报告7 月 12 日", "Q3 经营分析报告", /Q3 营收同比增长/, "data-analysis"],
+      ["开发任务：完善角色管理 PRD14:32", "完善角色管理 PRD", /租户管理员、项目管理员和普通成员/, "product-design"],
+      ["开发任务：实现权限配置页面昨天", "实现权限配置页面", /观察者的操作范围已分别覆盖/, "development"],
+      ["开发任务：分析登录失败问题周一", "分析登录失败问题", /登录失败集中在过期会话/, "development"],
+      ["办公任务：Q3 经营分析报告7 月 12 日", "Q3 经营分析报告", /Q3 营收同比增长/, "data-analysis"],
     ] as const;
 
     for (const [buttonName, title, content, agentId] of taskCases) {
@@ -417,7 +432,7 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByLabelText("选择 Agent")).toHaveValue("development");
 
     await userEvent.click(
-      screen.getByRole("button", { name: "Q3 经营分析报告7 月 12 日" }),
+      screen.getByRole("button", { name: "办公任务：Q3 经营分析报告7 月 12 日" }),
     );
     expect(screen.getByLabelText("选择 Agent")).toHaveValue("data-analysis");
     await userEvent.click(
@@ -450,7 +465,7 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("button", { name: "恢复角色与成员权限重构工作区" }),
     );
 
-    await userEvent.click(screen.getByRole("button", { name: "文档预览" }));
+    await userEvent.click(screen.getByRole("button", { name: "PRD" }));
     expect(screen.getByLabelText("PRD 修改要求")).toBeEnabled();
     await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
     await userEvent.selectOptions(screen.getByLabelText("产品设计开始环节"), "prototype");
@@ -474,7 +489,7 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("button", { name: "恢复角色与成员权限重构工作区" }),
     );
 
-    await userEvent.click(screen.getByRole("button", { name: "文档预览" }));
+    await userEvent.click(screen.getByRole("button", { name: "PRD" }));
     expect(screen.getByLabelText("PRD 修改要求")).toBeDisabled();
     await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
     await userEvent.selectOptions(screen.getByLabelText("选择 Agent"), "development");
@@ -498,25 +513,9 @@ describe("enterprise AI client demo", () => {
     expect(screen.getByRole("button", { name: "创建修复任务" })).toBeEnabled();
   });
 
-  test("shows and adjusts Agent-selected context", async () => {
+  test("closes project settings with Escape", async () => {
     render(<Page />);
     await openCustomerPortal();
-    await userEvent.click(screen.getByRole("button", { name: "查看自动上下文来源" }));
-
-    expect(screen.getByRole("complementary", { name: "自动上下文" })).toBeInTheDocument();
-    expect(screen.getByText("本次自动引用 6 项上下文")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("checkbox", { name: "引用角色权限访谈纪要" }));
-    expect(screen.getByText("本次自动引用 5 项上下文")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "锁定项目决策记忆" }));
-    expect(screen.getByRole("button", { name: "解除锁定项目决策记忆" })).toBeInTheDocument();
-  });
-
-  test("closes automatic context and project settings with Escape", async () => {
-    render(<Page />);
-    await openCustomerPortal();
-    await userEvent.click(screen.getByRole("button", { name: "查看自动上下文来源" }));
-    await userEvent.keyboard("{Escape}");
-    expect(screen.queryByRole("complementary", { name: "自动上下文" })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "项目设置" }));
     await userEvent.keyboard("{Escape}");
     expect(screen.queryByRole("complementary", { name: "项目设置" })).not.toBeInTheDocument();
@@ -898,7 +897,7 @@ describe("enterprise AI client demo", () => {
     render(<Page />);
     await openRoleRequirement();
     await userEvent.selectOptions(screen.getByLabelText("产品设计开始环节"), "prd");
-    await userEvent.click(screen.getByRole("button", { name: "文档预览" }));
+    await userEvent.click(screen.getByRole("button", { name: "PRD" }));
     const input = screen.getByLabelText("PRD 修改要求");
     await userEvent.type(input, "增加批量修改角色的二次确认说明");
     await userEvent.click(
@@ -914,7 +913,7 @@ describe("enterprise AI client demo", () => {
   test("retains an unconfirmed PRD revision when leaving with the back button", async () => {
     render(<Page />);
     await openRoleRequirement();
-    await userEvent.click(screen.getByRole("button", { name: "文档预览" }));
+    await userEvent.click(screen.getByRole("button", { name: "PRD" }));
     await userEvent.type(
       screen.getByLabelText("PRD 修改要求"),
       "调整角色批量操作说明",
@@ -928,14 +927,14 @@ describe("enterprise AI client demo", () => {
     await userEvent.click(
       screen.getByRole("button", { name: "恢复角色与成员权限重构工作区" }),
     );
-    await userEvent.click(screen.getByRole("button", { name: "文档预览" }));
+    await userEvent.click(screen.getByRole("button", { name: "PRD" }));
     expect(screen.getByText("调整角色批量操作说明")).toBeInTheDocument();
   });
 
   test("discards an unconfirmed PRD revision before sidebar navigation", async () => {
     render(<Page />);
     await openRoleRequirement();
-    await userEvent.click(screen.getByRole("button", { name: "文档预览" }));
+    await userEvent.click(screen.getByRole("button", { name: "PRD" }));
     await userEvent.type(screen.getByLabelText("PRD 修改要求"), "这条修订应被放弃");
     await userEvent.click(screen.getByRole("button", { name: "生成修订建议" }));
     await userEvent.click(screen.getByRole("button", { name: "智能资产" }));
@@ -949,7 +948,7 @@ describe("enterprise AI client demo", () => {
   test("returns to an unconfirmed PRD revision from guarded sidebar navigation", async () => {
     render(<Page />);
     await openRoleRequirement();
-    await userEvent.click(screen.getByRole("button", { name: "文档预览" }));
+    await userEvent.click(screen.getByRole("button", { name: "PRD" }));
     await userEvent.type(screen.getByLabelText("PRD 修改要求"), "继续确认这条修订");
     await userEvent.click(screen.getByRole("button", { name: "生成修订建议" }));
     await userEvent.click(screen.getByRole("button", { name: "项目" }));
@@ -1150,7 +1149,7 @@ describe("enterprise AI client demo", () => {
   test("changes the auxiliary rail with the active office and product Agent", async () => {
     render(<Page />);
     await userEvent.click(
-      screen.getByRole("button", { name: "Q3 经营分析报告7 月 12 日" }),
+      screen.getByRole("button", { name: "办公任务：Q3 经营分析报告7 月 12 日" }),
     );
     expect(screen.getByRole("button", { name: "图表预览" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "代码差异" })).not.toBeInTheDocument();
