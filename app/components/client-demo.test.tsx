@@ -699,11 +699,8 @@ describe("enterprise AI client demo", () => {
 
     const drawer = screen.getByRole("complementary", { name: "页面预览" });
     expect(
-      within(drawer).getByRole("link", { name: "在浏览器打开" }),
-    ).toHaveAttribute(
-      "href",
-      "/prototype?project=customer-portal&requirement=role-permissions&version=V3&inspect=1",
-    );
+      within(drawer).getByRole("link", { name: "浏览器打开" }),
+    ).toHaveAttribute("href", "/prototype?mode=inspect");
     await userEvent.click(
       within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
     );
