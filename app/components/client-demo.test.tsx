@@ -702,9 +702,9 @@ describe("enterprise AI client demo", () => {
       within(drawer).getByRole("link", { name: "浏览器打开" }),
     ).toHaveAttribute("href", "/prototype?mode=inspect");
     await userEvent.click(
-      within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
+      within(drawer).getByRole("button", { name: "保存角色" }),
     );
-    expect(within(drawer).getByText("关联 Spec：AC-07")).toBeInTheDocument();
+    expect(within(drawer).getByText("AC-07")).toBeInTheDocument();
   });
 
   test("keeps applied prototype edits after closing and reopening the drawer", async () => {
