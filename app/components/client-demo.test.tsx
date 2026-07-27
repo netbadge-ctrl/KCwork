@@ -1031,7 +1031,7 @@ describe("enterprise AI client demo", () => {
     expect(
       screen.getByRole("complementary", { name: "测试报告" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/AC-11/)).toBeInTheDocument();
+    expect(screen.getByText("用例")).toBeInTheDocument();
     expect(screen.getByText("通过率")).toBeInTheDocument();
   });
 
