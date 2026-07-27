@@ -150,6 +150,10 @@ export interface AssetItem {
   trigger?: string;
   capabilities?: string[];
   enabled?: boolean;
+  url?: string;
+  branch?: string;
+  count?: number;
+  authMethod?: string;
 }
 
 export interface Message {

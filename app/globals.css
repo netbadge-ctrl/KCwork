@@ -1785,6 +1785,33 @@ select:focus-visible {
   gap: 7px;
 }
 
+/* 按资产类型差异化的纵向添加表单 */
+.asset-add-form {
+  grid-template-columns: 1fr;
+  max-width: 560px;
+  gap: 12px;
+}
+.asset-add-header { display: grid; gap: 3px; }
+.asset-add-field { display: grid; gap: 5px; }
+.asset-add-field > span { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+.asset-add-field input,
+.asset-add-field select,
+.asset-add-field textarea {
+  min-width: 0;
+  padding: 8px 11px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  outline: 0;
+  background: var(--surface);
+  color: var(--text);
+  resize: vertical;
+}
+.asset-add-field input:focus,
+.asset-add-field select:focus,
+.asset-add-field textarea:focus { border-color: var(--accent); }
+.asset-add-form .inline-create-actions { justify-content: flex-end; }
+
 .inline-create-actions > button:not(.primary-button) {
   padding: 8px 10px;
   color: var(--text-muted);

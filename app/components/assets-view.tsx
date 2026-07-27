@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { Agent, AssetItem, AssetKind } from "../lib/types";
+import { AssetAddForm } from "./asset-add-form";
 import { KnowledgeMemoryWorkspace } from "./knowledge-memory-workspace";
 
 export interface AssetsViewProps {
@@ -33,37 +34,19 @@ export function AssetsView({ agents, assets }: AssetsViewProps) {
   const [activeKind, setActiveKind] = useState<AssetKind>("skill");
   const [query, setQuery] = useState("");
   const [isAdding, setIsAdding] = useState(false);
-  const [assetName, setAssetName] = useState("");
-  const [assetDescription, setAssetDescription] = useState("");
   const [customAssets, setCustomAssets] = useState<AssetItem[]>([]);
   const [enabledAssets, setEnabledAssets] = useState<Record<string, boolean>>(
     () => Object.fromEntries(assets.map((asset) => [asset.id, asset.enabled ?? true])),
   );
   const allAssets = [...assets, ...customAssets];
-  const activeLabel = tabs.find((tab) => tab.kind === activeKind)?.label ?? "资产";
   const visibleAssets = allAssets.filter(
     (asset) =>
       asset.kind === activeKind &&
       `${asset.name}${asset.description}`.includes(query),
   );
 
-  const addAsset = () => {
-    const name = assetName.trim();
-    if (!name) return;
-    setCustomAssets((current) => [
-      ...current,
-      {
-        id: `custom-${activeKind}-${Date.now()}`,
-        kind: activeKind,
-        name,
-        description: assetDescription.trim() || `新添加的${activeLabel}`,
-        status: activeKind === "tool" || activeKind === "plugin" ? "已连接" : "可用",
-        meta: "刚刚添加",
-        enabled: true,
-      },
-    ]);
-    setAssetName("");
-    setAssetDescription("");
+  const addAsset = (asset: AssetItem) => {
+    setCustomAssets((current) => [...current, asset]);
     setIsAdding(false);
   };
 
@@ -109,35 +92,11 @@ export function AssetsView({ agents, assets }: AssetsViewProps) {
         </button>
       </div>
       {isAdding && (
-        <form
-          className="inline-create-form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            addAsset();
-          }}
-        >
-          <div>
-            <strong>添加{activeLabel}</strong>
-            <span>添加后会出现在当前分类中。</span>
-          </div>
-          <input
-            aria-label={`${activeLabel}名称`}
-            autoFocus
-            onChange={(event) => setAssetName(event.target.value)}
-            placeholder={`${activeLabel}名称`}
-            value={assetName}
-          />
-          <input
-            aria-label={`${activeLabel}说明`}
-            onChange={(event) => setAssetDescription(event.target.value)}
-            placeholder="简要说明"
-            value={assetDescription}
-          />
-          <div className="inline-create-actions">
-            <button onClick={() => setIsAdding(false)} type="button">取消</button>
-            <button className="primary-button" disabled={!assetName.trim()} type="submit">添加</button>
-          </div>
-        </form>
+        <AssetAddForm
+          kind={activeKind}
+          onAdd={addAsset}
+          onCancel={() => setIsAdding(false)}
+        />
       )}
 
       {activeKind === "knowledge" || activeKind === "memory" ? (
