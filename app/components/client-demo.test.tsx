@@ -881,9 +881,9 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("button", { name: "发送到主对话" }),
     );
     expect(screen.getAllByText(/二次确认说明/).length).toBeGreaterThan(0);
-    await userEvent.click(screen.getByRole("button", { name: "预览 PDF" }));
+    await userEvent.click(screen.getByRole("button", { name: "确认并生成新版本" }));
     expect(
-      screen.getByRole("complementary", { name: "PDF 预览" }),
+      screen.getByRole("complementary", { name: "产物预览" }),
     ).toBeInTheDocument();
   });
 
