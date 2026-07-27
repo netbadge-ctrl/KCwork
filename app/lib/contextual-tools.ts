@@ -129,6 +129,7 @@ export function resolveContextualTools(context: ContextualToolContext): Contextu
       tool("project-tests", "测试资产", TestTube2),
       tool("context-maintenance", "共享上下文", Database),
       tool("members", "成员与角色", Users),
+      tool("project-settings", "需求状态与门禁", ShieldCheck),
       tool("investment", "投入分析", BarChart3),
     ];
   }

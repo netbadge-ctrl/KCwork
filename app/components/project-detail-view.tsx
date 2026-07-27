@@ -1,4 +1,4 @@
-import { ArrowLeft, FilePlus2, Settings } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock3, FilePlus2, GitBranch, Sparkles } from "lucide-react";
 import type {
   Agent,
   AgentWorkSession,
@@ -40,45 +40,58 @@ export function ProjectDetailView({
   onCreateRequirement,
   onOpenPreview,
 }: ProjectDetailViewProps) {
+  const activeRequirementCount = requirements.filter(
+    (requirement) => (requirementStages[requirement.id] ?? requirement.stage) !== "done",
+  ).length;
   return (
     <div className="project-detail page-scroll">
-      <header className="page-header detail-header">
+      <header className="project-detail-header">
         <button className="back-button" onClick={onBack} type="button">
-          <ArrowLeft size={17} /> 返回项目
+          <ArrowLeft size={15} /> 全部项目
         </button>
-        <button
-          className="secondary-button project-settings-entry"
-          onClick={() => onOpenPreview("project-settings")}
-          type="button"
-        >
-          <Settings size={15} /> 项目设置
-        </button>
-        <div className="detail-title-row">
-          <div>
-            <div className="project-kicker">
-              <span style={{ background: project.color }} /> 系统开发项目
+        <div className="project-detail-heading">
+          <div className="project-detail-identity">
+            <span className="project-detail-mark" style={{ background: project.color }}>
+              {project.name.slice(0, 1)}
+            </span>
+            <div>
+              <p className="project-kicker">系统开发项目</p>
+              <h1>{project.name}</h1>
+              <p>{project.description}</p>
             </div>
-            <h1>{project.name}</h1>
-            <p>{project.description}</p>
+          </div>
+          <div className="project-detail-facts">
+            <span><strong>{activeRequirementCount}</strong><small>进行中需求</small></span>
+            <span><strong>{project.repositories?.length ?? 0}</strong><small>代码仓库</small></span>
+            <span><strong>{project.members}</strong><small>项目成员</small></span>
           </div>
         </div>
-        <div className="project-meta-row">
-          <span>更新于 {project.updatedAt}</span>
-          <span>
+        <div className="project-detail-status">
+          <span><Clock3 size={13} />更新于 {project.updatedAt}</span>
+          <span className={contextSources.length > 0 ? "ready" : ""}>
+            {contextSources.length > 0 ? <CheckCircle2 size={13} /> : <Sparkles size={13} />}
             {contextSources.length > 0
               ? "Agent 协作上下文已就绪"
               : "项目上下文尚未连接"}
           </span>
+          <span><GitBranch size={13} />{project.repositories?.join("、") ?? "尚未连接代码库"}</span>
         </div>
       </header>
 
       {sessions.length > 0 && (
-        <RecentAgentWork agents={agents} onResume={onResumeSession} sessions={sessions} />
+        <RecentAgentWork
+          agents={agents}
+          onResume={onResumeSession}
+          requirements={requirements}
+          sessions={sessions}
+        />
       )}
       {requirements.length > 0 ? (
         <AgentRequirementList
           agents={agents}
+          historicalTotal={project.historicalRequirementCount}
           lastAgentByRequirement={lastAgentByRequirement}
+          onCreate={onCreateRequirement}
           onOpen={onOpenRequirement}
           requirements={requirements}
           stages={requirementStages}

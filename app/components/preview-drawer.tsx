@@ -101,7 +101,7 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   pdf: "PDF 预览",
   members: "成员管理",
   sources: "自动上下文",
-  "project-settings": "项目设置",
+  "project-settings": "需求状态与门禁",
   "context-maintenance": "共享上下文",
   "create-system": "新建系统项目",
   "project-repositories": "代码仓库",
@@ -398,6 +398,7 @@ export function PreviewDrawer({
                 onSetRequirementStage={onSetRequirementStage}
                 requirementStages={requirementStages}
                 requirements={requirements}
+                section="governance"
               />
             )}
             {selectedProject && PROJECT_CONTEXT_PREVIEW_KIND[preview ?? ""] && (

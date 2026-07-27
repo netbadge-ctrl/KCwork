@@ -6926,3 +6926,595 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
 .investment-requirement-head .open { transform: rotate(0deg); }
 .investment-requirement-head svg:not(.open) { transform: rotate(-90deg); }
 .investment-requirement .investment-table { margin: 0 8px 8px; }
+
+/* Refined project workspace: identity, recent Agent tasks and unified requirements */
+.project-detail.page-scroll {
+  container-type: inline-size;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.project-detail-header,
+.project-detail > .content-section {
+  width: min(1120px, 100%);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.project-detail-header {
+  display: grid;
+  gap: 13px;
+  padding: 2px 0 15px;
+  border-bottom: 1px solid var(--border);
+}
+
+.project-detail-header .back-button {
+  width: max-content;
+  margin: 0;
+  font-size: 10px;
+}
+
+.project-detail-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.project-detail-identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.project-detail-mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 7px 18px rgb(54 44 99 / 13%);
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.project-detail-identity > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.project-detail-identity .project-kicker {
+  margin: 0;
+  color: var(--accent);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.project-detail-identity h1 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+.project-detail-identity > div > p:last-child {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.project-detail-facts {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.project-detail-facts > span {
+  display: grid;
+  min-width: 78px;
+  gap: 1px;
+  padding: 0 14px;
+  border-left: 1px solid var(--border);
+}
+
+.project-detail-facts strong {
+  font-size: 15px;
+}
+
+.project-detail-facts small {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.project-detail-status {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.project-detail-status > span {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+}
+
+.project-detail-status > span:last-child {
+  overflow: hidden;
+  max-width: 460px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-detail-status .ready {
+  color: #2d7c64;
+}
+
+.project-detail .recent-agent-work,
+.project-detail .agent-requirement-list {
+  padding: 15px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  box-shadow: 0 8px 24px rgb(38 33 55 / 5%);
+}
+
+.project-detail .section-title {
+  margin-bottom: 11px;
+}
+
+.project-detail .section-title h2 {
+  font-size: 14px;
+}
+
+.agent-task-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.agent-task-card {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  color: var(--text);
+  text-align: left;
+  background: var(--surface-soft);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.agent-task-card:hover {
+  background: #fbfaff;
+  border-color: #ddd6f5;
+}
+
+.agent-task-card .agent-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  font-size: 11px;
+}
+
+.agent-task-copy,
+.agent-task-next,
+.agent-task-next > div {
+  display: grid;
+  min-width: 0;
+}
+
+.agent-task-copy {
+  gap: 2px;
+}
+
+.agent-task-copy small,
+.agent-task-copy > span,
+.agent-task-next small {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-task-copy strong {
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-task-next {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+}
+
+.agent-task-next > div {
+  max-width: 126px;
+  gap: 3px;
+  text-align: right;
+}
+
+.agent-task-next small {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+}
+
+.agent-task-next strong {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 8px;
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-requirement-heading,
+.project-requirement-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.project-requirement-heading > div {
+  display: grid;
+  gap: 2px;
+}
+
+.project-requirement-heading h2,
+.project-requirement-heading p,
+.project-requirement-heading span {
+  margin: 0;
+}
+
+.project-requirement-heading h2 {
+  font-size: 14px;
+}
+
+.project-requirement-heading > div > span {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.project-create-requirement {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  color: white;
+  background: var(--text);
+  border: 0;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.project-requirement-toolbar {
+  padding: 10px 0;
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.project-requirement-toolbar > span {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.project-requirement-filters {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  background: var(--surface-soft);
+  border-radius: 8px;
+}
+
+.project-requirement-filters button {
+  display: inline-flex;
+  min-height: 27px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 8px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  font-size: 9px;
+}
+
+.project-requirement-filters button span {
+  display: grid;
+  min-width: 16px;
+  height: 16px;
+  place-items: center;
+  background: rgb(115 104 144 / 8%);
+  border-radius: 5px;
+  font-size: 8px;
+}
+
+.project-requirement-filters button.active {
+  color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 1px 4px rgb(38 33 55 / 8%);
+  font-weight: 650;
+}
+
+.project-requirement-list {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.project-requirement-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.7fr) 108px 140px 148px 66px 92px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 11px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.project-requirement-row:last-child {
+  border-bottom: 0;
+}
+
+.project-requirement-row:hover {
+  background: #fcfbff;
+}
+
+.project-requirement-row.completed {
+  background: #fbfcfb;
+}
+
+.project-requirement-main {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 0;
+  color: var(--text);
+  text-align: left;
+  background: transparent;
+  border: 0;
+}
+
+.project-requirement-main > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.project-requirement-main strong,
+.project-requirement-main small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-requirement-main strong {
+  font-size: 11px;
+}
+
+.project-requirement-main small {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.project-requirement-state,
+.project-requirement-agent > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.project-stage-chip {
+  width: max-content;
+  padding: 3px 6px;
+  color: #76551d;
+  background: #fff3d8;
+  border-radius: 6px;
+  font-size: 8px;
+  font-weight: 650;
+}
+
+.project-stage-chip.done {
+  color: #28775f;
+  background: #eaf7f2;
+}
+
+.project-requirement-state small,
+.project-requirement-agent small {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-requirement-agent {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.agent-avatar.mini {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  border-radius: 7px;
+  font-size: 9px;
+}
+
+.project-requirement-agent strong {
+  overflow: hidden;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-requirement-artifacts {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.project-requirement-artifacts span {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.project-requirement-people {
+  display: flex;
+  padding-left: 7px;
+}
+
+.project-requirement-people span {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  margin-left: -7px;
+  color: #654dc5;
+  background: #eee9ff;
+  border: 2px solid white;
+  border-radius: 50%;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.project-requirement-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 0;
+  color: var(--accent);
+  background: transparent;
+  border: 0;
+  font-size: 8px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.project-requirement-empty {
+  padding: 26px;
+  color: var(--text-muted);
+  font-size: 9px;
+  text-align: center;
+}
+
+.project-requirement-setting select {
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 9px;
+}
+
+.requirement-gate-summary {
+  width: max-content;
+  padding: 4px 7px;
+  color: #725b25;
+  background: #fff4da;
+  border-radius: 6px;
+  font-size: 8px;
+}
+
+.requirement-gate-summary.approved {
+  color: #28775f;
+  background: #eaf7f2;
+}
+
+@container (max-width: 900px) {
+  .project-detail-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .project-detail-facts > span:first-child {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .agent-task-list {
+    grid-template-columns: 1fr;
+  }
+
+  .project-requirement-row {
+    grid-template-columns: minmax(240px, 1fr) 104px 136px 86px;
+  }
+
+  .project-requirement-artifacts,
+  .project-requirement-people {
+    display: none;
+  }
+}
+
+@container (max-width: 620px) {
+  .project-detail-facts,
+  .project-requirement-toolbar > span {
+    display: none;
+  }
+
+  .project-requirement-heading {
+    align-items: flex-start;
+  }
+
+  .project-requirement-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .project-requirement-state,
+  .project-requirement-agent {
+    grid-column: 1 / -1;
+  }
+
+  .project-requirement-agent {
+    display: none;
+  }
+
+  .project-requirement-open span {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .project-detail-heading {
+    align-items: flex-start;
+  }
+
+  .project-detail-status > span:last-child,
+  .agent-task-next > div {
+    display: none;
+  }
+
+  .agent-task-card {
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+  }
+}

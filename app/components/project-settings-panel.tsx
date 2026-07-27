@@ -63,8 +63,59 @@ export function ProjectSettingsPanel({
             ? "当前角色仅可查看"
             : `当前角色：${currentRoles.map((r) => projectRoleLabels[r]).join("、")}`}
         </span>
-        <p>项目治理和共享上下文维护集中在此处，日常工作仍围绕 Agent 与需求展开。</p>
+        <p>项目成员可以直接查看需求状态；有对应权限的角色可以调整状态并保留变更记录。</p>
       </div>
+
+      {(section === "all" || section === "governance") && (
+        <section className="project-settings-section">
+          {section === "all" && (
+            <button
+              aria-expanded={openSection === "governance"}
+              className="project-settings-section-toggle"
+              onClick={() => toggleSection("governance")}
+              type="button"
+            >
+              <span>需求状态与门禁</span>
+              <ChevronDown size={17} />
+            </button>
+          )}
+          {(section === "governance" || openSection === "governance") && (
+            <div className="project-settings-section-content">
+              <div className="project-requirement-settings-list">
+                {requirements.map((requirement) => {
+                  const stage = requirementStages[requirement.id] ?? requirement.stage;
+                  return (
+                    <div className="project-requirement-setting" key={requirement.id}>
+                      <div>
+                        <strong>{requirement.code} · {requirement.title}</strong>
+                        <small>{requirement.summary}</small>
+                      </div>
+                      <select
+                        aria-label={`调整 ${requirement.title} 状态`}
+                        disabled={!capabilities.canManageRequirements}
+                        onChange={(event) =>
+                          onSetRequirementStage(
+                            requirement.id,
+                            event.target.value as RequirementStage,
+                          )
+                        }
+                        value={stage}
+                      >
+                        {Object.entries(stageLabels).map(([value, label]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
+                      </select>
+                      <p className={`requirement-gate-summary ${requirement.gateStatus}`}>
+                        {requirement.gateLabel}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
       {section === "all" && <section className="project-settings-section">
         <button
