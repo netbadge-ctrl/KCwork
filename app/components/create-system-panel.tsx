@@ -1,4 +1,4 @@
-import { Check, Database, FileText, GitBranch, Link2, TestTube2 } from "lucide-react";
+import { Check, Database, FileText, GitBranch, Link2, TestTube2, X } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import type { AssetItem, Project } from "../lib/types";
 
@@ -51,6 +51,7 @@ function systemCodeFromName(name: string) {
   return normalized || "enterprise-system";
 }
 
+
 export function CreateSystemPanel({
   assets,
   onCreate,
@@ -58,12 +59,13 @@ export function CreateSystemPanel({
 }: CreateSystemPanelProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [systemCode, setSystemCode] = useState("enterprise-system");
-  const [systemCodeEdited, setSystemCodeEdited] = useState(false);
   const [repositoryIds, setRepositoryIds] = useState<string[]>([]);
   const [requirementSourceId, setRequirementSourceId] = useState<string | null>(null);
   const [testSourceId, setTestSourceId] = useState<string | null>(null);
   const [contextIds, setContextIds] = useState<string[]>([]);
+  const [repositoryLinks, setRepositoryLinks] = useState<string[]>([]);
+  const [requirementLinks, setRequirementLinks] = useState<string[]>([]);
+  const [testLinks, setTestLinks] = useState<string[]>([]);
 
   const repositories = useMemo(
     () => assets.filter((asset) => asset.kind === "repository"),
@@ -88,27 +90,43 @@ export function CreateSystemPanel({
     if (!name.trim()) return;
     const selectedRepositories = repositories.filter((asset) => repositoryIds.includes(asset.id));
     const selectedContexts = contextAssets.filter((asset) => contextIds.includes(asset.id));
+    const repositoryNames = [
+      ...selectedRepositories.map((asset) => asset.name),
+      ...repositoryLinks,
+    ];
+    const requirementNames = selectedRequirementSource
+      ? [`${selectedRequirementSource.provider} · ${selectedRequirementSource.label}`]
+      : [];
+    const testNames = selectedTestSource
+      ? [`${selectedTestSource.provider} · ${selectedTestSource.label}`]
+      : [];
     onCreate({
       id: `project-${Date.now()}`,
       name: name.trim(),
-      systemCode: systemCode.trim() || systemCodeFromName(name),
+      systemCode: systemCodeFromName(name),
       description: description.trim() || "持续迭代的企业系统项目",
       members: 1,
       updatedAt: "刚刚",
       contextCount:
-        selectedRepositories.length +
-        selectedContexts.length +
-        Number(Boolean(selectedRequirementSource)) +
-        Number(Boolean(selectedTestSource)),
+        repositoryNames.length +
+        (requirementNames.length + requirementLinks.length) +
+        (testNames.length + testLinks.length) +
+        selectedContexts.length,
       color: "#7c5cff",
-      repositories: selectedRepositories.map((asset) => asset.name),
-      requirementSource: selectedRequirementSource
-        ? `${selectedRequirementSource.provider} · ${selectedRequirementSource.label}`
-        : "未关联需求来源",
+      repositories: repositoryNames,
+      requirementSource:
+        requirementNames.length > 0
+          ? requirementNames[0]
+          : requirementLinks.length > 0
+            ? `自定义需求来源 · ${requirementLinks.join("、")}`
+            : "未关联需求来源",
       historicalRequirementCount: selectedRequirementSource?.count ?? 0,
-      testSuite: selectedTestSource
-        ? `${selectedTestSource.provider} · ${selectedTestSource.label}`
-        : "未关联测试资产",
+      testSuite:
+        testNames.length > 0
+          ? testNames[0]
+          : testLinks.length > 0
+            ? `自定义测试来源 · ${testLinks.join("、")}`
+            : "未关联测试资产",
       testCaseCount: selectedTestSource?.count ?? 0,
       contextAssets: selectedContexts.map((asset) => asset.name),
     });
@@ -133,24 +151,9 @@ export function CreateSystemPanel({
             <input
               aria-label="系统名称"
               autoFocus
-              onChange={(event) => {
-                const nextName = event.target.value;
-                setName(nextName);
-                if (!systemCodeEdited) setSystemCode(systemCodeFromName(nextName));
-              }}
+              onChange={(event) => setName(event.target.value)}
               placeholder="例如：企业客户门户"
               value={name}
-            />
-          </label>
-          <label>
-            <span>系统标识</span>
-            <input
-              aria-label="系统标识"
-              onChange={(event) => {
-                setSystemCodeEdited(true);
-                setSystemCode(event.target.value);
-              }}
-              value={systemCode}
             />
           </label>
           <label className="wide">
@@ -193,6 +196,12 @@ export function CreateSystemPanel({
             );
           })}
         </div>
+        <LinkAdder
+          label="添加仓库链接"
+          links={repositoryLinks}
+          placeholder="粘贴仓库地址，例如 https://github.com/org/repo"
+          setLinks={setRepositoryLinks}
+        />
       </ConnectionSection>
 
       <ConnectionSection
@@ -217,6 +226,12 @@ export function CreateSystemPanel({
             </button>
           ))}
         </div>
+        <LinkAdder
+          label="添加需求链接"
+          links={requirementLinks}
+          placeholder="粘贴需求文档地址，例如 https://docs.example.com/req-032"
+          setLinks={setRequirementLinks}
+        />
       </ConnectionSection>
 
       <ConnectionSection
@@ -241,6 +256,12 @@ export function CreateSystemPanel({
             </button>
           ))}
         </div>
+        <LinkAdder
+          label="添加测试链接"
+          links={testLinks}
+          placeholder="粘贴测试集地址，例如 https://test.example.com/suite/portal"
+          setLinks={setTestLinks}
+        />
       </ConnectionSection>
 
       <ConnectionSection
@@ -274,7 +295,7 @@ export function CreateSystemPanel({
         <div>
           <Link2 size={16} />
           <span>
-            将连接 {repositoryIds.length} 个仓库、{selectedRequirementSource?.count ?? 0} 项需求、
+            将连接 {repositoryIds.length + repositoryLinks.length} 个仓库、{selectedRequirementSource?.count ?? 0} 项需求、
             {selectedTestSource?.count ?? 0} 条用例和 {contextIds.length} 项共享上下文
           </span>
         </div>
@@ -308,5 +329,61 @@ function ConnectionSection({
       </div>
       {children}
     </section>
+  );
+}
+
+function LinkAdder({
+  links,
+  setLinks,
+  placeholder,
+  label,
+}: {
+  links: string[];
+  setLinks(next: string[]): void;
+  placeholder: string;
+  label: string;
+}) {
+  const [draft, setDraft] = useState("");
+  const add = () => {
+    const trimmed = draft.trim();
+    if (!trimmed) return;
+    setLinks([...links, trimmed]);
+    setDraft("");
+  };
+  return (
+    <div className="link-adder">
+      <div className="link-adder-input">
+        <input
+          aria-label={label}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              add();
+            }
+          }}
+          placeholder={placeholder}
+          value={draft}
+        />
+        <button disabled={!draft.trim()} onClick={add} type="button">添加</button>
+      </div>
+      {links.length > 0 && (
+        <ul className="link-adder-list">
+          {links.map((link, index) => (
+            <li key={`${link}-${index}`}>
+              <Link2 size={13} />
+              <span>{link}</span>
+              <button
+                aria-label={`移除${link}`}
+                onClick={() => setLinks(links.filter((_, i) => i !== index))}
+                type="button"
+              >
+                <X size={12} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
