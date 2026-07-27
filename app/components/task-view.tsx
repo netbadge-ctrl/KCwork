@@ -4,30 +4,57 @@ import {
   Circle,
   Clock3,
   FileText,
-  MoreHorizontal,
+  Layers3,
   RotateCcw,
 } from "lucide-react";
+import { useState, type Dispatch } from "react";
 import type {
   Agent,
   ExecutionState,
   Message,
   PreviewKind,
+  ProductWorkMode,
   Project,
+  ProjectRole,
+  RecentTask,
+  Requirement,
+  ProductContextReference,
 } from "../lib/types";
+import { projectRoleLabels } from "../lib/project-capabilities";
 import { Composer } from "./composer";
+import { DownstreamProductContext, ProductPackageStrip } from "./product-package-strip";
+import type { ProductPackageAction, ProductPackageState } from "../lib/product-package";
+import { RequirementBaselineStrip } from "./requirement-baseline";
+import type { RequirementBaselineState } from "../lib/requirement-baseline";
+import { RequirementMoreActions } from "./requirement-more-actions";
 
 export interface TaskViewProps {
+  task: RecentTask;
   messages: Message[];
   execution: ExecutionState;
   agent: Agent;
+  executionAgent: Agent;
   project: Project | null;
   agents: Agent[];
   projects: Project[];
   selectedProjectId: string | null;
+  canEdit: boolean;
+  currentRole: ProjectRole;
+  contextCount?: number;
+  productWorkMode?: ProductWorkMode;
+  projectSelectionLocked?: boolean;
+  requirement?: Requirement | null;
   onSelectAgent(id: string): void;
   onSelectProject(id: string | null): void;
-  onSend(text: string): void;
+  onProductWorkModeChange?(mode: ProductWorkMode): void;
+  onSend(text: string, contextReference?: ProductContextReference): void;
   onOpenPreview(kind: PreviewKind): void;
+  onBackToProject?(): void;
+  productPackage?: ProductPackageState;
+  onProductPackageAction?: Dispatch<ProductPackageAction>;
+  requirementBaseline?: RequirementBaselineState;
+  activePreview?: PreviewKind | null;
+  onClearProductContext?(): void;
 }
 
 const executionSteps = [
@@ -37,42 +64,110 @@ const executionSteps = [
 ] as const;
 
 export function TaskView({
+  task,
   messages,
   execution,
   agent,
+  executionAgent,
   project,
   agents,
   projects,
   selectedProjectId,
+  canEdit,
+  currentRole,
+  contextCount,
+  productWorkMode,
+  projectSelectionLocked = false,
+  requirement = null,
   onSelectAgent,
   onSelectProject,
+  onProductWorkModeChange,
   onSend,
   onOpenPreview,
+  onBackToProject,
+  productPackage,
+  onProductPackageAction,
+  requirementBaseline,
+  activePreview = null,
+  onClearProductContext,
 }: TaskViewProps) {
+  const [isRequirementContextOpen, setIsRequirementContextOpen] = useState(false);
+  const [savedArtifactIds, setSavedArtifactIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   return (
     <div className="task-view">
       <header className="task-header">
         <div>
           <div className="task-heading-row">
-            <h1>完善角色管理 PRD</h1>
-            <ChevronDown size={15} />
+            <h1>{task.title}</h1>
           </div>
-          <small>任务 · 今天 14:32</small>
+          <small>任务 · {task.time}</small>
         </div>
         <div className="task-header-actions">
+          {!canEdit && project && <span className="read-only-notice">当前角色仅可查看</span>}
           {project && (
-            <span className="project-chip">
-              <span style={{ background: project.color }} /> {project.name}
-            </span>
+            <div className="project-header-cluster">
+              {onBackToProject ? (
+                <button className="project-chip" onClick={onBackToProject} type="button">
+                  <span style={{ background: project.color }} /> {project.name}
+                </button>
+              ) : (
+                <span className="project-chip">
+                  <span style={{ background: project.color }} /> {project.name}
+                </span>
+              )}
+              {requirement && requirementBaseline && agent.mode !== "office" && (
+                <button
+                  aria-expanded={isRequirementContextOpen}
+                  className={`requirement-context-toggle ${isRequirementContextOpen ? "active" : ""}`}
+                  onClick={() => setIsRequirementContextOpen((isOpen) => !isOpen)}
+                  type="button"
+                >
+                  <Layers3 size={14} />
+                  需求上下文
+                  <span className="context-status-dot" />
+                  <ChevronDown size={13} />
+                </button>
+              )}
+              {requirement && <RequirementMoreActions canEdit={canEdit} />}
+            </div>
           )}
-          <button className="context-count" type="button">
-            {project?.contextCount ?? 0} 项上下文
-          </button>
-          <button aria-label="更多任务操作" className="icon-button" type="button">
-            <MoreHorizontal size={18} />
+          <button
+            className="context-count"
+            onClick={() => onOpenPreview("sources")}
+            type="button"
+          >
+            {contextCount ?? project?.contextCount ?? 0} 项上下文
           </button>
         </div>
       </header>
+
+      {isRequirementContextOpen && requirementBaseline && requirement && agent.mode !== "office" && (
+        <div className={`requirement-context-toolbar ${agent.id === "product-design" ? "with-product" : ""}`}>
+          <RequirementBaselineStrip onOpen={onOpenPreview} requirement={requirement} state={requirementBaseline} />
+          {productPackage && onProductPackageAction && agent.id === "product-design" && (
+            <ProductPackageStrip
+              canEdit={canEdit}
+              dispatch={onProductPackageAction}
+              onOpen={onOpenPreview}
+              state={productPackage}
+            />
+          )}
+        </div>
+      )}
+
+      {!requirementBaseline && productPackage && onProductPackageAction && agent.id === "product-design" && (
+        <ProductPackageStrip canEdit={canEdit} dispatch={onProductPackageAction} onOpen={onOpenPreview} state={productPackage} />
+      )}
+
+      {productPackage && onProductPackageAction && ["development", "testing"].includes(agent.id) && (
+        <DownstreamProductContext
+          agentId={agent.id}
+          dispatch={onProductPackageAction}
+          state={productPackage}
+        />
+      )}
 
       <div className="conversation-scroll">
         <div className="conversation-inner">
@@ -90,28 +185,37 @@ export function TaskView({
                     ✦ {agents.find((item) => item.id === message.agentId)?.name}
                   </span>
                 )}
+                {message.contextReference && <span className="message-context-reference"><Layers3 size={12} />{message.contextReference.label}</span>}
                 <p>{message.text}</p>
                 {message.artifact && (
                   <div className="artifact-card">
-                    <span className="artifact-icon"><FileText size={19} /></span>
-                    <span className="artifact-copy">
-                      <strong>角色管理模块 PRD v1.3</strong>
-                      <small>产品文档 · 刚刚更新 · 8.4 KB</small>
-                    </span>
                     <button
-                      aria-label="查看角色管理模块 PRD v1.3"
+                      className="artifact-open"
+                      aria-label={`查看${message.artifactTitle ?? `${task.title} 产物`}`}
                       onClick={() => onOpenPreview(message.artifact!)}
                       type="button"
                     >
-                      查看产物
+                      <span className="artifact-icon"><FileText size={19} /></span>
+                      <span className="artifact-copy">
+                        <strong>{message.artifactTitle ?? `${task.title} 产物`}</strong>
+                        <small>{message.artifactMeta ?? "任务产物"}</small>
+                      </span>
                     </button>
-                  </div>
-                )}
-                {message.role === "agent" && message.artifact && (
-                  <div className="result-actions">
-                    <button className="primary-small" onClick={() => onOpenPreview(message.artifact!)} type="button">打开预览</button>
-                    <button type="button">继续调整</button>
-                    <button type="button">保存到项目</button>
+                    <button
+                      className={`artifact-save ${savedArtifactIds.has(message.id) ? "saved" : ""}`}
+                      disabled={savedArtifactIds.has(message.id)}
+                      onClick={() =>
+                        setSavedArtifactIds((current) => {
+                          const next = new Set(current);
+                          next.add(message.id);
+                          return next;
+                        })
+                      }
+                      type="button"
+                    >
+                      {savedArtifactIds.has(message.id) && <Check size={13} />}
+                      {savedArtifactIds.has(message.id) ? "已保存到项目" : "保存到项目"}
+                    </button>
                   </div>
                 )}
               </div>
@@ -120,9 +224,9 @@ export function TaskView({
 
           {!["idle", "done", "error"].includes(execution) && (
             <article className="message-turn agent">
-              <span className="message-avatar agent">{agent.shortName}</span>
+              <span className="message-avatar agent">{executionAgent.shortName}</span>
               <div className="message-content">
-                <span className="message-agent-name">✦ {agent.name}</span>
+                <span className="message-agent-name">✦ {executionAgent.name}</span>
                 <div className="execution-card">
                   <div className="execution-heading">
                     <span><Clock3 size={15} /> 正在执行</span>
@@ -153,7 +257,7 @@ export function TaskView({
           {execution === "error" && (
             <article className="error-card">
               <strong>执行失败</strong>
-              <p>当前 Agent 暂时无法完成请求，请重试或更换 Agent。</p>
+              <p>{executionAgent.name} 暂时无法完成请求，请重试或更换 Agent。</p>
               <div><button type="button"><RotateCcw size={14} /> 重试</button><button type="button">更换 Agent</button></div>
             </article>
           )}
@@ -169,16 +273,33 @@ export function TaskView({
       <div className="task-composer-wrap">
         <Composer
           agents={agents}
+          disabled={!canEdit}
           mode={agent.mode === "office" ? "office" : "research"}
+          onProductWorkModeChange={onProductWorkModeChange}
           onSelectAgent={onSelectAgent}
           onSelectProject={onSelectProject}
           onSend={onSend}
+          onClearProductContext={onClearProductContext}
+          productWorkMode={productWorkMode}
+          projectSelectionLocked={projectSelectionLocked}
           projects={projects}
           selectedAgentId={agent.id}
           selectedProjectId={selectedProjectId}
+          selectedProductContext={(() => {
+            if (agent.id !== "product-design") return null;
+            if (activePreview === "prd") return { pageName: `PRD ${productPackage?.prdVersions.at(-1)?.version ?? ""}`, componentName: "当前章节" };
+            if (activePreview !== "prototype" || !productPackage?.selectedComponentId) return null;
+            const page = productPackage.pages.find((item) => item.id === productPackage.selectedPageId);
+            const component = page?.components.find((item) => item.id === productPackage.selectedComponentId);
+            return page && component ? { pageName: page.name, componentName: component.name } : null;
+          })()}
           variant="task"
         />
-        <p className="composer-hint">Agent 可能会出错，请检查重要信息与产物。</p>
+        <p className="composer-hint">
+          {canEdit
+            ? "Agent 可能会出错，请检查重要信息与产物。"
+            : `${projectRoleLabels[currentRole]}角色仅可查看当前项目任务。`}
+        </p>
       </div>
     </div>
   );

@@ -4,11 +4,15 @@ import {
   ChevronRight,
   Database,
   GitBranch,
+  Plus,
+  Puzzle,
   PlugZap,
   Search,
+  Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 import type { Agent, AssetItem, AssetKind } from "../lib/types";
+import { KnowledgeMemoryWorkspace } from "./knowledge-memory-workspace";
 
 export interface AssetsViewProps {
   agents: Agent[];
@@ -16,21 +20,52 @@ export interface AssetsViewProps {
 }
 
 const tabs: { label: string; kind: AssetKind; icon: typeof Bot }[] = [
+  { label: "Skill", kind: "skill", icon: Sparkles },
+  { label: "插件", kind: "plugin", icon: Puzzle },
+  { label: "MCP", kind: "tool", icon: PlugZap },
   { label: "Agent", kind: "agent", icon: Bot },
+  { label: "代码库", kind: "repository", icon: GitBranch },
   { label: "知识库", kind: "knowledge", icon: Database },
   { label: "记忆库", kind: "memory", icon: BrainCircuit },
-  { label: "代码库", kind: "repository", icon: GitBranch },
-  { label: "工具", kind: "tool", icon: PlugZap },
 ];
 
 export function AssetsView({ agents, assets }: AssetsViewProps) {
-  const [activeKind, setActiveKind] = useState<AssetKind>("agent");
+  const [activeKind, setActiveKind] = useState<AssetKind>("skill");
   const [query, setQuery] = useState("");
-  const visibleAssets = assets.filter(
+  const [isAdding, setIsAdding] = useState(false);
+  const [assetName, setAssetName] = useState("");
+  const [assetDescription, setAssetDescription] = useState("");
+  const [customAssets, setCustomAssets] = useState<AssetItem[]>([]);
+  const [enabledAssets, setEnabledAssets] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(assets.map((asset) => [asset.id, asset.enabled ?? true])),
+  );
+  const allAssets = [...assets, ...customAssets];
+  const activeLabel = tabs.find((tab) => tab.kind === activeKind)?.label ?? "资产";
+  const visibleAssets = allAssets.filter(
     (asset) =>
       asset.kind === activeKind &&
       `${asset.name}${asset.description}`.includes(query),
   );
+
+  const addAsset = () => {
+    const name = assetName.trim();
+    if (!name) return;
+    setCustomAssets((current) => [
+      ...current,
+      {
+        id: `custom-${activeKind}-${Date.now()}`,
+        kind: activeKind,
+        name,
+        description: assetDescription.trim() || `新添加的${activeLabel}`,
+        status: activeKind === "tool" || activeKind === "plugin" ? "已连接" : "可用",
+        meta: "刚刚添加",
+        enabled: true,
+      },
+    ]);
+    setAssetName("");
+    setAssetDescription("");
+    setIsAdding(false);
+  };
 
   return (
     <div className="assets-view page-scroll">
@@ -38,9 +73,8 @@ export function AssetsView({ agents, assets }: AssetsViewProps) {
         <div>
           <p className="eyebrow">企业能力底座</p>
           <h1>智能资产</h1>
-          <p>统一管理可用 Agent、知识、记忆、代码库与工具连接。</p>
+          <p>让 Agent 复用 Skill、插件、知识、记忆和项目上下文。</p>
         </div>
-        <button className="primary-button" type="button">添加资产</button>
       </header>
       <div className="asset-tabs" role="tablist" aria-label="资产分类">
         {tabs.map(({ label, kind, icon: Icon }) => (
@@ -48,7 +82,11 @@ export function AssetsView({ agents, assets }: AssetsViewProps) {
             aria-selected={activeKind === kind}
             className={activeKind === kind ? "active" : ""}
             key={kind}
-            onClick={() => setActiveKind(kind)}
+            onClick={() => {
+              setActiveKind(kind);
+              setIsAdding(false);
+              setQuery("");
+            }}
             role="tab"
             type="button"
           >
@@ -56,17 +94,55 @@ export function AssetsView({ agents, assets }: AssetsViewProps) {
           </button>
         ))}
       </div>
-      <label className="search-box compact">
-        <Search size={16} />
-        <input
-          aria-label="搜索智能资产"
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="搜索当前分类"
-          value={query}
-        />
-      </label>
+      <div className="asset-tab-toolbar">
+        <label className="search-box compact">
+          <Search size={16} />
+          <input
+            aria-label="搜索智能资产"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="搜索当前分类"
+            value={query}
+          />
+        </label>
+        <button className="primary-button" onClick={() => setIsAdding(true)} type="button">
+          <Plus size={15} /> 添加
+        </button>
+      </div>
+      {isAdding && (
+        <form
+          className="inline-create-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            addAsset();
+          }}
+        >
+          <div>
+            <strong>添加{activeLabel}</strong>
+            <span>添加后会出现在当前分类中。</span>
+          </div>
+          <input
+            aria-label={`${activeLabel}名称`}
+            autoFocus
+            onChange={(event) => setAssetName(event.target.value)}
+            placeholder={`${activeLabel}名称`}
+            value={assetName}
+          />
+          <input
+            aria-label={`${activeLabel}说明`}
+            onChange={(event) => setAssetDescription(event.target.value)}
+            placeholder="简要说明"
+            value={assetDescription}
+          />
+          <div className="inline-create-actions">
+            <button onClick={() => setIsAdding(false)} type="button">取消</button>
+            <button className="primary-button" disabled={!assetName.trim()} type="submit">添加</button>
+          </div>
+        </form>
+      )}
 
-      {activeKind === "agent" ? (
+      {activeKind === "knowledge" || activeKind === "memory" ? (
+        <KnowledgeMemoryWorkspace assets={visibleAssets} kind={activeKind} query={query} />
+      ) : activeKind === "agent" ? (
         <div className="asset-grid agent-assets">
           {agents.filter((agent) => agent.name.includes(query)).map((agent) => (
             <article className="asset-card" key={agent.id}>
@@ -80,6 +156,18 @@ export function AssetsView({ agents, assets }: AssetsViewProps) {
               <button type="button">查看能力 <ChevronRight size={15} /></button>
             </article>
           ))}
+          {visibleAssets.map((asset) => (
+            <article className="asset-card" key={asset.id}>
+              <div className="asset-card-top">
+                <span className="agent-avatar large">{asset.name.slice(0, 1)}</span>
+                <span className="status-badge success">已启用</span>
+              </div>
+              <p className="asset-category">自定义 Agent</p>
+              <h2>{asset.name}</h2>
+              <p>{asset.description}</p>
+              <div className="asset-meta"><span>{asset.meta}</span><ChevronRight size={15} /></div>
+            </article>
+          ))}
         </div>
       ) : (
         <div className="asset-grid">
@@ -91,11 +179,37 @@ export function AssetsView({ agents, assets }: AssetsViewProps) {
                   {activeKind === "memory" && <BrainCircuit size={19} />}
                   {activeKind === "repository" && <GitBranch size={19} />}
                   {activeKind === "tool" && <PlugZap size={19} />}
+                  {activeKind === "skill" && <Sparkles size={19} />}
+                  {activeKind === "plugin" && <Puzzle size={19} />}
                 </span>
-                <span className="status-badge success">{asset.status}</span>
+                {(activeKind === "skill" || activeKind === "plugin") ? (
+                  <button
+                    aria-label={`${enabledAssets[asset.id] ?? true ? "停用" : "启用"}${asset.name}`}
+                    className={`asset-toggle ${enabledAssets[asset.id] ?? true ? "active" : ""}`}
+                    onClick={() => setEnabledAssets((current) => ({
+                      ...current,
+                      [asset.id]: !(current[asset.id] ?? true),
+                    }))}
+                    type="button"
+                  >
+                    {enabledAssets[asset.id] ?? true ? "已启用" : "启用"}
+                  </button>
+                ) : (
+                  <span className="status-badge success">{asset.status}</span>
+                )}
               </div>
               <h2>{asset.name}</h2>
               <p>{asset.description}</p>
+              {asset.scope && (
+                <div className="asset-detail-line">
+                  <span>{asset.scope}</span><small>{asset.trigger}</small>
+                </div>
+              )}
+              {asset.capabilities && (
+                <div className="asset-capabilities">
+                  {asset.capabilities.map((capability) => <span key={capability}>{capability}</span>)}
+                </div>
+              )}
               <div className="asset-meta"><span>{asset.meta}</span><ChevronRight size={15} /></div>
             </article>
           ))}

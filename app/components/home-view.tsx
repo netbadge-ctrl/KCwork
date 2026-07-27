@@ -1,5 +1,5 @@
 import { ArrowRight, Code2, MessageSquareText } from "lucide-react";
-import type { Agent, Mode, Project } from "../lib/types";
+import type { Agent, Mode, ProductWorkMode, Project, ProjectRole } from "../lib/types";
 import { Composer } from "./composer";
 
 export interface HomeViewProps {
@@ -8,8 +8,12 @@ export interface HomeViewProps {
   projects: Project[];
   selectedAgentId: string;
   selectedProjectId: string | null;
+  canEdit: boolean;
+  currentRole: ProjectRole;
+  productWorkMode: ProductWorkMode;
   onModeChange(mode: Mode): void;
   onSelectAgent(id: string): void;
+  onProductWorkModeChange(mode: ProductWorkMode): void;
   onSelectProject(id: string | null): void;
   onSend(text: string): void;
   onOpenProject(id: string): void;
@@ -41,35 +45,39 @@ export function HomeView(props: HomeViewProps) {
             onClick={() => props.onModeChange("research")}
             type="button"
           >
-            <Code2 size={17} /> 代码研发
+            <Code2 size={17} /> 系统开发
           </button>
         </div>
-        <Composer {...props} variant="hero" />
+        {!props.canEdit && props.selectedProjectId && (
+          <span className="read-only-notice home-read-only-notice">当前角色仅可查看</span>
+        )}
+        <Composer {...props} disabled={!props.canEdit} variant="hero" />
       </section>
 
       <section className="home-section">
         <div className="section-title">
           <div>
             <p className="eyebrow">按需调用</p>
-            <h2>{props.mode === "office" ? "办公 Agent" : "研发 Agent"}</h2>
+            <h2>{props.mode === "office" ? "办公 Agent" : "系统开发 Agent"}</h2>
           </div>
           <span>每次任务只选择你需要的能力</span>
         </div>
         <div className="agent-card-grid">
           {visibleAgents.map((agent) => (
-            <button
-              className={`agent-card ${props.selectedAgentId === agent.id ? "selected" : ""}`}
-              key={agent.id}
-              onClick={() => props.onSelectAgent(agent.id)}
-              type="button"
-            >
-              <span className="agent-avatar">{agent.shortName}</span>
-              <span className="agent-card-copy">
-                <strong>{agent.name}</strong>
-                <small>{agent.description}</small>
-              </span>
-              <ArrowRight size={16} />
-            </button>
+            <div className="agent-card-slot" key={agent.id}>
+              <button
+                className={`agent-card ${props.selectedAgentId === agent.id ? "selected" : ""}`}
+                onClick={() => props.onSelectAgent(agent.id)}
+                type="button"
+              >
+                <span className="agent-avatar">{agent.shortName}</span>
+                <span className="agent-card-copy">
+                  <strong>{agent.name}</strong>
+                  <small>{agent.description}</small>
+                </span>
+                <ArrowRight size={16} />
+              </button>
+            </div>
           ))}
         </div>
       </section>
