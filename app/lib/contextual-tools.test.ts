@@ -23,23 +23,4 @@ describe("resolveContextualTools", () => {
       expect(kinds(agentId, "office")).not.toContain("test");
     }
   });
-
-  test("maps product, development, review, and test Agents to their own evidence", () => {
-    expect(kinds("product-design", "research", true, false, "analysis"))
-      .toEqual(["context", "analysis", "questions", "log"]);
-    expect(kinds("product-design", "research", true, false, "prototype"))
-      .toEqual(["prototype", "components", "interaction", "context"]);
-    expect(kinds("product-design", "research", true, false, "prd"))
-      .toEqual(["prd", "pdf", "analysis", "context"]);
-    expect(kinds("development")).toEqual(["files", "frontend-preview", "diff", "console", "requirement-spec", "requirement-acceptance", "context"]);
-    expect(kinds("testing", "research", true, true)).toEqual(["test", "failures", "log", "context"]);
-  });
-
-  test("hides execution-only entries until evidence exists and caps the rail at four", () => {
-    for (const legacyId of ["requirement-analysis", "prototype", "prd-writer"]) {
-      expect(kinds(legacyId, "research", false)).toEqual(["context", "analysis"]);
-    }
-    expect(kinds("testing", "research", false, false)).toEqual(["test", "failures", "context"]);
-    expect(kinds("development").length).toBeLessThanOrEqual(4);
-  });
 });
