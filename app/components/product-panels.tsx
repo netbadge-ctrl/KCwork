@@ -79,12 +79,11 @@ function ProductContext({ requirement, state }: { requirement: Requirement | nul
 function ProductPrototypePanel({ state, dispatch, canEdit, onScopedSend, prototypeInspect = true }: Props) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
-  const [pendingInstruction, setPendingInstruction] = useState("");
   const page = state.pages.find((item) => item.id === state.selectedPageId) ?? state.pages[0];
   const component = page.components.find((item) => item.id === state.selectedComponentId) ?? null;
   const closeInspector = () => {
     setIsInspectorOpen(false);
-    setPendingInstruction("");
+    dispatch({ type: "set-pending-instruction", instruction: "" });
     dispatch({ type: "select-component", componentId: null });
   };
   return <section className="product-panel prototype-workbench">
@@ -92,7 +91,7 @@ function ProductPrototypePanel({ state, dispatch, canEdit, onScopedSend, prototy
       <div className="prototype-canvas-column">
         <div className="prototype-canvas-toolbar"><span>{page.route}</span><div><button className="page-start-action" disabled={!canEdit || page.start} onClick={() => dispatch({ type: "set-start-page", pageId: page.id })} type="button">{page.start ? "起始页" : "设为起始页"}</button>{(["desktop", "tablet", "mobile"] as const).map((item) => <button aria-label={item === "desktop" ? "桌面端" : item === "tablet" ? "平板" : "移动端"} className={device === item ? "active" : ""} key={item} onClick={() => setDevice(item)} type="button">{item === "desktop" ? <Monitor size={13} /> : item === "tablet" ? <Tablet size={13} /> : <Smartphone size={13} />}</button>)}</div></div>
         <div className={`product-prototype-canvas ${device}`}>
-          <PrototypeDemoPage inspect={prototypeInspect} page={page} selectedComponentId={isInspectorOpen ? component?.id ?? null : null} onSelect={(item) => { if (!prototypeInspect) return; dispatch({ type: "select-component", componentId: item.id }); setIsInspectorOpen(true); setPendingInstruction(""); }} />
+          <PrototypeDemoPage inspect={prototypeInspect} page={page} selectedComponentId={isInspectorOpen ? component?.id ?? null : null} onSelect={(item) => { if (!prototypeInspect) return; dispatch({ type: "select-component", componentId: item.id }); setIsInspectorOpen(true); dispatch({ type: "set-pending-instruction", instruction: "" }); }} />
         </div>
         <div className="prototype-version-save"><span>{state.prototypeStatus === "draft" ? "有未保存的组件或页面修改" : `当前 ${state.prototypeVersions.at(-1)?.version} · 已确认`}</span><button disabled={!canEdit || state.prototypeStatus !== "draft"} onClick={() => dispatch({ type: "create-prototype-version", title: `更新${page.name}` })} type="button"><Save size={14} />保存为新版本</button></div>
       </div>
@@ -103,8 +102,8 @@ function ProductPrototypePanel({ state, dispatch, canEdit, onScopedSend, prototy
         <label>视觉主色<input disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { color: event.target.value } })} type="color" value={component.color} /></label>
         <label>组件状态<select disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { state: event.target.value as PrototypeComponent["state"] } })} value={component.state}><option value="default">默认</option><option value="disabled">禁用</option><option value="loading">加载中</option></select></label>
         <label>交互目标<input disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { target: event.target.value } })} value={component.target ?? ""} /></label>
-        <ScopedArtifactComposer canEdit={canEdit} label={`原型 ${state.prototypeVersions.at(-1)?.version} / ${page.name} / ${component.name}`} onSend={(text) => { setPendingInstruction(text); onScopedSend?.({ kind: "prototype", label: `原型 ${state.prototypeVersions.at(-1)?.version} / ${page.name} / ${component.name}` }, text); }} />
-        {pendingInstruction && <div className="scoped-change-preview"><b><GitCompareArrows size={13} />Agent 修改建议</b><p>{pendingInstruction}</p><footer><button onClick={() => setPendingInstruction("")} type="button"><X size={12} />放弃</button><button onClick={() => { dispatch({ type: "update-component", patch: { text: component.text } }); dispatch({ type: "create-prototype-version", title: `调整${component.name}` }); setPendingInstruction(""); }} type="button"><Check size={12} />应用并生成新版本</button></footer></div>}
+        <ScopedArtifactComposer canEdit={canEdit} label={`原型 ${state.prototypeVersions.at(-1)?.version} / ${page.name} / ${component.name}`} onSend={(text) => { dispatch({ type: "set-pending-instruction", instruction: text }); onScopedSend?.({ kind: "prototype", label: `原型 ${state.prototypeVersions.at(-1)?.version} / ${page.name} / ${component.name}` }, text); }} />
+        {state.pendingInstruction && <div className="scoped-change-preview"><b><GitCompareArrows size={13} />Agent 修改建议</b><p>{state.pendingInstruction}</p><footer><button onClick={() => dispatch({ type: "set-pending-instruction", instruction: "" })} type="button"><X size={12} />放弃</button><button onClick={() => { dispatch({ type: "update-component", patch: { text: component.text } }); dispatch({ type: "create-prototype-version", title: `调整${component.name}` }); dispatch({ type: "set-pending-instruction", instruction: "" }); }} type="button"><Check size={12} />应用并生成新版本</button></footer></div>}
       </aside>}
     </div>
   </section>;

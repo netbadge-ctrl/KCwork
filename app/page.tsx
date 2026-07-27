@@ -399,7 +399,7 @@ export default function Page() {
     const hasUnconfirmedPrototype =
       includePrototype &&
       selectedRequirement &&
-      prototypeStatus.pending;
+      (prototypeStatus.pending || Boolean(productPackageSession.state.pendingInstruction));
     if (hasUnconfirmedDraft || hasUnconfirmedPrototype) {
       const kind = hasUnconfirmedDraft && hasUnconfirmedPrototype
         ? "combined"
@@ -499,7 +499,7 @@ export default function Page() {
     <main
       className={`client-shell ${state.view === "home" ? "no-auxiliary" : ""} ${state.view !== "home" && state.preview ? "drawer-open" : ""} ${isArtifactFocus ? "artifact-focus" : ""}`}
       data-prototype-dirty={prototypeStatus.dirty}
-      data-prototype-pending={prototypeStatus.pending}
+      data-prototype-pending={prototypeStatus.pending || Boolean(productPackageSession.state.pendingInstruction)}
       style={
         {
           "--sidebar-width": `${effectiveSidebarWidth}px`,
