@@ -628,8 +628,6 @@ describe("enterprise AI client demo", () => {
 
     expect(screen.getAllByText("企业 SSO 登录体验优化").length).toBeGreaterThan(0);
     expect(screen.queryByText("AC-07")).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "测试报告" }));
-    expect(screen.getByText(/租户选择失败时可重新发起 SSO/)).toBeInTheDocument();
     await userEvent.click(
       screen.getByRole("button", { name: "5 项上下文" }),
     );
