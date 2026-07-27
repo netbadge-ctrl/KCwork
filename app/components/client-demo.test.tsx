@@ -756,16 +756,9 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("button", { name: "原型" }),
     );
     const drawer = screen.getByRole("complementary", { name: "页面预览" });
-    await userEvent.click(
-      within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
-    );
-    await userEvent.clear(within(drawer).getByLabelText("元素文案"));
-    await userEvent.type(within(drawer).getByLabelText("元素文案"), "邀请成员");
-    await userEvent.click(within(drawer).getByRole("button", { name: "预览修改" }));
-    await userEvent.click(within(drawer).getByRole("button", { name: "应用修改" }));
-    await userEvent.clear(within(drawer).getByLabelText("元素文案"));
-    await userEvent.type(within(drawer).getByLabelText("元素文案"), "邀请同事");
-    await userEvent.click(within(drawer).getByRole("button", { name: "预览修改" }));
+    await userEvent.click(within(drawer).getByRole("button", { name: "保存角色" }));
+    await userEvent.type(within(drawer).getByLabelText("精准引用修改要求"), "邀请同事");
+    await userEvent.click(within(drawer).getByRole("button", { name: "发送到主对话" }));
 
     await userEvent.click(screen.getByRole("button", { name: "PRD 撰写" }));
     expect(
@@ -781,10 +774,7 @@ describe("enterprise AI client demo", () => {
       name: "页面预览",
     });
     expect(
-      within(updatedDrawer).getByRole("button", { name: "选择邀请成员按钮" }),
-    ).toBeInTheDocument();
-    expect(
-      within(updatedDrawer).queryByText(/邀请成员 → 邀请同事/),
+      within(updatedDrawer).queryByText(/Agent 修改建议/),
     ).not.toBeInTheDocument();
   });
 
@@ -796,12 +786,9 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("button", { name: "原型" }),
     );
     const drawer = screen.getByRole("complementary", { name: "页面预览" });
-    await userEvent.click(
-      within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
-    );
-    await userEvent.clear(within(drawer).getByLabelText("元素文案"));
-    await userEvent.type(within(drawer).getByLabelText("元素文案"), "邀请同事");
-    await userEvent.click(within(drawer).getByRole("button", { name: "预览修改" }));
+    await userEvent.click(within(drawer).getByRole("button", { name: "保存角色" }));
+    await userEvent.type(within(drawer).getByLabelText("精准引用修改要求"), "邀请同事");
+    await userEvent.click(within(drawer).getByRole("button", { name: "发送到主对话" }));
     await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
     await userEvent.click(screen.getByRole("button", { name: "保留修改并离开" }));
 
