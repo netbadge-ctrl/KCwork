@@ -710,19 +710,16 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("button", { name: "原型" }),
     );
     let drawer = screen.getByRole("complementary", { name: "页面预览" });
-    await userEvent.click(
-      within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
-    );
-    await userEvent.clear(within(drawer).getByLabelText("元素文案"));
-    await userEvent.type(within(drawer).getByLabelText("元素文案"), "邀请成员");
-    await userEvent.click(within(drawer).getByRole("button", { name: "预览修改" }));
-    await userEvent.click(within(drawer).getByRole("button", { name: "应用修改" }));
+    await userEvent.click(within(drawer).getByRole("button", { name: "保存角色" }));
+    await userEvent.clear(within(drawer).getByLabelText("组件文案"));
+    await userEvent.type(within(drawer).getByLabelText("组件文案"), "保存权限");
+    await userEvent.click(within(drawer).getByRole("button", { name: "关闭组件编辑" }));
     await userEvent.click(screen.getByRole("button", { name: "关闭预览" }));
 
     await userEvent.click(screen.getByRole("button", { name: "原型" }));
     drawer = screen.getByRole("complementary", { name: "页面预览" });
     expect(
-      within(drawer).getByRole("button", { name: "选择邀请成员按钮" }),
+      within(drawer).getByRole("button", { name: "保存权限" }),
     ).toBeInTheDocument();
   });
 
