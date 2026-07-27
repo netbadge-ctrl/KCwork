@@ -1039,13 +1039,13 @@ describe("enterprise AI client demo", () => {
     render(<Page />);
     await userEvent.click(screen.getByRole("button", { name: "智能资产" }));
     for (const label of [
-      "Agent",
       "Skill",
       "插件",
+      "MCP",
+      "Agent",
+      "代码库",
       "知识库",
       "记忆库",
-      "代码库",
-      "工具连接",
     ]) {
       expect(screen.getByRole("tab", { name: label })).toBeInTheDocument();
     }
