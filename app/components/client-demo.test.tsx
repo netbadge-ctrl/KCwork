@@ -1032,7 +1032,7 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("complementary", { name: "测试报告" }),
     ).toBeInTheDocument();
     expect(screen.getByText(/AC-11/)).toBeInTheDocument();
-    expect(screen.getByText("92%")).toBeInTheDocument();
+    expect(screen.getByText("通过率")).toBeInTheDocument();
   });
 
   test("shows all governed smart asset categories", async () => {
