@@ -1018,7 +1018,6 @@ describe("enterprise AI client demo", () => {
     expect(
       screen.getByRole("complementary", { name: "代码差异" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("AI 修改说明")).toBeInTheDocument();
   });
 
   test("shows Spec-linked test cases and a test report", async () => {

@@ -6,7 +6,7 @@ import {
   RotateCcw,
   Save,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { codeChanges } from "../lib/demo-data";
 import type { CodeChange, Requirement } from "../lib/types";
 
@@ -144,6 +144,7 @@ export function CodeWorkbenchPreview({
     [requirement?.id],
   );
   const [mode, setMode] = useState<WorkbenchMode>(initialMode);
+  useEffect(() => { setMode(initialMode); }, [initialMode]);
   const [selectedFile, setSelectedFile] = useState(changes[0]?.file ?? "");
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [savedDrafts, setSavedDrafts] = useState<Record<string, string>>({});
