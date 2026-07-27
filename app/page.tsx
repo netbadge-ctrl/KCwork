@@ -497,7 +497,7 @@ export default function Page() {
 
   return (
     <main
-      className={`client-shell ${state.view === "home" ? "no-auxiliary" : ""} ${state.view !== "home" && state.preview ? "drawer-open" : ""} ${isArtifactFocus ? "artifact-focus" : ""}`}
+      className={`client-shell ${state.view === "home" ? "no-auxiliary" : ""} ${state.view !== "home" && state.preview && state.preview !== "create-system" ? "drawer-open" : ""} ${state.preview === "create-system" ? "overlay-drawer-open" : ""} ${isArtifactFocus ? "artifact-focus" : ""}`}
       data-prototype-dirty={prototypeStatus.dirty}
       data-prototype-pending={prototypeStatus.pending || Boolean(productPackageSession.state.pendingInstruction)}
       style={

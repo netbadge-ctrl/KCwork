@@ -154,6 +154,7 @@ export interface AssetItem {
   branch?: string;
   count?: number;
   authMethod?: string;
+  details?: Record<string, string>;
 }
 
 export interface Message {

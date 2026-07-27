@@ -9,10 +9,11 @@ import {
   PlugZap,
   Search,
   Sparkles,
+  X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Agent, AssetItem, AssetKind } from "../lib/types";
-import { AssetAddForm } from "./asset-add-form";
+import { AssetAddForm, assetAddConfigs } from "./asset-add-form";
 import { KnowledgeMemoryWorkspace } from "./knowledge-memory-workspace";
 
 export interface AssetsViewProps {
@@ -49,6 +50,17 @@ export function AssetsView({ agents, assets }: AssetsViewProps) {
     setCustomAssets((current) => [...current, asset]);
     setIsAdding(false);
   };
+
+  useEffect(() => {
+    if (!isAdding) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsAdding(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [isAdding]);
+
+  const addConfig = assetAddConfigs[activeKind];
 
   return (
     <div className="assets-view page-scroll">
@@ -92,11 +104,37 @@ export function AssetsView({ agents, assets }: AssetsViewProps) {
         </button>
       </div>
       {isAdding && (
-        <AssetAddForm
-          kind={activeKind}
-          onAdd={addAsset}
-          onCancel={() => setIsAdding(false)}
-        />
+        <div
+          className="asset-add-overlay"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setIsAdding(false);
+          }}
+        >
+          <aside
+            aria-labelledby="asset-add-title"
+            aria-modal="true"
+            className="asset-add-drawer"
+            role="dialog"
+          >
+            <header className="asset-add-drawer-header">
+              <div>
+                <p>{addConfig.eyebrow}</p>
+                <h2 id="asset-add-title">{addConfig.title}</h2>
+                <span>{addConfig.description}</span>
+              </div>
+              <button aria-label="关闭添加页面" className="icon-button" onClick={() => setIsAdding(false)} type="button">
+                <X size={18} />
+              </button>
+            </header>
+            <div className="asset-add-drawer-body">
+              <AssetAddForm
+                kind={activeKind}
+                onAdd={addAsset}
+                onCancel={() => setIsAdding(false)}
+              />
+            </div>
+          </aside>
+        </div>
       )}
 
       {activeKind === "knowledge" || activeKind === "memory" ? (
