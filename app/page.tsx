@@ -394,8 +394,8 @@ export default function Page() {
     const draftId = selectedPrdDocument?.id;
     const hasUnconfirmedDraft =
       includePrd &&
-      draftId &&
-      Boolean(state.documentDrafts[draftId]);
+      (Boolean(draftId && state.documentDrafts[draftId]) ||
+        Boolean(productPackageSession.state.prdRevision));
     const hasUnconfirmedPrototype =
       includePrototype &&
       selectedRequirement &&
@@ -416,6 +416,9 @@ export default function Page() {
               documentId: draftId,
               draft: "",
             });
+          }
+          if (productPackageSession.state.prdRevision) {
+            productPackageSession.dispatch({ type: "set-prd-revision", revision: "" });
           }
           if (hasUnconfirmedPrototype && selectedRequirement) {
             discardPrototypeDraft(selectedRequirement.id);
