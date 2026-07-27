@@ -2,7 +2,7 @@ import type { ProductWorkMode } from "../lib/types";
 
 const productModes = [
   { id: "analysis", label: "需求分析", detail: "澄清范围、依赖与验收边界" },
-  { id: "prototype", label: "原型设计与审计", detail: "生成、修改并检查页面交互" },
+  { id: "prototype", label: "原型设计", detail: "生成、修改并检查页面交互" },
   { id: "prd", label: "PRD 撰写", detail: "组织产品文档与可测试标准" },
 ] satisfies Array<{ id: ProductWorkMode; label: string; detail: string }>;
 

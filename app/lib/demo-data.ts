@@ -17,7 +17,7 @@ import type {
 } from "./types";
 
 export const agents: Agent[] = [
-  { id: "product-design", name: "产品设计 Agent", shortName: "产", mode: "research", category: "产品", description: "从需求分析、原型设计与审计或 PRD 撰写任一环节开始" },
+  { id: "product-design", name: "产品设计 Agent", shortName: "产", mode: "research", category: "产品", description: "从需求分析、原型设计或 PRD 撰写任一环节开始" },
   { id: "development", name: "开发 Agent", shortName: "开", mode: "research", category: "研发", description: "理解代码库并完成前后端实现" },
   { id: "testing", name: "测试 Agent", shortName: "测", mode: "research", category: "测试", description: "设计用例并生成测试报告" },
   { id: "meeting-notes", name: "会议纪要 Agent", shortName: "会", mode: "office", category: "办公", description: "提炼决议、风险和待办" },
