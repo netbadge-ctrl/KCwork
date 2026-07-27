@@ -864,16 +864,10 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("button", { name: "原型" }),
     );
     const drawer = screen.getByRole("complementary", { name: "页面预览" });
-    expect(
-      within(drawer).getByRole("link", { name: "在浏览器打开" }),
-    ).toHaveAttribute(
-      "href",
-      "/prototype?project=customer-portal&requirement=role-permissions&version=V3&inspect=1&readonly=1",
-    );
-    await userEvent.click(
-      within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
-    );
-    expect(within(drawer).getByLabelText("元素文案")).toBeDisabled();
+    // viewer 只读：ProductPanel 编辑控件应 disabled
+    expect(within(drawer).getByRole("button", { name: "新增页面" })).toBeDisabled();
+    await userEvent.click(within(drawer).getByRole("button", { name: "保存角色" }));
+    expect(within(drawer).getByLabelText("组件文案")).toBeDisabled();
   });
 
   test("revises a PRD with natural language and opens PDF preview", async () => {
@@ -1146,7 +1140,7 @@ describe("enterprise AI client demo", () => {
     );
     await userEvent.click(screen.getByRole("button", { name: "原型设计与审计" }));
     expect(screen.getByRole("button", { name: "原型" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "组件结构" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "交付检查" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "测试报告" })).not.toBeInTheDocument();
   });
 
