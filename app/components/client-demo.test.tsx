@@ -731,12 +731,9 @@ describe("enterprise AI client demo", () => {
       screen.getByRole("button", { name: "原型" }),
     );
     const drawer = screen.getByRole("complementary", { name: "页面预览" });
-    await userEvent.click(
-      within(drawer).getByRole("button", { name: "选择添加成员按钮" }),
-    );
-    await userEvent.clear(within(drawer).getByLabelText("元素文案"));
-    await userEvent.type(within(drawer).getByLabelText("元素文案"), "邀请同事");
-    await userEvent.click(within(drawer).getByRole("button", { name: "预览修改" }));
+    await userEvent.click(within(drawer).getByRole("button", { name: "保存角色" }));
+    await userEvent.type(within(drawer).getByLabelText("精准引用修改要求"), "邀请同事");
+    await userEvent.click(within(drawer).getByRole("button", { name: "发送到主对话" }));
     expect(document.querySelector(".client-shell")).toHaveAttribute(
       "data-prototype-pending",
       "true",
@@ -748,7 +745,7 @@ describe("enterprise AI client demo", () => {
     ).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "保留修改并离开" }));
     await userEvent.click(screen.getByRole("button", { name: "原型" }));
-    expect(screen.getByText(/添加成员 → 邀请同事/)).toBeInTheDocument();
+    expect(screen.getByText(/邀请同事/)).toBeInTheDocument();
   });
 
   test("discards only the pending prototype draft on a product-mode switch", async () => {
