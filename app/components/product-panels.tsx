@@ -57,7 +57,7 @@ export function PrototypeHeaderControls({ state, dispatch, canEdit, inspect, onI
     </div>
     <div className="prototype-toolbar-actions">
       <a href="/prototype?mode=inspect" rel="noreferrer" target="_blank"><Laptop size={14} />浏览器打开</a>
-      <button className={inspect ? "active" : ""} onClick={() => { onInspectChange(!inspect); if (inspect) dispatch({ type: "select-component", componentId: null }); }} type="button"><Sparkles size={14} />{inspect ? "组件可选" : "选择组件"}</button>
+      <button aria-pressed={inspect} className={inspect ? "active" : ""} onClick={() => { onInspectChange(!inspect); if (inspect) dispatch({ type: "select-component", componentId: null }); }} type="button"><Sparkles size={14} />{inspect ? "退出选择" : "组件可选"}</button>
       <div className="prototype-share">
         <button aria-expanded={isShareOpen} className={isShareOpen ? "active" : ""} onClick={() => setIsShareOpen((open) => !open)} type="button"><Share2 size={14} />分享</button>
         {isShareOpen && <div className="prototype-share-popover">

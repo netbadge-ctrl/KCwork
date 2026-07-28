@@ -231,6 +231,7 @@ select:focus-visible {
 
 .sidebar.collapsed {
   padding-inline: 8px;
+  overflow: visible;
 }
 
 .sidebar.collapsed .brand {
@@ -298,80 +299,11 @@ select:focus-visible {
   justify-content: center;
 }
 
-.sidebar.collapsed.peek-expanded {
-  width: 248px;
-  padding: 20px 14px 14px;
-  overflow: visible;
-  background: color-mix(in srgb, var(--bg-sidebar) 96%, white);
-  border-right-color: #d9dde6;
-  box-shadow: 16px 0 34px rgb(31 36 50 / 13%);
-}
-
-.sidebar.collapsed.peek-expanded .brand {
-  flex-direction: row;
-  gap: 10px;
-  padding: 0 8px 22px;
-}
-
-.sidebar.collapsed.peek-expanded .brand-label,
-.sidebar.collapsed.peek-expanded .brand small {
-  display: initial;
-}
-
-.sidebar.collapsed.peek-expanded .sidebar-toggle {
-  margin-left: auto;
-}
-
-.sidebar.collapsed.peek-expanded .nav-button {
-  justify-content: flex-start;
-  padding-inline: 10px;
-}
-
-.sidebar.collapsed.peek-expanded .nav-label,
-.sidebar.collapsed.peek-expanded .recent-heading span,
-.sidebar.collapsed.peek-expanded .task-copy,
-.sidebar.collapsed.peek-expanded .profile-copy {
-  position: static;
-  width: auto;
-  height: auto;
-  padding: initial;
-  margin: initial;
-  overflow: visible;
-  clip: auto;
-  white-space: normal;
-}
-
-.sidebar.collapsed.peek-expanded .recent-heading {
-  justify-content: space-between;
-  margin-inline: 10px;
-}
-
-.sidebar.collapsed.peek-expanded .recent-list {
-  overflow-y: auto;
-}
-
-.sidebar.collapsed.peek-expanded .recent-task {
-  display: grid;
-  justify-content: initial;
-  padding-inline: 9px;
-}
-
-.sidebar.collapsed.peek-expanded .profile {
-  grid-template-columns: minmax(0, 1fr) auto;
-  justify-items: initial;
-  padding-inline: 7px;
-}
-
-.sidebar.collapsed.peek-expanded .profile-main {
-  display: grid;
-  justify-content: initial;
-}
-
-.sidebar.collapsed:not(.peek-expanded) .recent-task-row {
+.sidebar.collapsed .recent-task-row {
   grid-template-columns: 1fr;
 }
 
-.sidebar.collapsed:not(.peek-expanded) .recent-task-delete {
+.sidebar.collapsed .recent-task-delete {
   display: none;
 }
 
@@ -380,7 +312,8 @@ select:focus-visible {
 }
 
 .sidebar .icon-button[data-tooltip]::after,
-.sidebar .recent-task-delete[data-tooltip]::after {
+.sidebar .recent-task-delete[data-tooltip]::after,
+.sidebar.collapsed .nav-button[data-tooltip]::after {
   position: absolute;
   top: 50%;
   left: calc(100% + 8px);
@@ -405,7 +338,9 @@ select:focus-visible {
 .sidebar .icon-button[data-tooltip]:hover::after,
 .sidebar .icon-button[data-tooltip]:focus-visible::after,
 .sidebar .recent-task-delete[data-tooltip]:hover::after,
-.sidebar .recent-task-delete[data-tooltip]:focus-visible::after {
+.sidebar .recent-task-delete[data-tooltip]:focus-visible::after,
+.sidebar.collapsed .nav-button[data-tooltip]:hover::after,
+.sidebar.collapsed .nav-button[data-tooltip]:focus-visible::after {
   opacity: 1;
   transform: translate(0, -50%);
 }

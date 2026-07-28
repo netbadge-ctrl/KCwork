@@ -197,7 +197,7 @@ export function PreviewDrawer({
   const isTestingReport = preview === "test" && selectedAgentId === "testing" && explicitPreviewKind !== "test";
   const isProductPanel = selectedAgentId === "product-design" && ["prototype", "prd", "delivery-check", "version-history"].includes(preview ?? "");
   const isRequirementBaselinePanel = ["requirement-spec", "requirement-acceptance"].includes(preview ?? "");
-  const [prototypeInspect, setPrototypeInspect] = useState(true);
+  const [prototypeInspect, setPrototypeInspect] = useState(false);
   const mainTools = tools.filter((tool) => tool.kind !== "context");
   const contextTools = tools.filter((tool) => tool.kind === "context");
   const [viewportWidth, setViewportWidth] = useState(

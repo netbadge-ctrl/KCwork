@@ -10,7 +10,6 @@ import {
   Settings,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
 import type { RecentTask, ViewId } from "../lib/types";
 
 export interface SidebarProps {
@@ -34,7 +33,6 @@ export function Sidebar({
   onOpenProfile,
   onToggleCollapsed,
 }: SidebarProps) {
-  const [peekExpanded, setPeekExpanded] = useState(false);
   const links = [
     { label: "新建任务", icon: Plus, view: "home" as const },
     { label: "项目", icon: FolderKanban, view: "projects" as const },
@@ -43,20 +41,14 @@ export function Sidebar({
 
   return (
     <nav
-      className={`sidebar ${collapsed ? "collapsed" : ""} ${collapsed && peekExpanded ? "peek-expanded" : ""}`}
+      className={`sidebar ${collapsed ? "collapsed" : ""}`}
       aria-label="主导航"
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-          setPeekExpanded(false);
-        }
+      onClick={(event) => {
+        if (!collapsed) return;
+        const target = event.target as HTMLElement;
+        if (target.closest("button, a, input, select, textarea")) return;
+        onToggleCollapsed();
       }}
-      onFocusCapture={() => {
-        if (collapsed) setPeekExpanded(true);
-      }}
-      onMouseEnter={() => {
-        if (collapsed) setPeekExpanded(true);
-      }}
-      onMouseLeave={() => setPeekExpanded(false)}
     >
       <div className="brand">
         <span className="brand-mark" aria-hidden="true">
