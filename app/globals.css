@@ -6676,7 +6676,7 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
 
 .prototype-inspector { display: grid; align-content: start; gap: 10px; }
 .prototype-inspector header { display: flex; align-items: center; gap: 6px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-.prototype-inspector.floating { position: absolute; top: 48px; right: 16px; z-index: 4; display: grid; width: min(430px, calc(100% - 32px)); max-height: calc(100% - 112px); grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; padding: 14px; overflow-y: auto; background: rgb(255 255 255 / 98%); box-shadow: 0 22px 64px rgb(27 31 40 / 22%); backdrop-filter: blur(12px); }
+.prototype-inspector.floating { position: absolute; bottom: 16px; left: 16px; z-index: 4; display: grid; width: min(430px, calc(100% - 32px)); max-height: calc(100% - 32px); grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; padding: 14px; overflow-y: auto; background: rgb(255 255 255 / 98%); box-shadow: 0 22px 64px rgb(27 31 40 / 22%); backdrop-filter: blur(12px); }
 .prototype-inspector.floating > header { justify-content: space-between; }
 .prototype-inspector.floating > header > span { display: flex; align-items: center; gap: 6px; }
 .prototype-inspector.floating > header > button { display: grid; width: 25px; height: 25px; place-items: center; color: var(--text-muted); background: var(--surface-soft); border: 0; border-radius: 6px; }
@@ -6821,7 +6821,7 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
   .prd-editor-layout { grid-template-columns: 1fr; }
   .prototype-page-tree { max-height: 180px; overflow: auto; }
   .prototype-inspector { grid-template-columns: 1fr; }
-  .prototype-inspector.floating { display: grid; top: 38px; right: 8px; width: calc(100% - 16px); grid-template-columns: 1fr; }
+  .prototype-inspector.floating { display: grid; bottom: 8px; left: 8px; width: calc(100% - 16px); max-height: calc(100% - 16px); grid-template-columns: 1fr; }
   .prototype-compact-toolbar { flex-wrap: wrap; }
   .prototype-page-menu { flex: 1; }
   .prototype-page-title-control { width: 100%; }
