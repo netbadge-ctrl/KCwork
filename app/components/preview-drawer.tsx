@@ -122,7 +122,7 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   "test-run": "执行测试",
   failures: "失败证据",
   defects: "缺陷记录",
-  "delivery-check": "交付检查",
+  "delivery-check": "产品交付物",
   "version-history": "版本记录",
   "requirement-spec": "需求 Spec",
   "requirement-acceptance": "验收标准",
@@ -460,9 +460,9 @@ export function PreviewDrawer({
           <button
             aria-label={label}
             className={preview === kind ? "active" : ""}
+            data-tooltip={label}
             key={kind}
             onClick={() => onSelect(kind)}
-            title={label}
             type="button"
           >
             <Icon size={18} />
@@ -473,15 +473,15 @@ export function PreviewDrawer({
             <button
               aria-label={label}
               className={preview === kind ? "active" : ""}
+              data-tooltip={label}
               key={kind}
               onClick={() => onSelect(kind)}
-              title={label}
               type="button"
             >
               <Icon size={18} />
             </button>
           ))}
-          <button aria-label="收起辅助栏" onClick={onClose} title="收起辅助栏" type="button">
+          <button aria-label="收起辅助栏" data-tooltip="收起辅助栏" onClick={onClose} type="button">
             <PanelRightClose size={18} />
           </button>
         </div>

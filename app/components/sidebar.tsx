@@ -61,7 +61,6 @@ export function Sidebar({
           className="icon-button sidebar-toggle"
           data-tooltip={collapsed ? "固定展开侧边栏" : "收起侧边栏"}
           onClick={onToggleCollapsed}
-          title={collapsed ? "展开左侧导航" : "收起左侧导航"}
           type="button"
         >
           {collapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
@@ -76,7 +75,6 @@ export function Sidebar({
             data-tooltip={label}
             key={view}
             onClick={() => onNavigate(view)}
-            title={label}
             type="button"
           >
             <span className="nav-icon">
@@ -99,7 +97,6 @@ export function Sidebar({
               className={`recent-task ${task.mode}`}
               data-tooltip={`${task.title} · ${task.time}`}
               onClick={() => onOpenTask(task)}
-              title={`${task.title} · ${task.time}`}
               type="button"
             >
               <span className="task-type-icon" aria-hidden="true">
@@ -116,7 +113,6 @@ export function Sidebar({
                 className="recent-task-delete"
                 data-tooltip="删除任务"
                 onClick={() => onDeleteTask(task)}
-                title="删除任务"
                 type="button"
               >
                 <Trash2 size={14} />
@@ -134,7 +130,7 @@ export function Sidebar({
             <small>研发中心</small>
           </span>
         </button>
-        <button aria-label="个人设置" className="icon-button" data-tooltip="个人设置" onClick={onOpenProfile} title="个人设置" type="button">
+        <button aria-label="个人设置" className="icon-button" data-tooltip="个人设置" onClick={onOpenProfile} type="button">
           <Settings size={17} />
         </button>
       </div>

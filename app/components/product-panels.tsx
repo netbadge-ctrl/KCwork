@@ -205,11 +205,60 @@ function ScopedArtifactComposer({ canEdit, label, onSend }: { canEdit: boolean; 
 function DeliveryCheckPanel({ state, dispatch, canEdit, requirement }: Props) {
   const readiness = getProductReadiness(state);
   const artifacts = [["原型", state.prototypeStatus, state.prototypeVersions.at(-1)?.version], ["PRD", state.prdStatus, state.prdVersions.at(-1)?.version]] as const;
+  const [reviewing, setReviewing] = useState(false);
+  const [reviewDecisions, setReviewDecisions] = useState<Record<string, "pending" | "accepted" | "ignored">>({
+    prototype: "pending",
+    prd: "pending",
+  });
+  const digitalReviewers = [
+    {
+      id: "prototype",
+      avatar: "妍",
+      name: "苏妍",
+      role: "体验审查数字人",
+      artifact: "原型",
+      tone: "violet",
+      suggestion: "二次确认弹窗应展示受影响成员数和角色变更摘要，降低误操作风险。",
+    },
+    {
+      id: "prd",
+      avatar: "衡",
+      name: "章衡",
+      role: "产品评审数字人",
+      artifact: "PRD",
+      tone: "blue",
+      suggestion: "补充批量调整部分失败时的回退、重试和审计记录规则。",
+    },
+  ] as const;
+  const rerunReview = () => {
+    setReviewing(true);
+    window.setTimeout(() => {
+      setReviewDecisions({ prototype: "pending", prd: "pending" });
+      setReviewing(false);
+    }, 650);
+  };
   return <section className="product-panel delivery-check-panel">
     <ProductContext requirement={requirement} state={state} />
-    <div className="product-panel-heading"><div><span>产品交付检查</span><h3>原型与 PRD 是否已经具备？</h3><p>这里只检查产品交付物；Spec 与验收标准在需求公共基线中共同维护。</p></div><strong>{readiness.complete ? "完整" : `${2 - readiness.missing.length}/2`}</strong></div>
-    <div className="delivery-artifact-list">{artifacts.map(([name, status, version]) => <article key={name}>{status === "confirmed" ? <CheckCircle2 size={18} /> : <AlertTriangle size={18} />}<div><b>{name}</b><small>{status === "confirmed" ? `${version} · 内容已确认` : `${version} · 可继续完善`}</small></div><span className={status}>{status === "confirmed" ? "可用" : status === "missing" ? "缺失" : "调整中"}</span></article>)}</div>
-    <div className="conflict-section"><header><b>原型与 PRD 一致性</b><span>{state.conflicts.filter((item) => item.status === "open").length} 项待处理</span></header>{state.conflicts.map((item) => <article className={item.status} key={item.id}>{item.status === "resolved" ? <CheckCircle2 size={17} /> : <AlertTriangle size={17} />}<div><b>{item.title}</b><p><span>原型：{item.prototypeValue}</span><span>PRD：{item.prdValue}</span></p></div>{item.status === "open" ? <div className="conflict-actions"><button disabled={!canEdit} onClick={() => dispatch({ type: "resolve-conflict", conflictId: item.id, resolution: "prototype" })} type="button">以原型为准</button><button disabled={!canEdit} onClick={() => dispatch({ type: "resolve-conflict", conflictId: item.id, resolution: "prd" })} type="button">以 PRD 为准</button><button disabled={!canEdit} onClick={() => dispatch({ type: "resolve-conflict", conflictId: item.id, resolution: "both" })} type="button">同时修订</button></div> : <span>已处理</span>}</article>)}</div>
+    <div className="product-panel-heading"><div><span>产品交付物</span><h3>原型与 PRD</h3><p>集中查看交付版本和数字人审查建议；Spec 与验收标准仍在需求公共基线中共同维护。</p></div><strong>{readiness.complete ? "2/2" : `${2 - readiness.missing.length}/2`}</strong></div>
+    <div className="delivery-artifact-list">{artifacts.map(([name, status, version]) => <article key={name}>{name === "原型" ? <LayoutTemplate size={16} /> : <FileText size={16} />}<div><b>{name} <em>{version}</em></b><small>{status === "confirmed" ? "当前版本已确认" : status === "missing" ? "尚未生成" : "仍在调整"}</small></div><span className={status}>{status === "confirmed" ? "可用" : status === "missing" ? "缺失" : "调整中"}</span></article>)}</div>
+    <section className="digital-human-review">
+      <header>
+        <div className="digital-review-title"><span className="digital-avatar-stack"><i className="violet">妍</i><i className="blue">衡</i></span><span><b>数字人联合审查</b><small>分别审查原型体验与 PRD 完整性，建议由产品成员决定是否采纳。</small></span></div>
+        <button disabled={reviewing} onClick={rerunReview} type="button"><Sparkles size={13} />{reviewing ? "审查中…" : "重新审查"}</button>
+      </header>
+      <div className="digital-review-list">
+        {digitalReviewers.map((reviewer) => {
+          const decision = reviewDecisions[reviewer.id];
+          return <article className={decision} key={reviewer.id}>
+            <span className={`digital-human-avatar ${reviewer.tone}`}>{reviewer.avatar}</span>
+            <div><header><b>{reviewer.name}</b><span>{reviewer.role}</span><em>{reviewer.artifact}</em></header><p>{reviewer.suggestion}</p></div>
+            <div className="digital-review-actions">
+              {decision === "pending" ? <><button disabled={!canEdit} onClick={() => setReviewDecisions((current) => ({ ...current, [reviewer.id]: "ignored" }))} type="button">忽略</button><button disabled={!canEdit} onClick={() => setReviewDecisions((current) => ({ ...current, [reviewer.id]: "accepted" }))} type="button">采纳建议</button></> : <span>{decision === "accepted" ? <><Check size={12} />已采纳</> : "已忽略"}</span>}
+            </div>
+          </article>;
+        })}
+      </div>
+    </section>
     <div className={`product-completion-card ${state.productStatus}`}><div><Check size={19} /><span><b>{state.productStatus === "adjusting" ? "产品调整中" : "产品已标记完成"}</b><small>{state.productStatus === "complete-incomplete" ? `仍缺少${readiness.missing.join("、")}，同项目研发与测试已可见` : state.productStatus === "complete" ? "原型与 PRD 已具备，同项目研发与测试已可见" : "可随时完成，缺失项只作为风险提示"}</small></span></div><button disabled={!canEdit} onClick={() => dispatch({ type: state.productStatus === "adjusting" ? "mark-product-complete" : "reopen-product" })} type="button">{state.productStatus === "adjusting" ? "标记需求完成" : "重新进入产品调整"}</button></div>
   </section>;
 }

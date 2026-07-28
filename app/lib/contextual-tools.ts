@@ -97,7 +97,7 @@ const developmentTools: Record<string, ContextualTool[]> = {
 const productTools: ContextualTool[] = [
   tool("prototype", "原型", LayoutTemplate),
   tool("prd", "PRD", FileText),
-  tool("delivery-check", "交付检查", ClipboardCheck),
+  tool("delivery-check", "产品交付物", ClipboardCheck),
   tool("version-history", "版本记录", History),
   tool("context", "项目知识", Database),
 ];

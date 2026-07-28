@@ -1107,7 +1107,7 @@ describe("enterprise AI client demo", () => {
     );
     await userEvent.click(screen.getByRole("button", { name: "原型设计" }));
     expect(screen.getByRole("button", { name: "原型" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "交付检查" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "产品交付物" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "测试报告" })).not.toBeInTheDocument();
   });
 
