@@ -106,6 +106,19 @@ const baseComponents: PrototypeComponent[] = [
   { id: "batch-dialog", name: "批量修改弹窗", type: "dialog", text: "确认修改 3 位成员的角色？", color: "#ffffff", state: "default", specRef: "AC-11" },
 ];
 
+const sharedSurfaceComponents: PrototypeComponent[] = [
+  { id: "access-navigation", name: "成员与权限导航", type: "navigation", text: "成员与权限", color: "#ffffff", state: "default", target: "成员列表", specRef: "PRD 2.1" },
+  { id: "global-search", name: "全局搜索框", type: "input", text: "搜索成员、角色或策略", color: "#f5f6f9", state: "default", target: "搜索结果", specRef: "PRD 3.1" },
+  { id: "invite-member", name: "邀请成员按钮", type: "button", text: "邀请成员", color: "#6d4ed0", state: "default", target: "邀请成员弹窗", specRef: "PRD 3.2" },
+  { id: "member-filter", name: "成员筛选按钮", type: "button", text: "筛选", color: "#ffffff", state: "default", target: "筛选条件", specRef: "PRD 3.1" },
+  { id: "member-table", name: "成员列表", type: "table", text: "成员目录", color: "#ffffff", state: "default", target: "成员详情", specRef: "PRD 3.1" },
+];
+
+const withSharedSurface = (components: PrototypeComponent[]) => [
+  ...sharedSurfaceComponents.map((component) => ({ ...component })),
+  ...components,
+];
+
 export function createInitialProductPackage(requirementId: string): ProductPackageState {
   return {
     requirementId,
@@ -113,9 +126,9 @@ export function createInitialProductPackage(requirementId: string): ProductPacka
     prototypeStatus: "confirmed",
     prdStatus: "confirmed",
     pages: [
-      { id: "overview", name: "权限概览", route: "/settings/roles", start: true, components: [{ id: "overview-nav", name: "角色导航", type: "navigation", text: "成员与角色", color: "#7053d8", state: "default", target: "成员列表" }] },
-      { id: "members", name: "成员列表", route: "/settings/members", changed: true, components: baseComponents },
-      { id: "role-edit", name: "角色编辑", route: "/settings/roles/edit", components: [{ id: "role-name", name: "角色名称", type: "input", text: "项目管理员", color: "#ffffff", state: "default", specRef: "PRD 3.2" }, { id: "permission-table", name: "权限表格", type: "table", text: "查看 · 编辑 · 管理成员", color: "#ffffff", state: "default", specRef: "BR-12" }] },
+      { id: "overview", name: "权限概览", route: "/settings/roles", start: true, components: withSharedSurface([{ id: "overview-title", name: "页面标题", type: "text", text: "权限概览", color: "#20232b", state: "default", specRef: "PRD 2.1" }]) },
+      { id: "members", name: "成员列表", route: "/settings/members", changed: true, components: withSharedSurface(baseComponents) },
+      { id: "role-edit", name: "角色编辑", route: "/settings/roles/edit", components: withSharedSurface([{ id: "role-edit-title", name: "页面标题", type: "text", text: "角色配置", color: "#20232b", state: "default", specRef: "PRD 3.2" }, { id: "role-name", name: "角色名称", type: "input", text: "项目管理员", color: "#ffffff", state: "default", specRef: "PRD 3.2" }, { id: "permission-table", name: "权限表格", type: "table", text: "查看 · 编辑 · 管理成员", color: "#ffffff", state: "default", specRef: "BR-12" }]) },
     ],
     selectedPageId: "members",
     selectedComponentId: "save-role",
