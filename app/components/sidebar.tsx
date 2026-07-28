@@ -8,7 +8,9 @@ import {
   PanelLeftOpen,
   Plus,
   Settings,
+  Trash2,
 } from "lucide-react";
+import { useState } from "react";
 import type { RecentTask, ViewId } from "../lib/types";
 
 export interface SidebarProps {
@@ -16,6 +18,7 @@ export interface SidebarProps {
   collapsed: boolean;
   recentTasks: RecentTask[];
   onNavigate(view: ViewId): void;
+  onDeleteTask(task: RecentTask): void;
   onOpenTask(task: RecentTask): void;
   onOpenProfile(): void;
   onToggleCollapsed(): void;
@@ -26,10 +29,12 @@ export function Sidebar({
   collapsed,
   recentTasks,
   onNavigate,
+  onDeleteTask,
   onOpenTask,
   onOpenProfile,
   onToggleCollapsed,
 }: SidebarProps) {
+  const [peekExpanded, setPeekExpanded] = useState(false);
   const links = [
     { label: "新建任务", icon: Plus, view: "home" as const },
     { label: "项目", icon: FolderKanban, view: "projects" as const },
@@ -38,8 +43,20 @@ export function Sidebar({
 
   return (
     <nav
-      className={`sidebar ${collapsed ? "collapsed" : ""}`}
+      className={`sidebar ${collapsed ? "collapsed" : ""} ${collapsed && peekExpanded ? "peek-expanded" : ""}`}
       aria-label="主导航"
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setPeekExpanded(false);
+        }
+      }}
+      onFocusCapture={() => {
+        if (collapsed) setPeekExpanded(true);
+      }}
+      onMouseEnter={() => {
+        if (collapsed) setPeekExpanded(true);
+      }}
+      onMouseLeave={() => setPeekExpanded(false)}
     >
       <div className="brand">
         <span className="brand-mark" aria-hidden="true">
@@ -50,6 +67,7 @@ export function Sidebar({
         <button
           aria-label={collapsed ? "展开左侧导航" : "收起左侧导航"}
           className="icon-button sidebar-toggle"
+          data-tooltip={collapsed ? "固定展开侧边栏" : "收起侧边栏"}
           onClick={onToggleCollapsed}
           title={collapsed ? "展开左侧导航" : "收起左侧导航"}
           type="button"
@@ -63,6 +81,7 @@ export function Sidebar({
           <button
             aria-label={label}
             className={`nav-button ${activeView === view ? "active" : ""}`}
+            data-tooltip={label}
             key={view}
             onClick={() => onNavigate(view)}
             title={label}
@@ -82,22 +101,36 @@ export function Sidebar({
       </div>
       <div className="recent-list">
         {recentTasks.map((task) => (
-          <button
-            aria-label={`${task.mode === "office" ? "办公任务" : "开发任务"}：${task.title}${task.time}`}
-            className={`recent-task ${task.mode}`}
-            key={task.id}
-            onClick={() => onOpenTask(task)}
-            title={`${task.title} · ${task.time}`}
-            type="button"
-          >
-            <span className="task-type-icon" aria-hidden="true">
-              {task.mode === "office" ? <BriefcaseBusiness size={13} /> : <Code2 size={13} />}
-            </span>
-            <span className="task-copy">
-              <strong>{task.title}</strong>
-              <small>{task.time}</small>
-            </span>
-          </button>
+          <div className="recent-task-row" key={task.id}>
+            <button
+              aria-label={`${task.mode === "office" ? "办公任务" : "开发任务"}：${task.title}${task.time}`}
+              className={`recent-task ${task.mode}`}
+              data-tooltip={`${task.title} · ${task.time}`}
+              onClick={() => onOpenTask(task)}
+              title={`${task.title} · ${task.time}`}
+              type="button"
+            >
+              <span className="task-type-icon" aria-hidden="true">
+                {task.mode === "office" ? <BriefcaseBusiness size={13} /> : <Code2 size={13} />}
+              </span>
+              <span className="task-copy">
+                <strong>{task.title}</strong>
+                <small>{task.time}</small>
+              </span>
+            </button>
+            {!task.projectId && (
+              <button
+                aria-label={`删除任务：${task.title}`}
+                className="recent-task-delete"
+                data-tooltip="删除任务"
+                onClick={() => onDeleteTask(task)}
+                title="删除任务"
+                type="button"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
         ))}
       </div>
 
@@ -109,7 +142,7 @@ export function Sidebar({
             <small>研发中心</small>
           </span>
         </button>
-        <button aria-label="个人设置" className="icon-button" onClick={onOpenProfile} type="button">
+        <button aria-label="个人设置" className="icon-button" data-tooltip="个人设置" onClick={onOpenProfile} title="个人设置" type="button">
           <Settings size={17} />
         </button>
       </div>

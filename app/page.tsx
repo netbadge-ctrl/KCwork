@@ -147,6 +147,7 @@ export default function Page() {
   const [pendingNavigation, setPendingNavigation] =
     useState<PendingNavigation | null>(null);
   const [createdProjects, setCreatedProjects] = useState<Project[]>([]);
+  const [visibleRecentTasks, setVisibleRecentTasks] = useState(recentTasks);
   const [layoutPreferences, dispatchLayoutPreferences] = useReducer(
     layoutPreferencesReducer,
     initialLayoutPreferences,
@@ -290,7 +291,8 @@ export default function Page() {
   const selectedAgent =
     agents.find((agent) => agent.id === state.selectedAgentId) ?? agents[0];
   const selectedTask =
-    recentTasks.find((task) => task.id === state.selectedTaskId) ??
+    visibleRecentTasks.find((task) => task.id === state.selectedTaskId) ??
+    visibleRecentTasks[0] ??
     recentTasks[0];
   const taskExecutionAgentId =
     state.taskInvocationAgentIdsById[selectedTask.id] ??
@@ -510,7 +512,16 @@ export default function Page() {
       <Sidebar
         activeView={state.view}
         collapsed={effectiveSidebarCollapsed}
-        recentTasks={recentTasks}
+        recentTasks={visibleRecentTasks}
+        onDeleteTask={(task) => {
+          if (task.projectId) return;
+          setVisibleRecentTasks((current) =>
+            current.filter((item) => item.id !== task.id),
+          );
+          if (state.view === "task" && state.selectedTaskId === task.id) {
+            dispatch({ type: "navigate", view: "home" });
+          }
+        }}
         onNavigate={navigateFromSidebar}
         onOpenProfile={() => navigateFromSidebar("profile")}
         onOpenTask={(task) => {
