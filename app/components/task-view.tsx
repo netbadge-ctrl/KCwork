@@ -41,7 +41,7 @@ export interface TaskViewProps {
   requirement?: Requirement | null;
   onSelectAgent(id: string): void;
   onSelectProject(id: string | null): void;
-  onSend(text: string, contextReference?: ProductContextReference): void;
+  onSend(text: string, contextReference?: ProductContextReference, attachments?: string[]): void;
   onOpenPreview(kind: PreviewKind): void;
   onOpenProductContext?(reference: ProductContextReference): void;
   onRenameRequirement?(title: string): void;
@@ -195,6 +195,7 @@ export function TaskView({
                 {message.contextReference && (message.contextReference.kind === "requirement" || !onOpenProductContext
                   ? <span className={`message-context-reference ${message.contextReference.kind}`}><Layers3 size={12} /><em>需求</em>{message.contextReference.label}</span>
                   : <button className={`message-context-reference ${message.contextReference.kind}`} onClick={() => onOpenProductContext(message.contextReference!)} title="在右栏定位此内容" type="button"><Layers3 size={12} /><em>{message.contextReference.kind === "prototype" ? "原型" : "PRD"}</em>{message.contextReference.label}</button>)}
+                {message.attachments && message.attachments.length > 0 && <div className="message-attachments">{message.attachments.map((attachment) => <span key={attachment}>＋{attachment}</span>)}</div>}
                 <p>{message.text}</p>
                 {message.artifact && (
                   <div className="artifact-card">

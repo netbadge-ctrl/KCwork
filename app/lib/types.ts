@@ -166,6 +166,7 @@ export interface Message {
   artifactTitle?: string;
   artifactMeta?: string;
   contextReference?: ProductContextReference;
+  attachments?: string[];
 }
 
 export interface ProductContextReference {

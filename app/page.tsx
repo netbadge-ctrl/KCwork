@@ -460,7 +460,7 @@ export default function Page() {
     }
   };
 
-  const sendMessage = (text: string, contextReference?: ProductContextReference) => {
+  const sendMessage = (text: string, contextReference?: ProductContextReference, attachments?: string[]) => {
     const actionWords = "修改|更新|补充|完善|生成|同步|写入|调整";
     const prdWords = "PRD|产品文档|需求文档";
     const prototypeWords = "原型|页面|组件";
@@ -487,7 +487,7 @@ export default function Page() {
         componentId: component?.id,
       };
     }
-    dispatch({ type: "send-message", text, contextReference: resolvedContext });
+    dispatch({ type: "send-message", text, contextReference: resolvedContext, attachments });
     if (state.selectedAgentId !== "product-design") return;
     if (resolvedContext?.kind === "prototype") {
       productPackageSession.dispatch({

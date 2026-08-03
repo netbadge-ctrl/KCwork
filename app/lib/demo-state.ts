@@ -82,7 +82,7 @@ export type ClientAction =
   | { type: "set-document-draft"; documentId: string; draft: string }
   | { type: "open-preview"; preview: PreviewKind }
   | { type: "close-preview" }
-  | { type: "send-message"; text: string; contextReference?: import("./types").ProductContextReference }
+  | { type: "send-message"; text: string; contextReference?: import("./types").ProductContextReference; attachments?: string[] }
   | { type: "advance-execution"; taskId: string }
   | { type: "fail-execution"; taskId: string };
 
@@ -516,6 +516,7 @@ export function clientReducer(
                 role: "user",
                 text,
                 contextReference: action.contextReference,
+                attachments: action.attachments,
               },
               {
                 id: `${requirement.id}-agent-${messages.length + 1}`,
@@ -523,7 +524,7 @@ export function clientReducer(
                 agentId: state.selectedAgentId,
                 text: action.contextReference
                   ? `已基于「${action.contextReference.label}」生成修改建议。结果已回到对应产物中，请在右侧确认后应用。`
-                  : `${requirement.code} 的本轮处理已完成。结果已保留在当前需求工作区，可继续调整或查看对应产物。`,
+                  : `${requirement.code} 的本轮处理已完成。${action.attachments?.length ? `已参考 ${action.attachments.length} 项临时材料。` : ""}结果已保留在当前需求工作区，可继续调整或查看对应产物。`,
                 artifact:
                   state.selectedAgentId === "testing"
                     ? "test"
