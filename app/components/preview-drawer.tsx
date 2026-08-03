@@ -2,6 +2,7 @@ import {
   Check,
   FileText,
   PanelRightClose,
+  Settings,
   Sparkles,
   X,
 } from "lucide-react";
@@ -40,6 +41,7 @@ import {
 } from "./prototype-editor";
 import { PrototypePreviewShell } from "./prototype-preview-shell";
 import { ProductPanel, PrototypeHeaderControls } from "./product-panels";
+import { ProductToolSettings, type ProductToolSettingsKind } from "./product-tool-settings";
 import type { ProductPackageAction, ProductPackageState } from "../lib/product-package";
 import { RequirementBaselinePanel } from "./requirement-baseline";
 import type { RequirementBaselineAction, RequirementBaselineState } from "../lib/requirement-baseline";
@@ -200,6 +202,7 @@ export function PreviewDrawer({
       : selectedTool?.label ?? (preview ? contextualLabels[preview] : null) ?? "辅助内容";
   const isRequirementBaselinePanel = ["requirement-spec", "requirement-acceptance"].includes(preview ?? "");
   const [prototypeInspect, setPrototypeInspect] = useState(false);
+  const [toolSettingsOpen, setToolSettingsOpen] = useState(false);
   const mainTools = tools.filter((tool) => tool.kind !== "context");
   const contextTools = tools.filter((tool) => tool.kind === "context");
   const [viewportWidth, setViewportWidth] = useState(
@@ -239,6 +242,10 @@ export function PreviewDrawer({
     document.addEventListener("keydown", closeOnEscape);
     return () => document.removeEventListener("keydown", closeOnEscape);
   }, [preview, onClose]);
+
+  useEffect(() => {
+    setToolSettingsOpen(false);
+  }, [preview]);
 
   useEffect(() => {
     if (!preview || !contextualPreviewKinds.has(preview)) return;
@@ -328,10 +335,30 @@ export function PreviewDrawer({
               {isProductPanel && preview === "prototype" && <span className="drawer-artifact-version"><b>原型 {productPackage.prototypeVersions.at(-1)?.version}</b><small>{selectedRequirement?.code}</small></span>}
               {isProductPanel && preview === "prototype" && <PrototypeHeaderControls canEdit={capabilities.canEditProductArtifacts} dispatch={onProductPackageAction} inspect={prototypeInspect} onInspectChange={setPrototypeInspect} state={productPackage} />}
             </div>
-            <button aria-label="关闭预览" className="icon-button" onClick={onClose} type="button">
-              <X size={18} />
-            </button>
+            <div className="drawer-header-actions">
+              {(preview === "prototype" || preview === "prd") && (
+                <button
+                  aria-label={`${preview === "prototype" ? "原型" : "PRD"}工具设置`}
+                  aria-pressed={toolSettingsOpen}
+                  className={`icon-button tool-settings-trigger ${toolSettingsOpen ? "active" : ""}`}
+                  onClick={() => setToolSettingsOpen((open) => !open)}
+                  type="button"
+                >
+                  <Settings size={16} />
+                </button>
+              )}
+              <button aria-label="关闭预览" className="icon-button" onClick={onClose} type="button">
+                <X size={18} />
+              </button>
+            </div>
           </header>
+          {(preview === "prototype" || preview === "prd") && toolSettingsOpen && (
+            <ProductToolSettings
+              canEdit={capabilities.canEditProductArtifacts}
+              kind={preview as ProductToolSettingsKind}
+              onClose={() => setToolSettingsOpen(false)}
+            />
+          )}
           <div className="drawer-body">
             {previewError === preview ? (
               <PreviewErrorState kind={previewError} onRetry={onRetryPreview ?? (() => undefined)} />
