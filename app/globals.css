@@ -826,7 +826,11 @@ select:focus-visible {
 }
 
 .home-view {
-  padding-top: clamp(52px, 8vh, 100px);
+  display: grid;
+  min-height: 100%;
+  align-content: center;
+  padding-top: 48px;
+  padding-bottom: 88px;
 }
 
 .home-hero {
@@ -1005,6 +1009,58 @@ select:focus-visible {
   border: 0;
   border-radius: 8px;
   font-size: 11px;
+}
+
+.composer-context-control {
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 8px;
+  color: var(--text-muted);
+  font-size: 10px;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+}
+
+.composer-context-control:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.starter-prompts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px -2px -2px;
+  padding: 10px 2px 0;
+  border-top: 1px solid var(--border);
+}
+
+.starter-prompts > span {
+  flex: none;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.starter-prompts button {
+  min-width: 0;
+  padding: 5px 8px;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: var(--surface-soft);
+  border: 1px solid transparent;
+  border-radius: 7px;
+}
+
+.starter-prompts button:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: #ded7f7;
 }
 
 .send-button {
@@ -2683,8 +2739,7 @@ select:focus-visible {
   gap: 3px;
 }
 
-.project-chip,
-.context-count {
+.project-chip {
   height: 30px;
   padding: 0 9px;
   color: var(--text-secondary);
@@ -2692,30 +2747,6 @@ select:focus-visible {
   border: 1px solid var(--border);
   border-radius: 9px;
   font-size: 10px;
-}
-
-.context-count {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  text-align: left;
-}
-
-.context-count > span {
-  display: grid;
-  gap: 1px;
-  line-height: 1.05;
-}
-
-.context-count small {
-  color: var(--text-muted);
-  font-size: 8px;
-}
-
-.context-count:hover {
-  color: var(--accent);
-  background: var(--accent-soft);
-  border-color: #d8cffc;
 }
 
 .project-chip {
@@ -3947,7 +3978,6 @@ select:focus-visible {
     padding: 10px 14px;
   }
 
-  .task-header-actions .context-count,
   .task-header-actions .icon-button {
     display: none;
   }

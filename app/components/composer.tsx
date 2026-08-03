@@ -21,6 +21,8 @@ export interface ComposerProps {
   projectSelectionLocked?: boolean;
   disabled?: boolean;
   selectedProductContext?: ProductContextReference | null;
+  contextCount?: number;
+  onOpenContext?(): void;
 }
 
 export function Composer({
@@ -36,6 +38,8 @@ export function Composer({
   projectSelectionLocked = false,
   disabled = false,
   selectedProductContext = null,
+  contextCount,
+  onOpenContext,
 }: ComposerProps) {
   const [text, setText] = useState("");
   const [lockedProductContext, setLockedProductContext] = useState<ProductContextReference | null>(null);
@@ -61,6 +65,9 @@ export function Composer({
   const languageTarget = prdTargetScore > prototypeTargetScore ? "prd" : prototypeTargetScore > prdTargetScore ? "prototype" : null;
   const languageOverridesContext = languageTarget && activeProductContext && activeProductContext.kind !== languageTarget;
   const showProjectControl = variant === "hero";
+  const starterPrompts = mode === "office"
+    ? ["整理会议记录并提炼待办", "分析表格数据中的异常", "根据资料生成汇报提纲"]
+    : ["梳理一个新需求并形成产品方案", "分析代码库并定位问题影响范围", "根据需求补充测试场景"];
 
   const submit = () => {
     if (disabled || !text.trim()) return;
@@ -150,11 +157,31 @@ export function Composer({
           <button className="permission-tool" disabled={disabled} type="button">
             <ShieldCheck size={15} /> 权限
           </button>
+          {variant === "task" && onOpenContext && (
+            <button
+              aria-label={`查看本次会话引用的 ${contextCount ?? 0} 项上下文`}
+              className="composer-context-control"
+              onClick={onOpenContext}
+              type="button"
+            >
+              <Layers3 size={14} /> {contextCount ?? 0} 项上下文
+            </button>
+          )}
         </div>
         <button aria-label="发送" className="send-button" disabled={disabled || !text.trim()} onClick={submit} type="button">
           <ArrowUp size={17} strokeWidth={2.2} />
         </button>
       </div>
+      {variant === "hero" && !text.trim() && (
+        <div className="starter-prompts" aria-label="任务示例">
+          <span>试试这样开始</span>
+          {starterPrompts.map((prompt) => (
+            <button disabled={disabled} key={prompt} onClick={() => setText(prompt)} type="button">
+              {prompt}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

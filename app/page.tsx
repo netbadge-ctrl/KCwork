@@ -588,7 +588,6 @@ export default function Page() {
           <HomeView
             mode={state.mode}
             canEdit={canEditSelectedWorkspace}
-            currentRoles={currentRoles}
             agents={agents}
             projects={availableProjects}
             selectedAgentId={state.selectedAgentId}
@@ -599,7 +598,6 @@ export default function Page() {
             }
             onSelectProject={selectProject}
             onSend={sendMessage}
-            onOpenProject={openProject}
           />
         )}
 

@@ -142,15 +142,6 @@ export function TaskView({
               )}
             </div>
           )}
-          <button
-            aria-label={`查看本次会话引用的 ${contextCount ?? project?.contextCount ?? 0} 项上下文`}
-            className="context-count"
-            onClick={() => onOpenPreview("sources")}
-            type="button"
-          >
-            <Layers3 size={14} />
-            <span><small>本次会话</small>{contextCount ?? project?.contextCount ?? 0} 项上下文</span>
-          </button>
         </div>
       </header>
 
@@ -278,6 +269,8 @@ export function TaskView({
           selectedAgentId={agent.id}
           selectedProjectId={selectedProjectId}
           selectedProductContext={automaticProductContext}
+          contextCount={contextCount ?? project?.contextCount ?? 0}
+          onOpenContext={() => onOpenPreview("sources")}
           variant="task"
         />
         <p className="composer-hint">

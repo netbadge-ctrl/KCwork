@@ -65,7 +65,7 @@ export const contextSources: ContextSource[] = [
 ];
 
 export const projects: Project[] = [
-  { id: "customer-portal", name: "企业客户门户 V3.2", systemCode: "customer-portal", description: "统一客户身份、角色与权限体验", members: 12, updatedAt: "10 分钟前", contextCount: 23, color: "#7053d8", repositories: ["customer-portal-web", "customer-identity-api", "permission-service"], requirementSource: "企业需求平台 · 客户门户空间", historicalRequirementCount: 38, testSuite: "企业测试平台 · 客户门户回归集", testCaseCount: 286, contextAssets: ["产品规范知识库", "权限领域记忆", "企业设计系统"] },
+  { id: "customer-portal", name: "企业客户门户", systemCode: "customer-portal", description: "统一客户身份、角色与权限体验", members: 12, updatedAt: "10 分钟前", contextCount: 23, color: "#7053d8", repositories: ["customer-portal-web", "customer-identity-api", "permission-service"], requirementSource: "企业需求平台 · 客户门户空间", historicalRequirementCount: 38, testSuite: "企业测试平台 · 客户门户回归集", testCaseCount: 286, contextAssets: ["产品规范知识库", "权限领域记忆", "企业设计系统"] },
   { id: "expense", name: "智能报销系统", systemCode: "expense-platform", description: "优化报销审核与异常识别", members: 8, updatedAt: "昨天", contextCount: 17, color: "#d97746", repositories: ["expense-web", "expense-service"], requirementSource: "企业需求平台 · 财务数字化空间", historicalRequirementCount: 24, testSuite: "费用平台自动化测试集", testCaseCount: 164, contextAssets: ["财务制度知识库", "报销规则记忆"] },
   { id: "ops", name: "研发效能平台", systemCode: "engineering-ops", description: "打通代码、构建、测试与度量数据", members: 15, updatedAt: "3 天前", contextCount: 31, color: "#258866", repositories: ["devops-console", "pipeline-service", "metrics-worker", "quality-gateway"], requirementSource: "企业需求平台 · 研发效能空间", historicalRequirementCount: 46, testSuite: "研发效能核心回归集", testCaseCount: 318, contextAssets: ["研发规范知识库", "流水线运维记忆", "质量门禁规则"] },
 ];
