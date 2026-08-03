@@ -161,31 +161,31 @@ function PrototypeElement({ component, inspect, selected, onSelect }: { componen
 function ProductPrdPanel({ state, dispatch, canEdit, requirement, onScopedSend }: Props) {
   const [editing, setEditing] = useState(false);
   const sections = ["1. 背景与目标", "2. 产品范围", "3. 核心方案", "4. 权限规则", "5. 异常处理"];
-  const selectedSection = state.selectedPrdSection ?? sections[0];
+  const selectedSection = state.selectedPrdSection;
   return <section className="product-panel prd-workbench">
     <ProductContext requirement={requirement} state={state} />
     <div className="product-panel-heading"><div><span>产品需求文档</span><h3>{requirement?.title ?? "角色与成员权限重构"}</h3><p>PRD {state.prdVersions.at(-1)?.version} · 关联原型 {state.prototypeVersions.at(-1)?.version} · 引用 {state.knowledgeIds.length} 项项目知识</p></div><button disabled={!canEdit} onClick={() => setEditing(!editing)} type="button">{editing ? "完成编辑" : "直接编辑"}</button></div>
     <div className="prd-anchor-strip">{sections.map((item) => <button className={item === state.selectedPrdSection ? "active" : ""} key={item} onClick={() => dispatch({ type: "select-prd-section", section: item })} type="button">{item}</button>)}</div>
     <div className="prd-document-scroll"><PrdDocumentSheet title={requirement?.title ?? "角色与成员权限重构"} meta={`${requirement?.code ?? ""} · Spec ${requirement?.specVersion ?? ""} · PRD ${state.prdVersions.at(-1)?.version ?? ""}`} body={state.prdBody} editable={editing} onChange={(body) => dispatch({ type: "set-prd-body", body })} /></div>
-    <div className="prd-natural-revision"><ScopedArtifactComposer canEdit={canEdit} label={`PRD ${state.prdVersions.at(-1)?.version} / ${selectedSection}`} onSend={(text) => { dispatch({ type: "set-prd-revision", revision: text }); onScopedSend?.({ kind: "prd", label: `PRD ${state.prdVersions.at(-1)?.version} / ${selectedSection}` }, text); }} />{state.prdRevision && <div className="prd-revision-preview"><b><GitCompareArrows size={14} />Agent 已生成待确认修订</b><p>将在“{selectedSection}”中补充：{state.prdRevision}</p><footer><button onClick={() => dispatch({ type: "set-prd-revision", revision: "" })} type="button">放弃</button><button onClick={() => dispatch({ type: "confirm-prd-revision" })} type="button">确认并生成新版本</button></footer></div>}</div>
+    <div className="prd-natural-revision">{selectedSection ? <ScopedArtifactComposer canEdit={canEdit} label={`PRD ${state.prdVersions.at(-1)?.version} / ${selectedSection}`} onSend={(text) => { dispatch({ type: "set-prd-revision", revision: text }); onScopedSend?.({ kind: "prd", label: `PRD ${state.prdVersions.at(-1)?.version} / ${selectedSection}` }, text); }} /> : <span className="prd-agent-selection-hint"><Sparkles size={12} />选择一个章节后，可针对所选内容让 Agent 修改</span>}{state.prdRevision && selectedSection && <div className="prd-revision-preview"><b><GitCompareArrows size={14} />Agent 已生成待确认修订</b><p>将在“{selectedSection}”中补充：{state.prdRevision}</p><footer><button onClick={() => dispatch({ type: "set-prd-revision", revision: "" })} type="button">放弃</button><button onClick={() => dispatch({ type: "confirm-prd-revision" })} type="button">确认并生成新版本</button></footer></div>}</div>
   </section>;
 }
 
 function ScopedArtifactComposer({ canEdit, label, onSend }: { canEdit: boolean; label: string; onSend(text: string): void }) {
   const [text, setText] = useState("");
-  const [sent, setSent] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const submit = () => {
     if (!canEdit || !text.trim()) return;
     onSend(text.trim());
     setText("");
-    setSent(true);
-    window.setTimeout(() => setSent(false), 1800);
+    setIsOpen(false);
   };
+  if (!isOpen) return <button className="scoped-agent-trigger" disabled={!canEdit} onClick={() => setIsOpen(true)} type="button"><Sparkles size={13} /><span><b>让 Agent 修改</b><small>{label}</small></span></button>;
   return (
     <div className="composer scoped-composer">
       <div className="scoped-command-heading">
-        <span><Sparkles size={13} /><b>针对当前内容提修改</b></span>
-        <small>指令与回复会同步到中栏主会话</small>
+        <span><Sparkles size={13} /><b>修改所选内容</b></span>
+        <button aria-label="收起 Agent 修改输入" onClick={() => { setText(""); setIsOpen(false); }} type="button"><X size={13} /></button>
       </div>
       <div className="composer-product-reference scoped-reference">
         <LayoutTemplate size={12} /><span><small>当前引用</small>{label}</span>
@@ -200,7 +200,7 @@ function ScopedArtifactComposer({ canEdit, label, onSend }: { canEdit: boolean; 
       />
       <div className="composer-toolbar">
         <div className="composer-controls">
-          {sent ? <span className="scoped-sent-status"><Check size={12} />已同步到主对话</span> : <span className="scoped-ref-tag">同一产品设计 Agent 会话</span>}
+          <span className="scoped-ref-tag">提交后同步到中栏主会话</span>
         </div>
         <button aria-label="发送到主对话" className="send-button" disabled={!canEdit || !text.trim()} onClick={submit} type="button">
           <ArrowUp size={15} />

@@ -33,7 +33,7 @@ import {
   discardPrototypeDraft,
   usePrototypeDocumentStatus,
 } from "./lib/prototype-state";
-import type { PreviewKind, ProductContextReference, ProductWorkMode, Project, ProjectSection, ViewId } from "./lib/types";
+import type { PreviewKind, ProductContextReference, Project, ProjectSection, ViewId } from "./lib/types";
 import {
   clampPreferredRightPanelWidth,
   COLLAPSED_SIDEBAR_WIDTH,
@@ -453,13 +453,6 @@ export default function Page() {
     }
   };
 
-  const handleProductWorkModeChange = (mode: ProductWorkMode) => {
-    if (mode === state.productWorkMode) return;
-    requestNavigation("产品工作模式", () =>
-      dispatch({ type: "set-product-work-mode", mode }),
-    );
-  };
-
   const sendMessage = (text: string, contextReference?: ProductContextReference) => {
     const actionWords = "修改|更新|补充|完善|生成|同步|写入|调整";
     const prdWords = "PRD|产品文档|需求文档";
@@ -598,11 +591,9 @@ export default function Page() {
             currentRoles={currentRoles}
             agents={agents}
             projects={availableProjects}
-            productWorkMode={state.productWorkMode}
             selectedAgentId={state.selectedAgentId}
             selectedProjectId={state.selectedProjectId}
             onModeChange={(mode) => dispatch({ type: "set-mode", mode })}
-            onProductWorkModeChange={handleProductWorkModeChange}
             onSelectAgent={(agentId) =>
               dispatch({ type: "select-agent", agentId })
             }
@@ -693,7 +684,6 @@ export default function Page() {
             execution={state.requirementExecutions[selectedRequirement.id] ?? "idle"}
             executionAgent={selectedAgent}
             messages={state.requirementMessages[selectedRequirement.id] ?? []}
-            productWorkMode={state.productWorkMode}
             project={selectedProject}
             projectSelectionLocked
             projects={availableProjects}
@@ -725,7 +715,6 @@ export default function Page() {
                 dispatch({ type: "select-agent", agentId }),
               );
             }}
-            onProductWorkModeChange={handleProductWorkModeChange}
             onSend={sendMessage}
             productPackage={productPackageSession.state}
             onProductPackageAction={productPackageSession.dispatch}
@@ -752,8 +741,6 @@ export default function Page() {
             selectedProjectId={state.selectedProjectId}
             canEdit={canEditSelectedWorkspace}
             currentRoles={currentRoles}
-            productWorkMode={state.productWorkMode}
-            onProductWorkModeChange={handleProductWorkModeChange}
             onSelectAgent={(agentId) =>
               dispatch({ type: "select-agent", agentId })
             }

@@ -6722,6 +6722,7 @@ button.message-context-reference:hover { background: #eeeaff; border-color: #cfc
 .prototype-inspector.floating > header,
 .prototype-inspector.floating > .selected-component-name,
 .prototype-inspector.floating > .inspector-field-wide,
+.prototype-inspector.floating > .scoped-agent-trigger,
 .prototype-inspector.floating > .scoped-composer,
 .prototype-inspector.floating > .scoped-change-preview { grid-column: 1 / -1; }
 .prototype-inspector label { display: grid; gap: 4px; color: var(--text-muted); font-size: 9px; }
@@ -6734,11 +6735,18 @@ button.message-context-reference:hover { background: #eeeaff; border-color: #cfc
 .selected-component-name small { color: var(--text-muted); }
 .component-chat-reference { padding: 8px; color: var(--accent); font-size: 9px; background: var(--accent-soft); border-radius: 8px; }
 .component-chat-reference b { display: block; margin-top: 3px; }
+.scoped-agent-trigger { display: flex; min-width: 0; min-height: 34px; align-items: center; gap: 7px; padding: 6px 9px; color: var(--accent); text-align: left; background: #f8f6ff; border: 1px solid #ded7f7; border-radius: 8px; }
+.scoped-agent-trigger:hover { background: #f1edff; border-color: #cec4f4; }
+.scoped-agent-trigger > svg { flex: 0 0 auto; }
+.scoped-agent-trigger > span { display: flex; min-width: 0; flex: 1; align-items: baseline; justify-content: space-between; gap: 10px; }
+.scoped-agent-trigger b { font-size: 10px; }
+.scoped-agent-trigger small { overflow: hidden; color: var(--text-muted); font-size: 8px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
 .scoped-composer { position: relative; display: grid; gap: 7px; padding: 9px; background: #faf9ff; border: 1px solid #e0daf7; border-radius: 9px; box-shadow: none; }
 .scoped-command-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .scoped-command-heading > span { display: inline-flex; align-items: center; gap: 5px; color: var(--text); font-size: 10px; }
 .scoped-command-heading > span svg { color: var(--accent); }
-.scoped-command-heading > small { color: var(--text-muted); font-size: 8px; line-height: 1.4; text-align: right; }
+.scoped-command-heading > button { display: grid; width: 22px; height: 22px; place-items: center; color: var(--text-muted); background: transparent; border: 0; border-radius: 6px; }
+.scoped-command-heading > button:hover { color: var(--text); background: var(--surface-soft); }
 .scoped-reference { position: relative; bottom: auto; left: auto; margin: 0; }
 .scoped-ref-tag { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; color: #796db2; font-size: 8px; background: transparent; border: 1px solid #ded8f3; border-radius: 7px; }
 .scoped-sent-status { display: inline-flex; align-items: center; gap: 4px; color: #248764; font-size: 8px; }
@@ -6773,10 +6781,12 @@ button.message-context-reference:hover { background: #eeeaff; border-color: #cfc
 .prd-document-editor h4 { margin: 18px 0 7px; font-size: 15px; }
 .prd-document-editor p { margin: 0 0 6px; color: #555c6a; font-size: 11px; line-height: 1.7; }
 .prd-document-editor textarea { width: 100%; height: 100%; min-height: 300px; padding: 0; resize: vertical; font: 12px/1.8 inherit; border: 0; outline: 0; }
-.prd-natural-revision { display: grid; gap: 9px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+.prd-natural-revision { display: grid; gap: 8px; padding: 0; background: transparent; border: 0; }
 .prd-natural-revision small { color: var(--text-muted); }
-.prd-natural-revision > .scoped-composer { padding: 10px; box-shadow: none; }
+.prd-natural-revision > .scoped-agent-trigger { justify-self: start; min-width: 230px; }
+.prd-natural-revision > .scoped-composer { padding: 9px; box-shadow: none; }
 .prd-natural-revision .scoped-composer textarea { min-height: 48px; padding: 8px 10px; }
+.prd-agent-selection-hint { display: inline-flex; justify-self: start; align-items: center; gap: 5px; padding: 6px 8px; color: var(--text-muted); font-size: 9px; background: var(--surface-soft); border-radius: 7px; }
 .prd-revision-preview { padding: 10px; background: var(--accent-soft); border-radius: 8px; }
 .prd-revision-preview > b { display: flex; align-items: center; gap: 5px; color: var(--accent); }
 .prd-revision-preview p { font-size: 11px; }

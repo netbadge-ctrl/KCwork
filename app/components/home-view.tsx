@@ -1,5 +1,5 @@
 import { ArrowRight, Code2, MessageSquareText } from "lucide-react";
-import type { Agent, Mode, ProductWorkMode, Project, ProjectRole } from "../lib/types";
+import type { Agent, Mode, Project, ProjectRole } from "../lib/types";
 import { Composer } from "./composer";
 
 export interface HomeViewProps {
@@ -10,10 +10,8 @@ export interface HomeViewProps {
   selectedProjectId: string | null;
   canEdit: boolean;
   currentRole: ProjectRole;
-  productWorkMode: ProductWorkMode;
   onModeChange(mode: Mode): void;
   onSelectAgent(id: string): void;
-  onProductWorkModeChange(mode: ProductWorkMode): void;
   onSelectProject(id: string | null): void;
   onSend(text: string): void;
   onOpenProject(id: string): void;

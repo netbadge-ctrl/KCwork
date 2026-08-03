@@ -6,8 +6,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { Agent, Mode, ProductContextReference, ProductWorkMode, Project } from "../lib/types";
-import { ProductModePicker } from "./product-mode-picker";
+import type { Agent, Mode, ProductContextReference, Project } from "../lib/types";
 
 export interface ComposerProps {
   mode: Mode;
@@ -21,8 +20,6 @@ export interface ComposerProps {
   variant: "hero" | "task";
   projectSelectionLocked?: boolean;
   disabled?: boolean;
-  productWorkMode?: ProductWorkMode;
-  onProductWorkModeChange?(mode: ProductWorkMode): void;
   selectedProductContext?: ProductContextReference | null;
 }
 
@@ -38,8 +35,6 @@ export function Composer({
   variant,
   projectSelectionLocked = false,
   disabled = false,
-  productWorkMode,
-  onProductWorkModeChange,
   selectedProductContext = null,
 }: ComposerProps) {
   const [text, setText] = useState("");
@@ -151,13 +146,6 @@ export function Composer({
               ))}
             </select>
           </label>
-          {selectedAgentId === "product-design" && productWorkMode && onProductWorkModeChange && (
-            <ProductModePicker
-              value={productWorkMode}
-              onChange={onProductWorkModeChange}
-              variant="compact"
-            />
-          )}
           <button className="permission-tool" disabled={disabled} type="button">
             <ShieldCheck size={15} /> 权限
           </button>

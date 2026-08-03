@@ -13,7 +13,6 @@ import type {
   ExecutionState,
   Message,
   PreviewKind,
-  ProductWorkMode,
   Project,
   ProjectRole,
   RecentTask,
@@ -41,12 +40,10 @@ export interface TaskViewProps {
   canEdit: boolean;
   currentRole: ProjectRole;
   contextCount?: number;
-  productWorkMode?: ProductWorkMode;
   projectSelectionLocked?: boolean;
   requirement?: Requirement | null;
   onSelectAgent(id: string): void;
   onSelectProject(id: string | null): void;
-  onProductWorkModeChange?(mode: ProductWorkMode): void;
   onSend(text: string, contextReference?: ProductContextReference): void;
   onOpenPreview(kind: PreviewKind): void;
   onOpenProductContext?(reference: ProductContextReference): void;
@@ -76,12 +73,10 @@ export function TaskView({
   canEdit,
   currentRole,
   contextCount,
-  productWorkMode,
   projectSelectionLocked = false,
   requirement = null,
   onSelectAgent,
   onSelectProject,
-  onProductWorkModeChange,
   onSend,
   onOpenPreview,
   onOpenProductContext,
@@ -312,11 +307,9 @@ export function TaskView({
           agents={agents}
           disabled={!canEdit}
           mode={agent.mode === "office" ? "office" : "research"}
-          onProductWorkModeChange={onProductWorkModeChange}
           onSelectAgent={onSelectAgent}
           onSelectProject={onSelectProject}
           onSend={onSend}
-          productWorkMode={productWorkMode}
           projectSelectionLocked={projectSelectionLocked}
           projects={projects}
           selectedAgentId={agent.id}
