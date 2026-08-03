@@ -5,7 +5,7 @@ import {
   Layers3,
   ShieldCheck,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Agent, Mode, ProductContextReference, Project } from "../lib/types";
 
 export interface ComposerProps {
@@ -39,6 +39,7 @@ export function Composer({
 }: ComposerProps) {
   const [text, setText] = useState("");
   const [lockedProductContext, setLockedProductContext] = useState<ProductContextReference | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const visibleAgents = useMemo(
     () => agents.filter((agent) => agent.mode === mode || agent.mode === "both"),
     [agents, mode],
@@ -60,6 +61,13 @@ export function Composer({
   const prototypeTargetScore = (new RegExp(`(?:${actionWords}).{0,12}(?:${prototypeWords})`, "i").test(text) ? 2 : 0) + (new RegExp(`(?:${prototypeWords}).{0,8}(?:${actionWords})`, "i").test(text) ? 1 : 0);
   const languageTarget = prdTargetScore > prototypeTargetScore ? "prd" : prototypeTargetScore > prdTargetScore ? "prototype" : null;
   const languageOverridesContext = languageTarget && activeProductContext && activeProductContext.kind !== languageTarget;
+  const showProjectControl = variant === "hero";
+
+  useEffect(() => {
+    const focusComposer = () => textareaRef.current?.focus();
+    window.addEventListener("kcwork:focus-agent-composer", focusComposer);
+    return () => window.removeEventListener("kcwork:focus-agent-composer", focusComposer);
+  }, []);
 
   const submit = () => {
     if (disabled || !text.trim()) return;
@@ -73,7 +81,7 @@ export function Composer({
       {activeProductContext && (
         <div className="composer-product-reference">
           <Layers3 size={12} />
-          <span><small>{text.trim() ? "当前上下文 · 已锁定" : "当前上下文 · 自动跟随"}</small>{activeProductContext.label}</span>
+          <span><small>{text.trim() ? "本条指令将基于 · 已锁定" : "Agent 当前会基于 · 自动跟随"}</small><b>{activeProductContext.label}</b></span>
           {languageOverridesContext && <span className="composer-language-route">已识别：将修改 {languageTarget === "prd" ? "PRD" : "原型"}</span>}
           {contextChangedWhileTyping && <button className="composer-reference-switch" onClick={() => setLockedProductContext(selectedProductContext)} type="button">改用当前右栏</button>}
         </div>
@@ -81,6 +89,7 @@ export function Composer({
       <textarea
         aria-label="任务输入"
         disabled={disabled}
+        ref={textareaRef}
         onChange={(event) => {
           const nextText = event.target.value;
           if (!text.trim() && nextText.trim()) setLockedProductContext(baseProductContext);
@@ -107,7 +116,7 @@ export function Composer({
           <button aria-label="添加附件" className="plain-tool" disabled={disabled} type="button">
             <Plus size={16} />
           </button>
-          {projectSelectionLocked ? (
+          {showProjectControl && (projectSelectionLocked ? (
             <span className="locked-project-control" aria-label="需求关联项目">
               <FolderOpen size={15} /> 已关联项目：{projects.find((project) => project.id === selectedProjectId)?.name ?? "未找到项目"}
             </span>
@@ -128,7 +137,7 @@ export function Composer({
                 ))}
               </select>
             </label>
-          )}
+          ))}
           <label className="select-control agent-select">
             <span className="mini-agent" aria-hidden="true">
               {visibleAgents.find((agent) => agent.id === selectedAgentId)

@@ -853,7 +853,6 @@ export default function Page() {
         view={state.view}
         productPackage={productPackageSession.state}
         onProductPackageAction={productPackageSession.dispatch}
-        onScopedProductSend={(reference, text) => sendMessage(text, reference)}
         requirementBaseline={requirementBaselineSession.state}
         onRequirementBaselineAction={requirementBaselineSession.dispatch}
         selectedAssetId={state.selectedAssetId}
