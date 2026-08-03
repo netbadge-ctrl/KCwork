@@ -461,9 +461,35 @@ export default function Page() {
   };
 
   const sendMessage = (text: string, contextReference?: ProductContextReference) => {
-    dispatch({ type: "send-message", text, contextReference });
+    const actionWords = "修改|更新|补充|完善|生成|同步|写入|调整";
+    const prdWords = "PRD|产品文档|需求文档";
+    const prototypeWords = "原型|页面|组件";
+    const prdTargetScore = (new RegExp(`(?:${actionWords}).{0,12}(?:${prdWords})`, "i").test(text) ? 2 : 0) + (new RegExp(`(?:${prdWords}).{0,8}(?:${actionWords})`, "i").test(text) ? 1 : 0);
+    const prototypeTargetScore = (new RegExp(`(?:${actionWords}).{0,12}(?:${prototypeWords})`, "i").test(text) ? 2 : 0) + (new RegExp(`(?:${prototypeWords}).{0,8}(?:${actionWords})`, "i").test(text) ? 1 : 0);
+    let resolvedContext = contextReference;
+    if (state.selectedAgentId === "product-design" && prdTargetScore > prototypeTargetScore) {
+      resolvedContext = {
+        kind: "prd",
+        label: `PRD ${productPackageSession.state.prdVersions.at(-1)?.version ?? ""}${productPackageSession.state.selectedPrdSection ? ` / ${productPackageSession.state.selectedPrdSection}` : " / 整份文档"}`,
+        artifactId: productPackageSession.state.prdVersions.at(-1)?.id,
+        versionId: productPackageSession.state.prdVersions.at(-1)?.version,
+        sectionId: productPackageSession.state.selectedPrdSection ?? undefined,
+      };
+    } else if (state.selectedAgentId === "product-design" && prototypeTargetScore > prdTargetScore) {
+      const page = productPackageSession.state.pages.find((item) => item.id === productPackageSession.state.selectedPageId) ?? productPackageSession.state.pages[0];
+      const component = page?.components.find((item) => item.id === productPackageSession.state.selectedComponentId);
+      resolvedContext = {
+        kind: "prototype",
+        label: `原型 ${productPackageSession.state.prototypeVersions.at(-1)?.version ?? ""} / ${page?.name ?? "当前页面"}${component ? ` / ${component.name}` : ""}`,
+        artifactId: productPackageSession.state.prototypeVersions.at(-1)?.id,
+        versionId: productPackageSession.state.prototypeVersions.at(-1)?.version,
+        pageId: page?.id,
+        componentId: component?.id,
+      };
+    }
+    dispatch({ type: "send-message", text, contextReference: resolvedContext });
     if (state.selectedAgentId !== "product-design") return;
-    if (contextReference?.kind === "prototype") {
+    if (resolvedContext?.kind === "prototype") {
       productPackageSession.dispatch({
         type: "set-pending-instruction",
         instruction: text,
@@ -471,12 +497,12 @@ export default function Page() {
       dispatch({ type: "open-preview", preview: "prototype" });
       return;
     }
-    if (contextReference?.kind === "prd") {
+    if (resolvedContext?.kind === "prd") {
       productPackageSession.dispatch({ type: "set-prd-revision", revision: text });
       dispatch({ type: "open-preview", preview: "prd" });
       return;
     }
-    if (contextReference?.kind === "requirement") return;
+    if (resolvedContext?.kind === "requirement") return;
     if (/原型|页面|组件/.test(text)) {
       productPackageSession.dispatch({
         type: "create-prototype-version",
@@ -686,10 +712,6 @@ export default function Page() {
             onOpenPreview={openPreview}
             onOpenProductContext={openProductContext}
             activePreview={state.preview}
-            onClearProductContext={() => {
-              if (state.preview === "prototype") productPackageSession.dispatch({ type: "select-component", componentId: null });
-              if (state.preview === "prd") productPackageSession.dispatch({ type: "select-prd-section", section: null });
-            }}
             onBackToProject={() =>
               requestNavigation(selectedProject.name, () =>
                 dispatch({ type: "navigate", view: "project-detail" }),
@@ -739,10 +761,6 @@ export default function Page() {
             onSend={sendMessage}
             onOpenPreview={openPreview}
             activePreview={state.preview}
-            onClearProductContext={() => {
-              if (state.preview === "prototype") productPackageSession.dispatch({ type: "select-component", componentId: null });
-              if (state.preview === "prd") productPackageSession.dispatch({ type: "select-prd-section", section: null });
-            }}
             productPackage={productPackageSession.state}
             onProductPackageAction={productPackageSession.dispatch}
             requirement={selectedRequirement}

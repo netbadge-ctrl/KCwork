@@ -55,7 +55,6 @@ export interface TaskViewProps {
   onProductPackageAction?: Dispatch<ProductPackageAction>;
   requirementBaseline?: RequirementBaselineState;
   activePreview?: PreviewKind | null;
-  onClearProductContext?(): void;
 }
 
 const executionSteps = [
@@ -91,7 +90,6 @@ export function TaskView({
   onProductPackageAction,
   requirementBaseline,
   activePreview = null,
-  onClearProductContext,
 }: TaskViewProps) {
   const [isRequirementContextOpen, setIsRequirementContextOpen] = useState(false);
   const [savedArtifactIds, setSavedArtifactIds] = useState<Set<string>>(
@@ -132,7 +130,6 @@ export function TaskView({
     : activePreview === "prd"
       ? prdProductContext
       : requirementProductContext;
-  const productContextOptions = [requirementProductContext, prototypePageContext, prototypeProductContext, prdDocumentContext, prdProductContext].filter((item): item is ProductContextReference => Boolean(item));
   return (
     <div className="task-view">
       <header className="task-header">
@@ -319,14 +316,12 @@ export function TaskView({
           onSelectAgent={onSelectAgent}
           onSelectProject={onSelectProject}
           onSend={onSend}
-          onClearProductContext={onClearProductContext}
           productWorkMode={productWorkMode}
           projectSelectionLocked={projectSelectionLocked}
           projects={projects}
           selectedAgentId={agent.id}
           selectedProjectId={selectedProjectId}
           selectedProductContext={automaticProductContext}
-          productContextOptions={productContextOptions}
           variant="task"
         />
         <p className="composer-hint">
