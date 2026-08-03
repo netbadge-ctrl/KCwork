@@ -440,6 +440,19 @@ export default function Page() {
     } else run();
   };
 
+  const openProductContext = (reference: ProductContextReference) => {
+    if (reference.kind === "prototype") {
+      if (reference.pageId) productPackageSession.dispatch({ type: "select-page", pageId: reference.pageId });
+      if (reference.componentId) productPackageSession.dispatch({ type: "select-component", componentId: reference.componentId });
+      openPreview("prototype");
+      return;
+    }
+    if (reference.kind === "prd") {
+      productPackageSession.dispatch({ type: "select-prd-section", section: reference.sectionId ?? null });
+      openPreview("prd");
+    }
+  };
+
   const handleProductWorkModeChange = (mode: ProductWorkMode) => {
     if (mode === state.productWorkMode) return;
     requestNavigation("产品工作模式", () =>
@@ -463,6 +476,7 @@ export default function Page() {
       dispatch({ type: "open-preview", preview: "prd" });
       return;
     }
+    if (contextReference?.kind === "requirement") return;
     if (/原型|页面|组件/.test(text)) {
       productPackageSession.dispatch({
         type: "create-prototype-version",
@@ -612,6 +626,7 @@ export default function Page() {
             onStartCreateProject={() => openPreview("create-system")}
             onOpenProject={openProject}
             onOpenPreview={openPreview}
+            onOpenProductContext={openProductContext}
             onBack={() => dispatch({ type: "navigate", view: "projects" })}
           />
         )}
@@ -669,6 +684,7 @@ export default function Page() {
               time: `${selectedRequirement.code} · Spec ${selectedRequirement.specVersion}`,
             }}
             onOpenPreview={openPreview}
+            onOpenProductContext={openProductContext}
             activePreview={state.preview}
             onClearProductContext={() => {
               if (state.preview === "prototype") productPackageSession.dispatch({ type: "select-component", componentId: null });

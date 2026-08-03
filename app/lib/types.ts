@@ -169,8 +169,13 @@ export interface Message {
 }
 
 export interface ProductContextReference {
-  kind: "prototype" | "prd";
+  kind: "requirement" | "prototype" | "prd";
   label: string;
+  artifactId?: string;
+  versionId?: string;
+  pageId?: string;
+  componentId?: string;
+  sectionId?: string;
 }
 
 export type RequirementStage =

@@ -1,5 +1,7 @@
 import {
   ArrowUp,
+  Check,
+  ChevronDown,
   FolderOpen,
   Plus,
   Layers3,
@@ -25,6 +27,7 @@ export interface ComposerProps {
   productWorkMode?: ProductWorkMode;
   onProductWorkModeChange?(mode: ProductWorkMode): void;
   selectedProductContext?: ProductContextReference | null;
+  productContextOptions?: ProductContextReference[];
   onClearProductContext?(): void;
 }
 
@@ -43,33 +46,84 @@ export function Composer({
   productWorkMode,
   onProductWorkModeChange,
   selectedProductContext = null,
+  productContextOptions = [],
   onClearProductContext,
 }: ComposerProps) {
   const [text, setText] = useState("");
+  const [lockedProductContext, setLockedProductContext] = useState<ProductContextReference | null>(null);
+  const [manualProductContext, setManualProductContext] = useState<ProductContextReference | null>(null);
+  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const visibleAgents = useMemo(
     () => agents.filter((agent) => agent.mode === mode || agent.mode === "both"),
     [agents, mode],
   );
+  const baseProductContext = manualProductContext ?? selectedProductContext;
+  const activeProductContext = text.trim()
+    ? lockedProductContext ?? baseProductContext
+    : baseProductContext;
+  const contextChangedWhileTyping = Boolean(
+    text.trim() &&
+    !manualProductContext &&
+    lockedProductContext &&
+    selectedProductContext &&
+    lockedProductContext.label !== selectedProductContext.label,
+  );
+  const availableProductContexts = useMemo(() => {
+    const seen = new Set<string>();
+    return productContextOptions.filter((item) => {
+      const key = `${item.kind}:${item.label}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [productContextOptions]);
+  const broaderProductContext = selectedProductContext?.kind === "prototype"
+    ? availableProductContexts.find((item) => item.kind === "prototype" && !item.componentId) ?? null
+    : selectedProductContext?.kind === "prd"
+      ? availableProductContexts.find((item) => item.kind === "prd" && !item.sectionId) ?? null
+      : null;
 
   const submit = () => {
     if (disabled || !text.trim()) return;
-    onSend(text.trim(), selectedProductContext ?? undefined);
+    onSend(text.trim(), activeProductContext ?? undefined);
     setText("");
+    setLockedProductContext(null);
+    setIsContextMenuOpen(false);
+  };
+
+  const chooseProductContext = (reference: ProductContextReference | null) => {
+    setManualProductContext(reference);
+    if (text.trim()) setLockedProductContext(reference ?? selectedProductContext);
+    setIsContextMenuOpen(false);
   };
 
   return (
     <div className={`composer ${variant}`}>
-      {selectedProductContext && (
+      {activeProductContext && (
         <div className="composer-product-reference">
           <Layers3 size={12} />
-          <span><small>当前引用</small>{selectedProductContext.label}</span>
-          {onClearProductContext && <button aria-label="移除当前引用" onClick={onClearProductContext} type="button"><X size={12} /></button>}
+          <button aria-expanded={isContextMenuOpen} className="composer-reference-trigger" onClick={() => setIsContextMenuOpen((open) => !open)} type="button">
+            <span><small>{manualProductContext ? "手动选择" : text.trim() ? "输入中 · 已锁定" : "自动跟随右栏"}</small>{activeProductContext.label}</span>
+            <ChevronDown size={12} />
+          </button>
+          {contextChangedWhileTyping && <button className="composer-reference-switch" onClick={() => setLockedProductContext(selectedProductContext)} type="button">改用当前右栏</button>}
+          {isContextMenuOpen && <div className="composer-reference-menu">
+            <header><b>指令作用对象</b><small>每条命令都会保留引用</small></header>
+            <button className={!manualProductContext ? "active" : ""} onClick={() => chooseProductContext(null)} type="button"><span><b>跟随右栏</b><small>{selectedProductContext?.label ?? "整个需求"}</small></span>{!manualProductContext && <Check size={13} />}</button>
+            {availableProductContexts.map((item) => <button className={manualProductContext?.kind === item.kind && manualProductContext.label === item.label ? "active" : ""} key={`${item.kind}-${item.label}`} onClick={() => chooseProductContext(item)} type="button"><span><b>{item.kind === "requirement" ? "整个需求" : item.kind === "prototype" ? "产品原型" : "需求文档"}</b><small>{item.label}</small></span>{manualProductContext?.kind === item.kind && manualProductContext.label === item.label && <Check size={13} />}</button>)}
+            {onClearProductContext && broaderProductContext && selectedProductContext?.label !== broaderProductContext.label && <button className="composer-reference-clear" onClick={() => { onClearProductContext(); chooseProductContext(broaderProductContext); }} type="button"><span><b>清除局部选择</b><small>改为 {broaderProductContext.label}</small></span><X size={13} /></button>}
+          </div>}
         </div>
       )}
       <textarea
         aria-label="任务输入"
         disabled={disabled}
-        onChange={(event) => setText(event.target.value)}
+        onChange={(event) => {
+          const nextText = event.target.value;
+          if (!text.trim() && nextText.trim()) setLockedProductContext(baseProductContext);
+          if (!nextText.trim()) setLockedProductContext(null);
+          setText(nextText);
+        }}
         onKeyDown={(event) => {
           if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
@@ -77,8 +131,8 @@ export function Composer({
           }
         }}
         placeholder={
-          selectedProductContext
-            ? `描述对「${selectedProductContext.label}」的修改…`
+          activeProductContext
+            ? `描述对「${activeProductContext.label}」的修改…`
             : mode === "office"
             ? "描述要整理的会议、文档或数据工作…"
             : "描述需求、开发目标或需要分析的问题…"

@@ -49,6 +49,7 @@ export interface TaskViewProps {
   onProductWorkModeChange?(mode: ProductWorkMode): void;
   onSend(text: string, contextReference?: ProductContextReference): void;
   onOpenPreview(kind: PreviewKind): void;
+  onOpenProductContext?(reference: ProductContextReference): void;
   onBackToProject?(): void;
   productPackage?: ProductPackageState;
   onProductPackageAction?: Dispatch<ProductPackageAction>;
@@ -84,6 +85,7 @@ export function TaskView({
   onProductWorkModeChange,
   onSend,
   onOpenPreview,
+  onOpenProductContext,
   onBackToProject,
   productPackage,
   onProductPackageAction,
@@ -95,6 +97,42 @@ export function TaskView({
   const [savedArtifactIds, setSavedArtifactIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const requirementProductContext: ProductContextReference | null = agent.id === "product-design" && requirement ? {
+    kind: "requirement",
+    label: `${requirement.code} · ${requirement.title}`,
+    artifactId: requirement.id,
+  } : null;
+  const prototypePage = productPackage?.pages.find((item) => item.id === productPackage.selectedPageId);
+  const prototypeComponent = prototypePage?.components.find((item) => item.id === productPackage?.selectedComponentId);
+  const prototypePageContext: ProductContextReference | null = agent.id === "product-design" && productPackage && prototypePage ? {
+    kind: "prototype",
+    label: `原型 ${productPackage.prototypeVersions.at(-1)?.version ?? ""} / ${prototypePage.name}`,
+    artifactId: productPackage.prototypeVersions.at(-1)?.id,
+    versionId: productPackage.prototypeVersions.at(-1)?.version,
+    pageId: prototypePage.id,
+  } : null;
+  const prototypeProductContext: ProductContextReference | null = prototypePageContext && prototypeComponent ? {
+    ...prototypePageContext,
+    label: `${prototypePageContext.label} / ${prototypeComponent.name}`,
+    componentId: prototypeComponent.id,
+  } : prototypePageContext;
+  const prdDocumentContext: ProductContextReference | null = agent.id === "product-design" && productPackage ? {
+    kind: "prd",
+    label: `PRD ${productPackage.prdVersions.at(-1)?.version ?? ""} / 整份文档`,
+    artifactId: productPackage.prdVersions.at(-1)?.id,
+    versionId: productPackage.prdVersions.at(-1)?.version,
+  } : null;
+  const prdProductContext: ProductContextReference | null = prdDocumentContext && productPackage?.selectedPrdSection ? {
+    ...prdDocumentContext,
+    label: `PRD ${productPackage.prdVersions.at(-1)?.version ?? ""} / ${productPackage.selectedPrdSection}`,
+    sectionId: productPackage.selectedPrdSection ?? undefined,
+  } : prdDocumentContext;
+  const automaticProductContext = activePreview === "prototype"
+    ? prototypeProductContext
+    : activePreview === "prd"
+      ? prdProductContext
+      : requirementProductContext;
+  const productContextOptions = [requirementProductContext, prototypePageContext, prototypeProductContext, prdDocumentContext, prdProductContext].filter((item): item is ProductContextReference => Boolean(item));
   return (
     <div className="task-view">
       <header className="task-header">
@@ -185,7 +223,9 @@ export function TaskView({
                     ✦ {agents.find((item) => item.id === message.agentId)?.name}
                   </span>
                 )}
-                {message.contextReference && <span className="message-context-reference"><Layers3 size={12} /><em>交付物引用</em>{message.contextReference.label}</span>}
+                {message.contextReference && (message.contextReference.kind === "requirement" || !onOpenProductContext
+                  ? <span className={`message-context-reference ${message.contextReference.kind}`}><Layers3 size={12} /><em>需求</em>{message.contextReference.label}</span>
+                  : <button className={`message-context-reference ${message.contextReference.kind}`} onClick={() => onOpenProductContext(message.contextReference!)} title="在右栏定位此内容" type="button"><Layers3 size={12} /><em>{message.contextReference.kind === "prototype" ? "原型" : "PRD"}</em>{message.contextReference.label}</button>)}
                 <p>{message.text}</p>
                 {message.artifact && (
                   <div className="artifact-card">
@@ -285,20 +325,8 @@ export function TaskView({
           projects={projects}
           selectedAgentId={agent.id}
           selectedProjectId={selectedProjectId}
-          selectedProductContext={(() => {
-            if (agent.id !== "product-design") return null;
-            if (activePreview === "prd" && productPackage?.selectedPrdSection) return {
-              kind: "prd",
-              label: `PRD ${productPackage.prdVersions.at(-1)?.version ?? ""} / ${productPackage.selectedPrdSection}`,
-            };
-            if (activePreview !== "prototype" || !productPackage?.selectedComponentId) return null;
-            const page = productPackage.pages.find((item) => item.id === productPackage.selectedPageId);
-            const component = page?.components.find((item) => item.id === productPackage.selectedComponentId);
-            return page && component ? {
-              kind: "prototype",
-              label: `原型 ${productPackage.prototypeVersions.at(-1)?.version ?? ""} / ${page.name} / ${component.name}`,
-            } : null;
-          })()}
+          selectedProductContext={automaticProductContext}
+          productContextOptions={productContextOptions}
           variant="task"
         />
         <p className="composer-hint">

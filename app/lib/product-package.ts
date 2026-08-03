@@ -133,7 +133,7 @@ export function createInitialProductPackage(requirementId: string): ProductPacka
       { id: "role-edit", name: "角色编辑", route: "/settings/roles/edit", components: withSharedSurface([{ id: "role-edit-title", name: "页面标题", type: "text", text: "角色配置", color: "#20232b", state: "default", specRef: "PRD 3.2" }, { id: "role-name", name: "角色名称", type: "input", text: "项目管理员", color: "#ffffff", state: "default", specRef: "PRD 3.2" }, { id: "permission-table", name: "权限表格", type: "table", text: "查看 · 编辑 · 管理成员", color: "#ffffff", state: "default", specRef: "BR-12" }]) },
     ],
     selectedPageId: "members",
-    selectedComponentId: "save-role",
+    selectedComponentId: null,
     selectedPrdSection: "3. 核心方案",
     prototypeVersions: [
       { id: "proto-v1", version: "V1", title: "角色管理基础页面", time: "7 月 18 日", pages: 2, affected: ["权限概览", "成员列表"] },
