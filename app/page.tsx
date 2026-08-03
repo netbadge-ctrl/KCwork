@@ -701,7 +701,7 @@ export default function Page() {
               requirementId: selectedRequirement.id,
               agentId: selectedAgent.id,
               productWorkMode: state.productWorkMode,
-              time: `${selectedRequirement.code} · Spec ${selectedRequirement.specVersion}`,
+              time: `Spec ${selectedRequirement.specVersion}`,
             }}
             onOpenPreview={openPreview}
             onOpenProductContext={openProductContext}

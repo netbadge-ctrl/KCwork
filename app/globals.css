@@ -2704,6 +2704,15 @@ select:focus-visible {
   letter-spacing: -0.01em;
 }
 
+.requirement-code {
+  padding: 2px 5px;
+  color: #9aa1ad;
+  font-size: 8px;
+  font-weight: 550;
+  background: var(--surface-soft);
+  border-radius: 5px;
+}
+
 .requirement-title-edit {
   display: grid;
   width: 25px;
@@ -3496,6 +3505,10 @@ select:focus-visible {
 }
 
 .drawer-title-group { display: flex; min-width: 0; flex: 1; align-items: center; gap: 10px; }
+.drawer-title-group h2 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drawer-artifact-version { display: inline-flex; flex: none; align-items: center; gap: 6px; }
+.drawer-artifact-version b { padding: 4px 7px; color: var(--accent); font-size: 9px; background: var(--accent-soft); border-radius: 6px; }
+.drawer-artifact-version small { color: #9aa1ad; font-size: 8px; }
 .prototype-drawer-header { position: relative; z-index: 8; gap: 8px; padding: 7px 10px; }
 .prototype-drawer-header h2 { flex: none; }
 
@@ -6281,7 +6294,10 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
 .prd-anchor-strip button { height: 24px; padding: 0 9px; color: var(--text-muted); font-size: 9px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 7px; }
 .prd-anchor-strip button.active { color: var(--accent); background: var(--accent-soft); border-color: #ddd5ff; }
 .prd-document-scroll { min-height: 0; overflow-y: auto; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 10px; }
-.artifact-focus .product-panel.prd-workbench { height: 100%; min-height: 0; grid-template-rows: auto auto auto minmax(0, 1fr) auto; }
+.prd-document-toolbar { display: flex; min-height: 30px; align-items: center; justify-content: space-between; gap: 10px; }
+.prd-document-toolbar > span { color: var(--text-muted); font-size: 9px; }
+.prd-document-toolbar > button { height: var(--artifact-control-height); padding: 0 9px; color: var(--text-secondary); font-size: var(--artifact-control-font-size); background: white; border: 1px solid var(--border); border-radius: var(--artifact-control-radius); }
+.artifact-focus .product-panel.prd-workbench { height: 100%; min-height: 0; grid-template-rows: auto auto minmax(0, 1fr) auto; }
 
 @media (max-width: 1050px) {
   .prototype-layout,
@@ -6453,6 +6469,11 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
 .baseline-assets small.draft { color: #a97716; }
 .baseline-shared { display: inline-flex; align-items: center; gap: 4px; padding: 5px 7px; color: #625587; font-size: 9px; background: #eeeaff; border-radius: 7px; white-space: nowrap; }
 
+.baseline-document-tabs { display: flex; gap: 3px; padding: 3px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 8px; }
+.baseline-document-tabs button { display: inline-flex; min-height: 28px; flex: 1; align-items: center; justify-content: center; gap: 6px; color: var(--text-muted); font-size: 10px; background: transparent; border: 0; border-radius: 6px; }
+.baseline-document-tabs button.active { color: var(--accent); background: white; box-shadow: 0 2px 7px rgb(34 37 46 / 7%); }
+.baseline-document-tabs small { padding: 2px 5px; color: inherit; font-size: 8px; background: var(--accent-soft); border-radius: 5px; }
+
 .requirement-baseline-panel { display: grid; align-content: start; gap: 13px; min-height: 100%; }
 .baseline-panel-context { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: 9px 10px; background: var(--accent-soft); border: 1px solid #ded6ff; border-radius: 10px; }
 .baseline-panel-context > span { padding: 3px 6px; color: var(--accent); font-size: 8px; font-weight: 700; background: white; border-radius: 5px; }
@@ -6471,6 +6492,7 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
 .spec-shared-editor { display: grid; gap: 6px; }
 .spec-shared-editor > span { font-size: 10px; font-weight: 650; }
 .spec-shared-editor textarea { width: 100%; min-height: 390px; padding: 16px; resize: vertical; color: #404653; font: 11px/1.8 ui-monospace, SFMono-Regular, Menlo, monospace; background: white; border: 1px solid var(--border); border-radius: 10px; outline: 0; }
+.spec-shared-editor.combined textarea { min-height: 320px; }
 .spec-shared-editor textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgb(112 83 216 / 10%); }
 .baseline-confirm-row { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 10px; background: white; border: 1px solid var(--border); border-radius: 9px; }
 .baseline-confirm-row > div { display: grid; flex: 1; gap: 2px; }

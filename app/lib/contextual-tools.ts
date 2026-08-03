@@ -103,8 +103,7 @@ const productTools: ContextualTool[] = [
 ];
 
 const sharedRequirementTools: ContextualTool[] = [
-  tool("requirement-spec", "需求 Spec", FileCode2),
-  tool("requirement-acceptance", "验收标准", ListChecks),
+  tool("requirement-spec", "需求规格", FileCode2),
 ];
 
 export const contextualPreviewKinds = new Set<PreviewKind>([

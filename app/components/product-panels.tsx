@@ -71,7 +71,7 @@ export function PrototypeHeaderControls({ state, dispatch, canEdit, inspect, onI
 }
 
 function ProductContext({ requirement, state }: { requirement: Requirement | null; state: ProductPackageState }) {
-  return <div className="product-panel-context"><span>产品设计 Agent</span><b>{requirement?.code ?? "未关联需求"}</b><small>原型 {state.prototypeVersions.at(-1)?.version} · PRD {state.prdVersions.at(-1)?.version}</small></div>;
+  return <div className="product-panel-context"><span>产品设计 Agent</span><b>{requirement?.title ?? "未关联需求"}</b><small>{requirement?.code} · 原型 {state.prototypeVersions.at(-1)?.version} · PRD {state.prdVersions.at(-1)?.version}</small></div>;
 }
 
 function ProductPrototypePanel({ state, dispatch, canEdit, prototypeInspect = true }: Props) {
@@ -161,10 +161,9 @@ function ProductPrdPanel({ state, dispatch, canEdit, requirement }: Props) {
   const sections = ["1. 背景与目标", "2. 产品范围", "3. 核心方案", "4. 权限规则", "5. 异常处理"];
   const selectedSection = state.selectedPrdSection;
   return <section className="product-panel prd-workbench">
-    <ProductContext requirement={requirement} state={state} />
-    <div className="product-panel-heading"><div><span>产品需求文档</span><h3>{documentName}</h3><p>PRD {state.prdVersions.at(-1)?.version} · 关联原型 {state.prototypeVersions.at(-1)?.version} · 引用 {state.knowledgeIds.length} 项项目知识</p></div><button disabled={!canEdit} onClick={() => setEditing(!editing)} type="button">{editing ? "完成编辑" : "直接编辑"}</button></div>
+    <div className="prd-document-toolbar"><span>关联原型 {state.prototypeVersions.at(-1)?.version} · 引用 {state.knowledgeIds.length} 项项目知识</span><button disabled={!canEdit} onClick={() => setEditing(!editing)} type="button">{editing ? "完成编辑" : "直接编辑"}</button></div>
     <div className="prd-anchor-strip">{sections.map((item) => <button className={item === state.selectedPrdSection ? "active" : ""} key={item} onClick={() => dispatch({ type: "select-prd-section", section: item })} type="button">{item}</button>)}</div>
-    <div className="prd-document-scroll"><PrdDocumentSheet title={documentName} meta={`${requirement?.code ?? ""} · Spec ${requirement?.specVersion ?? ""} · PRD ${state.prdVersions.at(-1)?.version ?? ""}`} body={state.prdBody} editable={editing} onChange={(body) => dispatch({ type: "set-prd-body", body })} /></div>
+    <div className="prd-document-scroll"><PrdDocumentSheet title={documentName} meta={`${requirement?.code ?? ""} · Spec ${requirement?.specVersion ?? ""} · PRD ${state.prdVersions.at(-1)?.version ?? ""}`} body={state.prdBody} editable={editing} showHeader={false} onChange={(body) => dispatch({ type: "set-prd-body", body })} /></div>
     {state.prdRevision && selectedSection && <div className="prd-natural-revision"><div className="prd-revision-preview"><b><GitCompareArrows size={14} />Agent 已生成待确认修订</b><p>将在“{selectedSection}”中补充：{state.prdRevision}</p><footer><button onClick={() => dispatch({ type: "set-prd-revision", revision: "" })} type="button">放弃</button><button onClick={() => dispatch({ type: "confirm-prd-revision" })} type="button">确认并生成新版本</button></footer></div></div>}
   </section>;
 }

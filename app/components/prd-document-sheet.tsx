@@ -6,6 +6,7 @@ export interface PrdDocumentSheetProps {
   meta: string;
   body: string;
   editable?: boolean;
+  showHeader?: boolean;
   onChange?(body: string): void;
 }
 
@@ -14,6 +15,7 @@ export function PrdDocumentSheet({
   meta,
   body,
   editable,
+  showHeader = true,
   onChange,
 }: PrdDocumentSheetProps) {
   if (editable) {
@@ -61,9 +63,7 @@ export function PrdDocumentSheet({
   flushParagraph();
   return (
     <div className="pdf-sheet prd-sheet">
-      <span className="document-tag">产品需求文档</span>
-      <h1>{title}</h1>
-      <p className="document-meta">{meta}</p>
+      {showHeader && <><span className="document-tag">产品需求文档</span><h1>{title}</h1><p className="document-meta">{meta}</p></>}
       {blocks}
       <div className="pdf-page-number">1 / 1</div>
     </div>

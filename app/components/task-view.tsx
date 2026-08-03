@@ -143,6 +143,7 @@ export function TaskView({
             ) : (
               <>
                 <h1>{task.title}</h1>
+                {requirement && <span className="requirement-code">{requirement.code}</span>}
                 {requirement && canEdit && onRenameRequirement && <button aria-label="编辑需求名称" className="requirement-title-edit" onClick={() => setIsEditingTitle(true)} type="button"><PencilLine size={13} /></button>}
               </>
             )}

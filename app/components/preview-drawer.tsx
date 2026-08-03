@@ -122,8 +122,8 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   defects: "缺陷记录",
   "delivery-check": "产品交付物",
   "version-history": "版本记录",
-  "requirement-spec": "需求 Spec",
-  "requirement-acceptance": "验收标准",
+  "requirement-spec": "需求规格",
+  "requirement-acceptance": "需求规格",
   investment: "投入分析",
 };
 
@@ -324,6 +324,8 @@ export function PreviewDrawer({
             <div className="drawer-title-group">
               <p className="eyebrow">辅助面板</p>
               <h2>{drawerTitle}</h2>
+              {isProductPanel && preview === "prd" && <span className="drawer-artifact-version"><b>PRD {productPackage.prdVersions.at(-1)?.version}</b><small>{selectedRequirement?.code}</small></span>}
+              {isProductPanel && preview === "prototype" && <span className="drawer-artifact-version"><b>原型 {productPackage.prototypeVersions.at(-1)?.version}</b><small>{selectedRequirement?.code}</small></span>}
               {isProductPanel && preview === "prototype" && <PrototypeHeaderControls canEdit={capabilities.canEditProductArtifacts} dispatch={onProductPackageAction} inspect={prototypeInspect} onInspectChange={setPrototypeInspect} state={productPackage} />}
             </div>
             <button aria-label="关闭预览" className="icon-button" onClick={onClose} type="button">
