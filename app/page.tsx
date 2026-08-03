@@ -137,6 +137,13 @@ interface PendingNavigation {
 
 export default function Page() {
   const [state, dispatch] = useReducer(clientReducer, initialClientState);
+  const workspaceRequirements = useMemo(
+    () => requirements.map((requirement) => ({
+      ...requirement,
+      title: state.requirementTitles[requirement.id] ?? requirement.title,
+    })),
+    [state.requirementTitles],
+  );
   const isArtifactFocus = ["prototype", "prd"].includes(state.preview ?? "") && ["task", "requirement-detail"].includes(state.view);
   const productPackageSession = useProductPackageSession(
     state.selectedRequirementId ?? "role-permissions",
@@ -308,10 +315,10 @@ export default function Page() {
   );
   const selectedRequirement = useMemo(
     () =>
-      requirements.find(
+      workspaceRequirements.find(
         (requirement) => requirement.id === state.selectedRequirementId,
       ) ?? null,
-    [state.selectedRequirementId],
+    [state.selectedRequirementId, workspaceRequirements],
   );
   const selectedPrdDocument = useMemo(
     () =>
@@ -612,7 +619,7 @@ export default function Page() {
               if (requirementId === state.selectedRequirementId) run();
               else {
                 const destination =
-                  requirements.find((item) => item.id === requirementId)
+                  workspaceRequirements.find((item) => item.id === requirementId)
                     ?.title ?? "需求工作区";
                 requestNavigation(destination, run);
               }
@@ -628,7 +635,7 @@ export default function Page() {
             }}
             projects={availableProjects}
             requirementStages={state.requirementStages}
-            requirements={requirements}
+            requirements={workspaceRequirements}
             selectedProjectId={
               state.view === "project-detail" ? state.selectedProjectId : null
             }
@@ -665,7 +672,7 @@ export default function Page() {
               };
               requestNavigation("查看项目资产", run);
             }}
-            requirements={requirements.filter(
+            requirements={workspaceRequirements.filter(
               (requirement) => requirement.projectId === state.selectedProjectId,
             )}
             section={state.projectSection}
@@ -677,7 +684,6 @@ export default function Page() {
             agent={selectedAgent}
             agents={agents}
             canEdit={canEditSelectedWorkspace}
-            contextCount={activeSelectedContextIds.length}
             currentRoles={currentRoles}
             execution={state.requirementExecutions[selectedRequirement.id] ?? "idle"}
             executionAgent={selectedAgent}
@@ -699,6 +705,7 @@ export default function Page() {
             }}
             onOpenPreview={openPreview}
             onOpenProductContext={openProductContext}
+            onRenameRequirement={(title) => dispatch({ type: "rename-requirement", requirementId: selectedRequirement.id, title })}
             activePreview={state.preview}
             onBackToProject={() =>
               requestNavigation(selectedProject.name, () =>
@@ -837,7 +844,7 @@ export default function Page() {
         width={layoutPreferences.rightPanelWidth}
         tools={contextualTools}
         requirementStages={state.requirementStages}
-        requirements={requirements.filter(
+        requirements={workspaceRequirements.filter(
           (requirement) => requirement.projectId === state.selectedProjectId,
         )}
         selectedContextIds={activeSelectedContextIds.filter((id) =>

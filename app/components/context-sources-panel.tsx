@@ -48,8 +48,8 @@ export function ContextSourcesPanel({
     <section className="context-sources-panel">
       <div className="context-sources-summary">
         <p className="eyebrow">会话上下文</p>
-        <h3>Agent 正在引用 {selectedIds.length} 项资料</h3>
-        <p>这里仅展示本次对话会用到的项目知识、记忆、文档与交付物；调整后只影响当前会话。</p>
+        <h3>允许 Agent 检索 {selectedIds.length} 项资料源</h3>
+        <p>这些资料不会被一次性放进上下文。Agent 会根据每条指令只召回相关片段，并在回答和产物中标注实际引用。</p>
       </div>
 
       {Object.entries(groups).map(([kind, groupSources]) => (

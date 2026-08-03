@@ -157,20 +157,22 @@ function PrototypeElement({ component, inspect, selected, onSelect }: { componen
 
 function ProductPrdPanel({ state, dispatch, canEdit, requirement }: Props) {
   const [editing, setEditing] = useState(false);
+  const documentName = `${requirement?.title ?? "角色与成员权限重构"}-PRD`;
   const sections = ["1. 背景与目标", "2. 产品范围", "3. 核心方案", "4. 权限规则", "5. 异常处理"];
   const selectedSection = state.selectedPrdSection;
   return <section className="product-panel prd-workbench">
     <ProductContext requirement={requirement} state={state} />
-    <div className="product-panel-heading"><div><span>产品需求文档</span><h3>{requirement?.title ?? "角色与成员权限重构"}</h3><p>PRD {state.prdVersions.at(-1)?.version} · 关联原型 {state.prototypeVersions.at(-1)?.version} · 引用 {state.knowledgeIds.length} 项项目知识</p></div><button disabled={!canEdit} onClick={() => setEditing(!editing)} type="button">{editing ? "完成编辑" : "直接编辑"}</button></div>
+    <div className="product-panel-heading"><div><span>产品需求文档</span><h3>{documentName}</h3><p>PRD {state.prdVersions.at(-1)?.version} · 关联原型 {state.prototypeVersions.at(-1)?.version} · 引用 {state.knowledgeIds.length} 项项目知识</p></div><button disabled={!canEdit} onClick={() => setEditing(!editing)} type="button">{editing ? "完成编辑" : "直接编辑"}</button></div>
     <div className="prd-anchor-strip">{sections.map((item) => <button className={item === state.selectedPrdSection ? "active" : ""} key={item} onClick={() => dispatch({ type: "select-prd-section", section: item })} type="button">{item}</button>)}</div>
-    <div className="prd-document-scroll"><PrdDocumentSheet title={requirement?.title ?? "角色与成员权限重构"} meta={`${requirement?.code ?? ""} · Spec ${requirement?.specVersion ?? ""} · PRD ${state.prdVersions.at(-1)?.version ?? ""}`} body={state.prdBody} editable={editing} onChange={(body) => dispatch({ type: "set-prd-body", body })} /></div>
+    <div className="prd-document-scroll"><PrdDocumentSheet title={documentName} meta={`${requirement?.code ?? ""} · Spec ${requirement?.specVersion ?? ""} · PRD ${state.prdVersions.at(-1)?.version ?? ""}`} body={state.prdBody} editable={editing} onChange={(body) => dispatch({ type: "set-prd-body", body })} /></div>
     {state.prdRevision && selectedSection && <div className="prd-natural-revision"><div className="prd-revision-preview"><b><GitCompareArrows size={14} />Agent 已生成待确认修订</b><p>将在“{selectedSection}”中补充：{state.prdRevision}</p><footer><button onClick={() => dispatch({ type: "set-prd-revision", revision: "" })} type="button">放弃</button><button onClick={() => dispatch({ type: "confirm-prd-revision" })} type="button">确认并生成新版本</button></footer></div></div>}
   </section>;
 }
 
 function DeliveryCheckPanel({ state, dispatch, canEdit, requirement }: Props) {
   const readiness = getProductReadiness(state);
-  const artifacts = [["原型", state.prototypeStatus, state.prototypeVersions.at(-1)?.version], ["PRD", state.prdStatus, state.prdVersions.at(-1)?.version]] as const;
+  const requirementName = requirement?.title ?? "角色与成员权限重构";
+  const artifacts = [["prototype", `${requirementName}-prototype`, state.prototypeStatus, state.prototypeVersions.at(-1)?.version], ["prd", `${requirementName}-PRD`, state.prdStatus, state.prdVersions.at(-1)?.version]] as const;
   const [reviewing, setReviewing] = useState(false);
   const [reviewDecisions, setReviewDecisions] = useState<Record<string, "pending" | "accepted" | "ignored">>({
     prototype: "pending",
@@ -206,7 +208,7 @@ function DeliveryCheckPanel({ state, dispatch, canEdit, requirement }: Props) {
   return <section className="product-panel delivery-check-panel">
     <ProductContext requirement={requirement} state={state} />
     <div className="product-panel-heading"><div><span>产品交付物</span><h3>原型与 PRD</h3><p>集中查看交付版本和数字人审查建议；Spec 与验收标准仍在需求公共基线中共同维护。</p></div><strong>{readiness.complete ? "2/2" : `${2 - readiness.missing.length}/2`}</strong></div>
-    <div className="delivery-artifact-list">{artifacts.map(([name, status, version]) => <article key={name}>{name === "原型" ? <LayoutTemplate size={16} /> : <FileText size={16} />}<div><b>{name} <em>{version}</em></b><small>{status === "confirmed" ? "当前版本已确认" : status === "missing" ? "尚未生成" : "仍在调整"}</small></div><span className={status}>{status === "confirmed" ? "可用" : status === "missing" ? "缺失" : "调整中"}</span></article>)}</div>
+    <div className="delivery-artifact-list">{artifacts.map(([kind, name, status, version]) => <article key={kind}>{kind === "prototype" ? <LayoutTemplate size={16} /> : <FileText size={16} />}<div><b>{name} <em>{version}</em></b><small>{status === "confirmed" ? "当前版本已确认" : status === "missing" ? "尚未生成" : "仍在调整"}</small></div><span className={status}>{status === "confirmed" ? "可用" : status === "missing" ? "缺失" : "调整中"}</span></article>)}</div>
     <section className="digital-human-review">
       <header>
         <div className="digital-review-title"><span className="digital-avatar-stack"><i className="violet">妍</i><i className="blue">衡</i></span><span><b>数字人联合审查</b><small>分别审查原型体验与 PRD 完整性，建议由产品成员决定是否采纳。</small></span></div>

@@ -21,8 +21,6 @@ export interface ComposerProps {
   projectSelectionLocked?: boolean;
   disabled?: boolean;
   selectedProductContext?: ProductContextReference | null;
-  contextCount?: number;
-  onOpenContext?(): void;
 }
 
 export function Composer({
@@ -38,8 +36,6 @@ export function Composer({
   projectSelectionLocked = false,
   disabled = false,
   selectedProductContext = null,
-  contextCount,
-  onOpenContext,
 }: ComposerProps) {
   const [text, setText] = useState("");
   const [lockedProductContext, setLockedProductContext] = useState<ProductContextReference | null>(null);
@@ -157,16 +153,6 @@ export function Composer({
           <button className="permission-tool" disabled={disabled} type="button">
             <ShieldCheck size={15} /> 权限
           </button>
-          {variant === "task" && onOpenContext && (
-            <button
-              aria-label={`查看本次会话引用的 ${contextCount ?? 0} 项上下文`}
-              className="composer-context-control"
-              onClick={onOpenContext}
-              type="button"
-            >
-              <Layers3 size={14} /> {contextCount ?? 0} 项上下文
-            </button>
-          )}
         </div>
         <button aria-label="发送" className="send-button" disabled={disabled || !text.trim()} onClick={submit} type="button">
           <ArrowUp size={17} strokeWidth={2.2} />

@@ -193,6 +193,11 @@ export function PreviewDrawer({
   const isBackendRuntimeLog = preview === "log" && selectedAgentId === "development";
   const isTestingReport = preview === "test" && selectedAgentId === "testing" && explicitPreviewKind !== "test";
   const isProductPanel = selectedAgentId === "product-design" && ["prototype", "prd", "delivery-check", "version-history"].includes(preview ?? "");
+  const drawerTitle = preview === "prototype" && selectedRequirement
+    ? `${selectedRequirement.title}-prototype`
+    : preview === "prd" && selectedRequirement
+      ? `${selectedRequirement.title}-PRD`
+      : selectedTool?.label ?? (preview ? contextualLabels[preview] : null) ?? "辅助内容";
   const isRequirementBaselinePanel = ["requirement-spec", "requirement-acceptance"].includes(preview ?? "");
   const [prototypeInspect, setPrototypeInspect] = useState(false);
   const mainTools = tools.filter((tool) => tool.kind !== "context");
@@ -318,7 +323,7 @@ export function PreviewDrawer({
           <header className={`drawer-header ${isProductPanel && preview === "prototype" ? "prototype-drawer-header" : ""}`}>
             <div className="drawer-title-group">
               <p className="eyebrow">辅助面板</p>
-              <h2>{selectedTool?.label ?? contextualLabels[preview] ?? "辅助内容"}</h2>
+              <h2>{drawerTitle}</h2>
               {isProductPanel && preview === "prototype" && <PrototypeHeaderControls canEdit={capabilities.canEditProductArtifacts} dispatch={onProductPackageAction} inspect={prototypeInspect} onInspectChange={setPrototypeInspect} state={productPackage} />}
             </div>
             <button aria-label="关闭预览" className="icon-button" onClick={onClose} type="button">

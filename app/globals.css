@@ -1011,24 +1011,6 @@ select:focus-visible {
   font-size: 11px;
 }
 
-.composer-context-control {
-  display: inline-flex;
-  height: 30px;
-  align-items: center;
-  gap: 5px;
-  padding: 0 8px;
-  color: var(--text-muted);
-  font-size: 10px;
-  background: transparent;
-  border: 0;
-  border-radius: 8px;
-}
-
-.composer-context-control:hover {
-  color: var(--accent);
-  background: var(--accent-soft);
-}
-
 .starter-prompts {
   display: flex;
   align-items: center;
@@ -2720,6 +2702,58 @@ select:focus-visible {
   margin: 0;
   font-size: 15px;
   letter-spacing: -0.01em;
+}
+
+.requirement-title-edit {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+}
+
+.requirement-title-edit:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.requirement-title-editor {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.requirement-title-editor input {
+  width: min(360px, 40vw);
+  height: 31px;
+  padding: 0 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 650;
+  background: var(--surface);
+  border: 1px solid #cfc4f4;
+  border-radius: 7px;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgb(112 83 216 / 8%);
+}
+
+.requirement-title-editor button {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  color: var(--text-muted);
+  background: var(--surface-soft);
+  border: 0;
+  border-radius: 6px;
+}
+
+.requirement-title-editor button[type="submit"] {
+  color: white;
+  background: var(--accent);
 }
 
 .task-header > div:first-child > small {

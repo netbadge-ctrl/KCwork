@@ -4,9 +4,11 @@ import {
   Clock3,
   FileText,
   Layers3,
+  PencilLine,
   RotateCcw,
+  X,
 } from "lucide-react";
-import { useState, type Dispatch } from "react";
+import { useEffect, useState, type Dispatch } from "react";
 import type {
   Agent,
   ExecutionState,
@@ -35,7 +37,6 @@ export interface TaskViewProps {
   selectedProjectId: string | null;
   canEdit: boolean;
   currentRole: ProjectRole;
-  contextCount?: number;
   projectSelectionLocked?: boolean;
   requirement?: Requirement | null;
   onSelectAgent(id: string): void;
@@ -43,6 +44,7 @@ export interface TaskViewProps {
   onSend(text: string, contextReference?: ProductContextReference): void;
   onOpenPreview(kind: PreviewKind): void;
   onOpenProductContext?(reference: ProductContextReference): void;
+  onRenameRequirement?(title: string): void;
   onBackToProject?(): void;
   productPackage?: ProductPackageState;
   onProductPackageAction?: Dispatch<ProductPackageAction>;
@@ -67,7 +69,6 @@ export function TaskView({
   selectedProjectId,
   canEdit,
   currentRole,
-  contextCount,
   projectSelectionLocked = false,
   requirement = null,
   onSelectAgent,
@@ -75,6 +76,7 @@ export function TaskView({
   onSend,
   onOpenPreview,
   onOpenProductContext,
+  onRenameRequirement,
   onBackToProject,
   productPackage,
   onProductPackageAction,
@@ -83,6 +85,15 @@ export function TaskView({
   const [savedArtifactIds, setSavedArtifactIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(task.title);
+  useEffect(() => setTitleDraft(task.title), [task.title]);
+  const saveTitle = () => {
+    const title = titleDraft.trim();
+    if (!title) return;
+    onRenameRequirement?.(title);
+    setIsEditingTitle(false);
+  };
   const requirementProductContext: ProductContextReference | null = agent.id === "product-design" && requirement ? {
     kind: "requirement",
     label: `${requirement.code} · ${requirement.title}`,
@@ -92,7 +103,7 @@ export function TaskView({
   const prototypeComponent = prototypePage?.components.find((item) => item.id === productPackage?.selectedComponentId);
   const prototypePageContext: ProductContextReference | null = agent.id === "product-design" && productPackage && prototypePage ? {
     kind: "prototype",
-    label: `原型 ${productPackage.prototypeVersions.at(-1)?.version ?? ""} / ${prototypePage.name}`,
+    label: `${requirement?.title ?? "当前需求"}-prototype / ${productPackage.prototypeVersions.at(-1)?.version ?? ""} / ${prototypePage.name}`,
     artifactId: productPackage.prototypeVersions.at(-1)?.id,
     versionId: productPackage.prototypeVersions.at(-1)?.version,
     pageId: prototypePage.id,
@@ -104,13 +115,13 @@ export function TaskView({
   } : prototypePageContext;
   const prdDocumentContext: ProductContextReference | null = agent.id === "product-design" && productPackage ? {
     kind: "prd",
-    label: `PRD ${productPackage.prdVersions.at(-1)?.version ?? ""} / 整份文档`,
+    label: `${requirement?.title ?? "当前需求"}-PRD / ${productPackage.prdVersions.at(-1)?.version ?? ""} / 整份文档`,
     artifactId: productPackage.prdVersions.at(-1)?.id,
     versionId: productPackage.prdVersions.at(-1)?.version,
   } : null;
   const prdProductContext: ProductContextReference | null = prdDocumentContext && productPackage?.selectedPrdSection ? {
     ...prdDocumentContext,
-    label: `PRD ${productPackage.prdVersions.at(-1)?.version ?? ""} / ${productPackage.selectedPrdSection}`,
+    label: `${requirement?.title ?? "当前需求"}-PRD / ${productPackage.prdVersions.at(-1)?.version ?? ""} / ${productPackage.selectedPrdSection}`,
     sectionId: productPackage.selectedPrdSection ?? undefined,
   } : prdDocumentContext;
   const automaticProductContext = activePreview === "prototype"
@@ -123,7 +134,18 @@ export function TaskView({
       <header className="task-header">
         <div>
           <div className="task-heading-row">
-            <h1>{task.title}</h1>
+            {isEditingTitle ? (
+              <form className="requirement-title-editor" onSubmit={(event) => { event.preventDefault(); saveTitle(); }}>
+                <input aria-label="需求名称" autoFocus onChange={(event) => setTitleDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Escape") { setTitleDraft(task.title); setIsEditingTitle(false); } }} value={titleDraft} />
+                <button aria-label="保存需求名称" disabled={!titleDraft.trim()} type="submit"><Check size={13} /></button>
+                <button aria-label="取消编辑需求名称" onClick={() => { setTitleDraft(task.title); setIsEditingTitle(false); }} type="button"><X size={13} /></button>
+              </form>
+            ) : (
+              <>
+                <h1>{task.title}</h1>
+                {requirement && canEdit && onRenameRequirement && <button aria-label="编辑需求名称" className="requirement-title-edit" onClick={() => setIsEditingTitle(true)} type="button"><PencilLine size={13} /></button>}
+              </>
+            )}
           </div>
           <small>任务 · {task.time}</small>
         </div>
@@ -269,8 +291,6 @@ export function TaskView({
           selectedAgentId={agent.id}
           selectedProjectId={selectedProjectId}
           selectedProductContext={automaticProductContext}
-          contextCount={contextCount ?? project?.contextCount ?? 0}
-          onOpenContext={() => onOpenPreview("sources")}
           variant="task"
         />
         <p className="composer-hint">

@@ -41,6 +41,7 @@ export interface ClientState {
   taskMessagesById: Record<string, Message[]>;
   requirementExecutions: Record<string, ExecutionState>;
   requirementMessages: Record<string, Message[]>;
+  requirementTitles: Record<string, string>;
   requirementStages: Record<string, RequirementStage>;
   stageRisks: Record<string, string>;
   memberRoles: Record<string, ProjectRole[]>;
@@ -56,6 +57,7 @@ export type ClientAction =
   | { type: "open-task"; taskId: string }
   | { type: "select-project"; projectId: string | null }
   | { type: "select-requirement"; requirementId: string }
+  | { type: "rename-requirement"; requirementId: string; title: string }
   | { type: "resume-agent-work"; sessionId: string }
   | { type: "toggle-context-source"; requirementId: string; sourceId: string }
   | { type: "toggle-context-lock"; requirementId: string; sourceId: string }
@@ -190,6 +192,9 @@ export const initialClientState: ClientState = {
     ],
     "audit-export": [],
   },
+  requirementTitles: Object.fromEntries(
+    requirements.map((requirement) => [requirement.id, requirement.title]),
+  ),
   requirementStages: Object.fromEntries(
     requirements.map((requirement) => [requirement.id, requirement.stage]),
   ),
@@ -341,6 +346,17 @@ export function clientReducer(
           ),
         };
       }
+    case "rename-requirement": {
+      const title = action.title.trim();
+      if (!title) return state;
+      return {
+        ...state,
+        requirementTitles: {
+          ...state.requirementTitles,
+          [action.requirementId]: title,
+        },
+      };
+    }
     case "resume-agent-work": {
       const session = agentWorkSessions.find((item) => item.id === action.sessionId);
       if (!session) return state;
