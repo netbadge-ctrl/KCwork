@@ -102,7 +102,6 @@ function ProductPrototypePanel({ state, dispatch, canEdit, prototypeInspect = tr
         <label>视觉主色<input disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { color: event.target.value } })} type="color" value={component.color} /></label>
         <label>组件状态<select disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { state: event.target.value as PrototypeComponent["state"] } })} value={component.state}><option value="default">默认</option><option value="disabled">禁用</option><option value="loading">加载中</option></select></label>
         <label className="inspector-field-wide">交互目标<input disabled={!canEdit} onChange={(event) => dispatch({ type: "update-component", patch: { target: event.target.value } })} value={component.target ?? ""} /></label>
-        <FocusMainComposerAction canEdit={canEdit} label={`原型 ${state.prototypeVersions.at(-1)?.version} / ${page.name} / ${component.name}`} />
         {state.pendingInstruction && <div className="scoped-change-preview"><b><GitCompareArrows size={13} />Agent 修改建议</b><p>{state.pendingInstruction}</p><footer><button onClick={() => dispatch({ type: "set-pending-instruction", instruction: "" })} type="button"><X size={12} />放弃</button><button onClick={() => { dispatch({ type: "update-component", patch: { text: component.text } }); dispatch({ type: "create-prototype-version", title: `调整${component.name}` }); dispatch({ type: "set-pending-instruction", instruction: "" }); }} type="button"><Check size={12} />应用并生成新版本</button></footer></div>}
       </aside>}
     </div>
@@ -165,12 +164,8 @@ function ProductPrdPanel({ state, dispatch, canEdit, requirement }: Props) {
     <div className="product-panel-heading"><div><span>产品需求文档</span><h3>{requirement?.title ?? "角色与成员权限重构"}</h3><p>PRD {state.prdVersions.at(-1)?.version} · 关联原型 {state.prototypeVersions.at(-1)?.version} · 引用 {state.knowledgeIds.length} 项项目知识</p></div><button disabled={!canEdit} onClick={() => setEditing(!editing)} type="button">{editing ? "完成编辑" : "直接编辑"}</button></div>
     <div className="prd-anchor-strip">{sections.map((item) => <button className={item === state.selectedPrdSection ? "active" : ""} key={item} onClick={() => dispatch({ type: "select-prd-section", section: item })} type="button">{item}</button>)}</div>
     <div className="prd-document-scroll"><PrdDocumentSheet title={requirement?.title ?? "角色与成员权限重构"} meta={`${requirement?.code ?? ""} · Spec ${requirement?.specVersion ?? ""} · PRD ${state.prdVersions.at(-1)?.version ?? ""}`} body={state.prdBody} editable={editing} onChange={(body) => dispatch({ type: "set-prd-body", body })} /></div>
-    <div className="prd-natural-revision">{selectedSection ? <FocusMainComposerAction canEdit={canEdit} label={`PRD ${state.prdVersions.at(-1)?.version} / ${selectedSection}`} /> : <span className="prd-agent-selection-hint"><Sparkles size={12} />选择一个章节后，可在对话中针对所选内容修改</span>}{state.prdRevision && selectedSection && <div className="prd-revision-preview"><b><GitCompareArrows size={14} />Agent 已生成待确认修订</b><p>将在“{selectedSection}”中补充：{state.prdRevision}</p><footer><button onClick={() => dispatch({ type: "set-prd-revision", revision: "" })} type="button">放弃</button><button onClick={() => dispatch({ type: "confirm-prd-revision" })} type="button">确认并生成新版本</button></footer></div>}</div>
+    {state.prdRevision && selectedSection && <div className="prd-natural-revision"><div className="prd-revision-preview"><b><GitCompareArrows size={14} />Agent 已生成待确认修订</b><p>将在“{selectedSection}”中补充：{state.prdRevision}</p><footer><button onClick={() => dispatch({ type: "set-prd-revision", revision: "" })} type="button">放弃</button><button onClick={() => dispatch({ type: "confirm-prd-revision" })} type="button">确认并生成新版本</button></footer></div></div>}
   </section>;
-}
-
-function FocusMainComposerAction({ canEdit, label }: { canEdit: boolean; label: string }) {
-  return <button className="scoped-agent-trigger" disabled={!canEdit} onClick={() => window.dispatchEvent(new CustomEvent("kcwork:focus-agent-composer"))} type="button"><Sparkles size={13} /><span><b>在对话中修改</b><small>{label}</small></span></button>;
 }
 
 function DeliveryCheckPanel({ state, dispatch, canEdit, requirement }: Props) {

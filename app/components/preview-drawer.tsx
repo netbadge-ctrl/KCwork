@@ -98,7 +98,7 @@ const contextualLabels: Partial<Record<PreviewKind, string>> = {
   prototype: "页面预览",
   pdf: "PDF 预览",
   members: "成员管理",
-  sources: "自动上下文",
+  sources: "本次会话上下文",
   "project-settings": "需求状态与门禁",
   "context-maintenance": "共享上下文",
   "create-system": "新建系统项目",

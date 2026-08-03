@@ -1,6 +1,5 @@
 import {
   Check,
-  ChevronDown,
   Circle,
   Clock3,
   FileText,
@@ -21,11 +20,8 @@ import type {
 } from "../lib/types";
 import { projectRoleLabels } from "../lib/project-capabilities";
 import { Composer } from "./composer";
-import { DownstreamProductContext, ProductPackageStrip } from "./product-package-strip";
+import { DownstreamProductContext } from "./product-package-strip";
 import type { ProductPackageAction, ProductPackageState } from "../lib/product-package";
-import { RequirementBaselineStrip } from "./requirement-baseline";
-import type { RequirementBaselineState } from "../lib/requirement-baseline";
-import { RequirementMoreActions } from "./requirement-more-actions";
 
 export interface TaskViewProps {
   task: RecentTask;
@@ -50,7 +46,6 @@ export interface TaskViewProps {
   onBackToProject?(): void;
   productPackage?: ProductPackageState;
   onProductPackageAction?: Dispatch<ProductPackageAction>;
-  requirementBaseline?: RequirementBaselineState;
   activePreview?: PreviewKind | null;
 }
 
@@ -83,10 +78,8 @@ export function TaskView({
   onBackToProject,
   productPackage,
   onProductPackageAction,
-  requirementBaseline,
   activePreview = null,
 }: TaskViewProps) {
-  const [isRequirementContextOpen, setIsRequirementContextOpen] = useState(false);
   const [savedArtifactIds, setSavedArtifactIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -147,49 +140,19 @@ export function TaskView({
                   <span style={{ background: project.color }} /> {project.name}
                 </span>
               )}
-              {requirement && requirementBaseline && agent.mode !== "office" && (
-                <button
-                  aria-expanded={isRequirementContextOpen}
-                  className={`requirement-context-toggle ${isRequirementContextOpen ? "active" : ""}`}
-                  onClick={() => setIsRequirementContextOpen((isOpen) => !isOpen)}
-                  type="button"
-                >
-                  <Layers3 size={14} />
-                  需求上下文
-                  <span className="context-status-dot" />
-                  <ChevronDown size={13} />
-                </button>
-              )}
-              {requirement && <RequirementMoreActions canEdit={canEdit} />}
             </div>
           )}
           <button
+            aria-label={`查看本次会话引用的 ${contextCount ?? project?.contextCount ?? 0} 项上下文`}
             className="context-count"
             onClick={() => onOpenPreview("sources")}
             type="button"
           >
-            {contextCount ?? project?.contextCount ?? 0} 项上下文
+            <Layers3 size={14} />
+            <span><small>本次会话</small>{contextCount ?? project?.contextCount ?? 0} 项上下文</span>
           </button>
         </div>
       </header>
-
-      {isRequirementContextOpen && requirementBaseline && requirement && agent.mode !== "office" && (
-        <div className={`requirement-context-toolbar ${agent.id === "product-design" ? "with-product" : ""}`}>
-          <RequirementBaselineStrip onOpen={onOpenPreview} requirement={requirement} state={requirementBaseline} />
-          {productPackage && onProductPackageAction && agent.id === "product-design" && (
-            <ProductPackageStrip
-              canEdit={canEdit}
-              dispatch={onProductPackageAction}
-              onOpen={onOpenPreview}
-              state={productPackage}
-            />
-          )}
-        </div>
-      )}
-
-      {!requirementBaseline && productPackage && onProductPackageAction && agent.id === "product-design" && (
-        <ProductPackageStrip canEdit={canEdit} dispatch={onProductPackageAction} onOpen={onOpenPreview} state={productPackage} />
-      )}
 
       {productPackage && onProductPackageAction && ["development", "testing"].includes(agent.id) && (
         <DownstreamProductContext

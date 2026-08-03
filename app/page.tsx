@@ -718,7 +718,6 @@ export default function Page() {
             onSend={sendMessage}
             productPackage={productPackageSession.state}
             onProductPackageAction={productPackageSession.dispatch}
-            requirementBaseline={requirementBaselineSession.state}
           />
         )}
 
@@ -751,7 +750,6 @@ export default function Page() {
             productPackage={productPackageSession.state}
             onProductPackageAction={productPackageSession.dispatch}
             requirement={selectedRequirement}
-            requirementBaseline={selectedRequirement ? requirementBaselineSession.state : undefined}
           />
         )}
       </section>

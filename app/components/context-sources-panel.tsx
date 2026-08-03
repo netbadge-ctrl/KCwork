@@ -47,9 +47,9 @@ export function ContextSourcesPanel({
   return (
     <section className="context-sources-panel">
       <div className="context-sources-summary">
-        <p className="eyebrow">Agent context</p>
-        <h3>本次自动引用 {selectedIds.length} 项上下文</h3>
-        <p>可调整本次 Agent 工作引用的上下文，并锁定需要持续保留的项目记忆。</p>
+        <p className="eyebrow">会话上下文</p>
+        <h3>Agent 正在引用 {selectedIds.length} 项资料</h3>
+        <p>这里仅展示本次对话会用到的项目知识、记忆、文档与交付物；调整后只影响当前会话。</p>
       </div>
 
       {Object.entries(groups).map(([kind, groupSources]) => (

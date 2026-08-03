@@ -5,7 +5,7 @@ import {
   Layers3,
   ShieldCheck,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Agent, Mode, ProductContextReference, Project } from "../lib/types";
 
 export interface ComposerProps {
@@ -39,7 +39,6 @@ export function Composer({
 }: ComposerProps) {
   const [text, setText] = useState("");
   const [lockedProductContext, setLockedProductContext] = useState<ProductContextReference | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const visibleAgents = useMemo(
     () => agents.filter((agent) => agent.mode === mode || agent.mode === "both"),
     [agents, mode],
@@ -63,12 +62,6 @@ export function Composer({
   const languageOverridesContext = languageTarget && activeProductContext && activeProductContext.kind !== languageTarget;
   const showProjectControl = variant === "hero";
 
-  useEffect(() => {
-    const focusComposer = () => textareaRef.current?.focus();
-    window.addEventListener("kcwork:focus-agent-composer", focusComposer);
-    return () => window.removeEventListener("kcwork:focus-agent-composer", focusComposer);
-  }, []);
-
   const submit = () => {
     if (disabled || !text.trim()) return;
     onSend(text.trim(), activeProductContext ?? undefined);
@@ -89,7 +82,6 @@ export function Composer({
       <textarea
         aria-label="任务输入"
         disabled={disabled}
-        ref={textareaRef}
         onChange={(event) => {
           const nextText = event.target.value;
           if (!text.trim() && nextText.trim()) setLockedProductContext(baseProductContext);
