@@ -2,11 +2,12 @@ import {
   ArrowUp,
   FolderOpen,
   Plus,
+  Layers3,
   ShieldCheck,
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { Agent, Mode, ProductWorkMode, Project } from "../lib/types";
+import type { Agent, Mode, ProductContextReference, ProductWorkMode, Project } from "../lib/types";
 import { ProductModePicker } from "./product-mode-picker";
 
 export interface ComposerProps {
@@ -17,13 +18,13 @@ export interface ComposerProps {
   selectedProjectId: string | null;
   onSelectAgent(id: string): void;
   onSelectProject?(id: string | null): void;
-  onSend(text: string): void;
+  onSend(text: string, contextReference?: ProductContextReference): void;
   variant: "hero" | "task";
   projectSelectionLocked?: boolean;
   disabled?: boolean;
   productWorkMode?: ProductWorkMode;
   onProductWorkModeChange?(mode: ProductWorkMode): void;
-  selectedProductContext?: { pageName: string; componentName: string } | null;
+  selectedProductContext?: ProductContextReference | null;
   onClearProductContext?(): void;
 }
 
@@ -52,7 +53,7 @@ export function Composer({
 
   const submit = () => {
     if (disabled || !text.trim()) return;
-    onSend(text.trim());
+    onSend(text.trim(), selectedProductContext ?? undefined);
     setText("");
   };
 
@@ -60,7 +61,8 @@ export function Composer({
     <div className={`composer ${variant}`}>
       {selectedProductContext && (
         <div className="composer-product-reference">
-          当前引用：{selectedProductContext.pageName} / {selectedProductContext.componentName}
+          <Layers3 size={12} />
+          <span><small>当前引用</small>{selectedProductContext.label}</span>
           {onClearProductContext && <button aria-label="移除当前引用" onClick={onClearProductContext} type="button"><X size={12} /></button>}
         </div>
       )}
@@ -75,7 +77,9 @@ export function Composer({
           }
         }}
         placeholder={
-          mode === "office"
+          selectedProductContext
+            ? `描述对「${selectedProductContext.label}」的修改…`
+            : mode === "office"
             ? "描述要整理的会议、文档或数据工作…"
             : "描述需求、开发目标或需要分析的问题…"
         }
@@ -136,7 +140,7 @@ export function Composer({
             <ShieldCheck size={15} /> 权限
           </button>
         </div>
-        <button aria-label="发送" className="send-button" disabled={disabled} onClick={submit} type="button">
+        <button aria-label="发送" className="send-button" disabled={disabled || !text.trim()} onClick={submit} type="button">
           <ArrowUp size={17} strokeWidth={2.2} />
         </button>
       </div>

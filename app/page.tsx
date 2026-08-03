@@ -450,7 +450,19 @@ export default function Page() {
   const sendMessage = (text: string, contextReference?: ProductContextReference) => {
     dispatch({ type: "send-message", text, contextReference });
     if (state.selectedAgentId !== "product-design") return;
-    if (contextReference) return;
+    if (contextReference?.kind === "prototype") {
+      productPackageSession.dispatch({
+        type: "set-pending-instruction",
+        instruction: text,
+      });
+      dispatch({ type: "open-preview", preview: "prototype" });
+      return;
+    }
+    if (contextReference?.kind === "prd") {
+      productPackageSession.dispatch({ type: "set-prd-revision", revision: text });
+      dispatch({ type: "open-preview", preview: "prd" });
+      return;
+    }
     if (/原型|页面|组件/.test(text)) {
       productPackageSession.dispatch({
         type: "create-prototype-version",
@@ -658,7 +670,10 @@ export default function Page() {
             }}
             onOpenPreview={openPreview}
             activePreview={state.preview}
-            onClearProductContext={() => dispatch({ type: "close-preview" })}
+            onClearProductContext={() => {
+              if (state.preview === "prototype") productPackageSession.dispatch({ type: "select-component", componentId: null });
+              if (state.preview === "prd") productPackageSession.dispatch({ type: "select-prd-section", section: null });
+            }}
             onBackToProject={() =>
               requestNavigation(selectedProject.name, () =>
                 dispatch({ type: "navigate", view: "project-detail" }),
@@ -708,7 +723,10 @@ export default function Page() {
             onSend={sendMessage}
             onOpenPreview={openPreview}
             activePreview={state.preview}
-            onClearProductContext={() => dispatch({ type: "close-preview" })}
+            onClearProductContext={() => {
+              if (state.preview === "prototype") productPackageSession.dispatch({ type: "select-component", componentId: null });
+              if (state.preview === "prd") productPackageSession.dispatch({ type: "select-prd-section", section: null });
+            }}
             productPackage={productPackageSession.state}
             onProductPackageAction={productPackageSession.dispatch}
             requirement={selectedRequirement}

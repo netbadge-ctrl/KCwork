@@ -185,7 +185,7 @@ export function TaskView({
                     ✦ {agents.find((item) => item.id === message.agentId)?.name}
                   </span>
                 )}
-                {message.contextReference && <span className="message-context-reference"><Layers3 size={12} />{message.contextReference.label}</span>}
+                {message.contextReference && <span className="message-context-reference"><Layers3 size={12} /><em>交付物引用</em>{message.contextReference.label}</span>}
                 <p>{message.text}</p>
                 {message.artifact && (
                   <div className="artifact-card">
@@ -287,11 +287,17 @@ export function TaskView({
           selectedProjectId={selectedProjectId}
           selectedProductContext={(() => {
             if (agent.id !== "product-design") return null;
-            if (activePreview === "prd") return { pageName: `PRD ${productPackage?.prdVersions.at(-1)?.version ?? ""}`, componentName: "当前章节" };
+            if (activePreview === "prd" && productPackage?.selectedPrdSection) return {
+              kind: "prd",
+              label: `PRD ${productPackage.prdVersions.at(-1)?.version ?? ""} / ${productPackage.selectedPrdSection}`,
+            };
             if (activePreview !== "prototype" || !productPackage?.selectedComponentId) return null;
             const page = productPackage.pages.find((item) => item.id === productPackage.selectedPageId);
             const component = page?.components.find((item) => item.id === productPackage.selectedComponentId);
-            return page && component ? { pageName: page.name, componentName: component.name } : null;
+            return page && component ? {
+              kind: "prototype",
+              label: `原型 ${productPackage.prototypeVersions.at(-1)?.version ?? ""} / ${page.name} / ${component.name}`,
+            } : null;
           })()}
           variant="task"
         />

@@ -66,6 +66,7 @@ export interface ProductPackageState {
   pages: PrototypePage[];
   selectedPageId: string;
   selectedComponentId: string | null;
+  selectedPrdSection: string | null;
   prototypeVersions: PrototypeVersion[];
   prdVersions: ProductDocumentVersion[];
   conflicts: ProductConflict[];
@@ -80,6 +81,7 @@ export interface ProductPackageState {
 export type ProductPackageAction =
   | { type: "select-page"; pageId: string }
   | { type: "select-component"; componentId: string | null }
+  | { type: "select-prd-section"; section: string | null }
   | { type: "update-component"; patch: Partial<PrototypeComponent> }
   | { type: "set-pending-instruction"; instruction: string }
   | { type: "add-page" }
@@ -132,6 +134,7 @@ export function createInitialProductPackage(requirementId: string): ProductPacka
     ],
     selectedPageId: "members",
     selectedComponentId: "save-role",
+    selectedPrdSection: "3. 核心方案",
     prototypeVersions: [
       { id: "proto-v1", version: "V1", title: "角色管理基础页面", time: "7 月 18 日", pages: 2, affected: ["权限概览", "成员列表"] },
       { id: "proto-v2", version: "V2", title: "补充成员角色编辑", time: "7 月 19 日", pages: 3, affected: ["成员列表", "角色编辑"] },
@@ -170,6 +173,7 @@ export function productPackageReducer(state: ProductPackageState, action: Produc
   switch (action.type) {
     case "select-page": return { ...state, selectedPageId: action.pageId, selectedComponentId: null };
     case "select-component": return { ...state, selectedComponentId: action.componentId };
+    case "select-prd-section": return { ...state, selectedPrdSection: action.section };
     case "update-component": return {
       ...state,
       pages: state.pages.map((page) => page.id !== state.selectedPageId ? page : {

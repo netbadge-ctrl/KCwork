@@ -6468,9 +6468,13 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
 .downstream-product-context button.update { color: var(--accent); background: white; border: 1px solid #d7cef9; }
 .snapshot-version { color: #267c5e; font-size: 11px; }
 
-.composer-product-reference { position: absolute; bottom: calc(100% + 7px); left: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 7px 5px 9px; color: var(--accent); font-size: 10px; background: var(--accent-soft); border: 1px solid #ddd5ff; border-radius: 8px 8px 8px 2px; }
+.composer-product-reference { position: absolute; bottom: calc(100% + 7px); left: 12px; display: inline-flex; max-width: calc(100% - 24px); align-items: center; gap: 7px; padding: 5px 6px 5px 8px; color: var(--accent); font-size: 10px; background: var(--accent-soft); border: 1px solid #ddd5ff; border-radius: 8px 8px 8px 2px; }
+.composer-product-reference > span { display: grid; min-width: 0; gap: 1px; }
+.composer-product-reference > span > small { color: #796db2; font-size: 8px; line-height: 1; }
+.composer-product-reference > span:not(.scoped-sent-status) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .composer-product-reference button { display: grid; width: 18px; height: 18px; place-items: center; color: var(--accent); background: white; border: 0; border-radius: 5px; }
 .message-context-reference { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 5px; padding: 4px 7px; color: var(--accent); font-size: 9px; background: var(--accent-soft); border: 1px solid #ddd5ff; border-radius: 6px; }
+.message-context-reference em { padding-right: 4px; color: #796db2; font-size: 8px; font-style: normal; border-right: 1px solid #d5ccf7; }
 
 .product-panel {
   --artifact-control-height: 28px;
@@ -6722,9 +6726,14 @@ textarea:disabled { cursor: not-allowed; opacity: .55; }
 .selected-component-name small { color: var(--text-muted); }
 .component-chat-reference { padding: 8px; color: var(--accent); font-size: 9px; background: var(--accent-soft); border-radius: 8px; }
 .component-chat-reference b { display: block; margin-top: 3px; }
-.scoped-composer { position: relative; display: grid; gap: 6px; padding: 10px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-float); }
+.scoped-composer { position: relative; display: grid; gap: 7px; padding: 9px; background: #faf9ff; border: 1px solid #e0daf7; border-radius: 9px; box-shadow: none; }
+.scoped-command-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.scoped-command-heading > span { display: inline-flex; align-items: center; gap: 5px; color: var(--text); font-size: 10px; }
+.scoped-command-heading > span svg { color: var(--accent); }
+.scoped-command-heading > small { color: var(--text-muted); font-size: 8px; line-height: 1.4; text-align: right; }
 .scoped-reference { position: relative; bottom: auto; left: auto; margin: 0; }
-.scoped-ref-tag { display: inline-flex; align-items: center; height: 26px; padding: 0 9px; color: var(--accent); font-size: 9px; background: var(--accent-soft); border: 1px solid #ddd5ff; border-radius: 8px; }
+.scoped-ref-tag { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; color: #796db2; font-size: 8px; background: transparent; border: 1px solid #ded8f3; border-radius: 7px; }
+.scoped-sent-status { display: inline-flex; align-items: center; gap: 4px; color: #248764; font-size: 8px; }
 .scoped-composer textarea { width: 100%; min-height: 48px; padding: 8px 10px; resize: vertical; font: 11px/1.5 inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; outline: 0; }
 .scoped-composer textarea:focus { border-color: var(--accent); }
 .scoped-composer .composer-toolbar { padding-top: 2px; }
